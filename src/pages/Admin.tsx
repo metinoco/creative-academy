@@ -187,8 +187,8 @@ const Admin = () => {
                   { l: "LTV alumno", v: "342€" },
                 ].map((k) => (
                   <div key={k.l}>
-                    <div className="text-[10px] uppercase tracking-widest text-[hsl(34_18%_45%)] font-bold">{k.l}</div>
-                    <div className="font-display text-lg mt-1 font-black text-[hsl(34_22%_18%)]">{k.v}</div>
+                    <div className="text-[10px] uppercase tracking-widest text-[hsl(250_20%_50%)] font-bold">{k.l}</div>
+                    <div className="font-display text-lg mt-1 font-black text-[hsl(250_60%_14%)]">{k.v}</div>
                   </div>
                 ))}
               </div>
