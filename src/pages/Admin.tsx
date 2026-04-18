@@ -281,8 +281,8 @@ const Admin = () => {
             <div className={`lg:col-span-2 ${ADMIN_CARD} rounded-3xl border ${ADMIN_BORDER} p-6`}>
               <div className="flex items-center justify-between mb-5">
                 <div>
-                  <h3 className="font-display text-xl font-black text-[hsl(34_22%_18%)]">Ventas recientes</h3>
-                  <p className="text-xs text-[hsl(34_18%_45%)] mt-0.5">+5 ventas hoy</p>
+                  <h3 className="font-display text-xl font-black text-[hsl(250_60%_14%)]">Ventas recientes</h3>
+                  <p className="text-xs text-[hsl(250_20%_50%)] mt-0.5">+5 ventas hoy</p>
                 </div>
                 <button className={`text-xs ${HONEY_TXT} font-bold hover:underline`}>Ver todas</button>
               </div>
@@ -295,12 +295,12 @@ const Admin = () => {
                       {s.name.split(" ").map((n) => n[0]).join("")}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-bold truncate text-[hsl(34_22%_18%)]">{s.name}</div>
-                      <div className="text-xs text-[hsl(34_18%_45%)] truncate">{s.course}</div>
+                      <div className="text-sm font-bold truncate text-[hsl(250_60%_14%)]">{s.name}</div>
+                      <div className="text-xs text-[hsl(250_20%_50%)] truncate">{s.course}</div>
                     </div>
                     <div className="text-right shrink-0">
                       <div className="text-sm font-bold">+{s.amount}€</div>
-                      <div className="text-[10px] text-[hsl(34_18%_50%)]">{s.date}</div>
+                      <div className="text-[10px] text-[hsl(250_20%_55%)]">{s.date}</div>
                     </div>
                   </div>
                 ))}
