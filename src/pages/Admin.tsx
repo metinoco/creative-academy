@@ -76,10 +76,10 @@ const Admin = () => {
 
         <div className={`p-4 m-3 rounded-2xl ${SIDEBAR_ACCENT}`}>
           <div className="flex items-center gap-3">
-            <img src={lauraImg} alt="Laura" loading="lazy" width={40} height={40} className="w-10 h-10 rounded-full object-cover ring-2 ring-[hsl(36_82%_48%)]" />
+            <img src={lauraImg} alt="Laura" loading="lazy" width={40} height={40} className="w-10 h-10 rounded-full object-cover ring-2 ring-[hsl(326_85%_55%)]" />
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium truncate">Laura Fernández</div>
-              <div className="text-[10px] text-[hsl(40_45%_92%/0.6)] truncate">Owner · admin@</div>
+              <div className="text-[10px] text-[hsl(250_30%_94%/0.6)] truncate">Owner · admin@</div>
             </div>
           </div>
         </div>
