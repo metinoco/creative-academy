@@ -42,9 +42,9 @@ const Curso = () => {
             <nav className="flex items-center gap-2 text-xs text-ink-foreground/60">
               <Link to="/" className="hover:text-secondary">Inicio</Link>
               <ChevronRight className="w-3 h-3" />
-              <Link to="/" className="hover:text-secondary">Identidad de marca</Link>
+              <Link to="/cursos" className="hover:text-secondary">Identidad de marca</Link>
               <ChevronRight className="w-3 h-3" />
-              <span className="text-ink-foreground">Branding desde cero</span>
+              <span className="text-ink-foreground">Marca magnética</span>
             </nav>
 
             <div className="flex flex-wrap gap-2">
@@ -53,8 +53,8 @@ const Curso = () => {
             </div>
 
             <h1 className="font-display text-6xl md:text-7xl lg:text-8xl font-black leading-[0.9]">
-              Branding<br />
-              <span className="text-primary">desde</span> <span className="italic text-secondary">cero</span>.
+              Marca<br />
+              <span className="text-primary">magnética</span> <span className="italic text-secondary">.</span>
             </h1>
 
             <p className="text-lg text-ink-foreground/70 max-w-xl leading-relaxed">

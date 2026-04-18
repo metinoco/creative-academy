@@ -21,7 +21,7 @@ const Index = () => {
               <div className="relative">
                 <span className="inline-flex items-center gap-2 rounded-full bg-ink-foreground/10 backdrop-blur px-3 py-1.5 text-xs font-bold uppercase tracking-wider">
                   <Sparkles className="w-3 h-3 text-secondary" />
-                  6 cursos nuevos
+                  16 cursos disponibles
                 </span>
 
                 <h1 className="mt-8 font-display text-6xl md:text-7xl lg:text-[6.5rem] leading-[0.9] font-black">
@@ -92,15 +92,15 @@ const Index = () => {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div className="max-w-2xl">
             <span className="inline-block px-3 py-1 rounded-full bg-secondary/30 text-ink text-[10px] font-black uppercase tracking-widest">
-              Catálogo · 06 cursos
+              Catálogo · 16 cursos
             </span>
             <h2 className="mt-4 font-display text-5xl md:text-6xl font-black leading-[0.95]">
               Elige tu próxima<br /><span className="text-primary italic">obsesión creativa</span>.
             </h2>
           </div>
-          <button className="inline-flex items-center gap-2 rounded-full border-2 border-ink bg-card px-5 py-3 text-sm font-bold hover:bg-ink hover:text-ink-foreground transition self-start">
+          <Link to="/cursos" className="inline-flex items-center gap-2 rounded-full border-2 border-ink bg-card px-5 py-3 text-sm font-bold hover:bg-ink hover:text-ink-foreground transition self-start">
             Ver todos <ArrowUpRight className="w-4 h-4" />
-          </button>
+          </Link>
         </div>
 
         {/* BENTO GRID */}
