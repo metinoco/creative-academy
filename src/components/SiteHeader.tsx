@@ -1,10 +1,12 @@
 import { Link, useLocation } from "react-router-dom";
 import { ShoppingBag } from "lucide-react";
+import Logo from "@/components/Logo";
 
 const SiteHeader = ({ variant = "public" }: { variant?: "public" | "student" }) => {
   const { pathname } = useLocation();
   const links = [
-    { to: "/", label: "Catálogo" },
+    { to: "/", label: "Inicio" },
+    { to: "/cursos", label: "Cursos" },
     { to: "/curso", label: "Ver curso" },
     { to: "/alumno", label: "Mis cursos" },
     { to: "/admin", label: "Admin" },
@@ -13,15 +15,7 @@ const SiteHeader = ({ variant = "public" }: { variant?: "public" | "student" }) 
   return (
     <header className="sticky top-0 z-40 backdrop-blur-md bg-background/80 border-b border-border/60">
       <div className="container flex items-center justify-between h-20">
-        <Link to="/" className="flex items-center gap-2.5 group">
-          <span className="relative grid place-items-center w-9 h-9 rounded-full bg-ink text-ink-foreground font-display text-lg font-bold">
-            A
-            <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary" />
-          </span>
-          <span className="font-display text-xl font-semibold tracking-tight">
-            Academia Creativa<span className="text-primary">.</span>
-          </span>
-        </Link>
+        <Logo />
 
         <nav className="hidden md:flex items-center gap-8 text-sm">
           {links.map((l) => (
