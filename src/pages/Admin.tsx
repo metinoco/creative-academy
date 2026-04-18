@@ -169,13 +169,13 @@ const Admin = () => {
                 <svg viewBox="0 0 600 200" className="w-full h-full" preserveAspectRatio="none">
                   <defs>
                     <linearGradient id="g1" x1="0" x2="0" y1="0" y2="1">
-                      <stop offset="0%" stopColor="hsl(36 82% 48%)" stopOpacity="0.35" />
-                      <stop offset="100%" stopColor="hsl(36 82% 48%)" stopOpacity="0" />
+                      <stop offset="0%" stopColor="hsl(326 85% 55%)" stopOpacity="0.35" />
+                      <stop offset="100%" stopColor="hsl(326 85% 55%)" stopOpacity="0" />
                     </linearGradient>
                   </defs>
                   <path d="M0,160 C60,140 100,120 160,110 C220,100 260,130 320,90 C380,50 420,70 480,40 C540,20 580,30 600,25 L600,200 L0,200 Z" fill="url(#g1)" />
-                  <path d="M0,160 C60,140 100,120 160,110 C220,100 260,130 320,90 C380,50 420,70 480,40 C540,20 580,30 600,25" fill="none" stroke="hsl(36 82% 48%)" strokeWidth="2.5" />
-                  <path d="M0,170 C60,165 100,150 160,155 C220,160 260,140 320,130 C380,120 420,125 480,100 C540,90 580,85 600,80" fill="none" stroke="hsl(60 22% 42%)" strokeWidth="1.5" strokeOpacity="0.6" strokeDasharray="4 4" />
+                  <path d="M0,160 C60,140 100,120 160,110 C220,100 260,130 320,90 C380,50 420,70 480,40 C540,20 580,30 600,25" fill="none" stroke="hsl(326 85% 55%)" strokeWidth="2.5" />
+                  <path d="M0,170 C60,165 100,150 160,155 C220,160 260,140 320,130 C380,120 420,125 480,100 C540,90 580,85 600,80" fill="none" stroke="hsl(172 75% 42%)" strokeWidth="1.5" strokeOpacity="0.7" strokeDasharray="4 4" />
                 </svg>
               </div>
 
