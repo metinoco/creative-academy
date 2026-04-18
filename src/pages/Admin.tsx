@@ -5,27 +5,23 @@ import lauraImg from "@/assets/avatar-laura.jpg";
 import Logo from "@/components/Logo";
 
 /**
- * Admin — paleta cálida ALTERNATIVA al portal:
- *  - Fondo: arena cálida (warm sand) en vez de cream
- *  - Sidebar: marrón oliva profundo (#3a3220) en vez de ink puro
- *  - Acento principal: miel/ámbar (#c9851a)
- *  - Acento secundario: clay (#b85c38)
- *  - Soft accent: musgo cálido (#8a8b4a)
- *  Toda la paleta vía clases arbitrarias bg-[hsl(...)] para diferenciarla
- *  visualmente del portal sin tocar los design tokens globales.
+ * Admin — paleta VIBRANTE alternativa al portal:
+ *  - Fondo: blanco puro (panel limpio)
+ *  - Sidebar: índigo profundo
+ *  - Acentos: magenta eléctrico, violeta, turquesa, lima
  */
 
-const ADMIN_BG = "bg-[hsl(38_45%_94%)]";
-const ADMIN_SURFACE = "bg-[hsl(40_38%_88%)]";
-const ADMIN_CARD = "bg-[hsl(42_55%_97%)]";
-const ADMIN_BORDER = "border-[hsl(36_28%_82%)]";
-const SIDEBAR_BG = "bg-[hsl(34_22%_18%)]";
-const SIDEBAR_FG = "text-[hsl(40_45%_92%)]";
-const SIDEBAR_ACCENT = "bg-[hsl(34_18%_26%)]";
-const HONEY = "bg-[hsl(36_82%_48%)]";
-const HONEY_TXT = "text-[hsl(36_82%_42%)]";
-const CLAY = "bg-[hsl(18_62%_48%)]";
-const MOSS = "bg-[hsl(60_22%_42%)]";
+const ADMIN_BG = "bg-white";
+const ADMIN_SURFACE = "bg-[hsl(250_30%_96%)]";
+const ADMIN_CARD = "bg-white";
+const ADMIN_BORDER = "border-[hsl(250_20%_90%)]";
+const SIDEBAR_BG = "bg-[hsl(250_60%_14%)]";
+const SIDEBAR_FG = "text-[hsl(250_30%_94%)]";
+const SIDEBAR_ACCENT = "bg-[hsl(250_50%_22%)]";
+const HONEY = "bg-[hsl(326_85%_55%)]"; // magenta vibrante
+const HONEY_TXT = "text-[hsl(326_85%_50%)]";
+const CLAY = "bg-[hsl(265_82%_58%)]"; // violeta eléctrico
+const MOSS = "bg-[hsl(172_75%_42%)]"; // turquesa
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", active: true },
