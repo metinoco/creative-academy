@@ -114,10 +114,10 @@ const Admin = () => {
           <div className="flex items-end justify-between flex-wrap gap-4">
             <div>
               <span className={`text-xs font-black uppercase tracking-[0.2em] ${HONEY_TXT}`}>Panel de control</span>
-              <h1 className="mt-2 font-display text-4xl md:text-5xl leading-tight text-[hsl(34_22%_18%)]">
-                Buenos días, <span className="italic text-[hsl(18_62%_48%)]">Laura</span>
+              <h1 className="mt-2 font-display text-4xl md:text-5xl leading-tight text-[hsl(250_60%_14%)]">
+                Buenos días, <span className="italic text-[hsl(265_82%_58%)]">Laura</span>
               </h1>
-              <p className="text-[hsl(34_18%_38%)] mt-2">Esto es lo que está pasando hoy en la academia.</p>
+              <p className="text-[hsl(250_20%_45%)] mt-2">Esto es lo que está pasando hoy en la academia.</p>
             </div>
             <div className="flex gap-2">
               {["Hoy", "7 días", "30 días", "Año"].map((p, i) => (
@@ -125,8 +125,8 @@ const Admin = () => {
                   key={p}
                   className={`px-4 py-2 rounded-full text-xs font-bold transition ${
                     i === 2
-                      ? `${SIDEBAR_BG} text-[hsl(40_45%_92%)]`
-                      : `${ADMIN_CARD} border ${ADMIN_BORDER} hover:border-[hsl(36_82%_48%)]/40`
+                      ? `${SIDEBAR_BG} text-[hsl(250_30%_94%)]`
+                      : `${ADMIN_CARD} border ${ADMIN_BORDER} hover:border-[hsl(326_85%_55%)]/40`
                   }`}
                 >
                   {p}
