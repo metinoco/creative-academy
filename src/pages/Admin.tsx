@@ -140,12 +140,12 @@ const Admin = () => {
             {stats.map((s) => (
               <div key={s.label} className={`${ADMIN_CARD} rounded-3xl border ${ADMIN_BORDER} p-6 hover:shadow-lg transition relative overflow-hidden`}>
                 <div className={`absolute top-0 left-0 w-1 h-full ${s.accent}`} />
-                <div className="text-xs uppercase tracking-widest text-[hsl(34_18%_45%)] font-bold">{s.label}</div>
-                <div className="font-display text-3xl mt-2 font-black text-[hsl(34_22%_18%)]">{s.value}</div>
-                <div className={`mt-3 inline-flex items-center gap-1 text-xs font-bold ${s.up ? HONEY_TXT : "text-[hsl(34_18%_45%)]"}`}>
+                <div className="text-xs uppercase tracking-widest text-[hsl(250_20%_50%)] font-bold">{s.label}</div>
+                <div className="font-display text-3xl mt-2 font-black text-[hsl(250_60%_14%)]">{s.value}</div>
+                <div className={`mt-3 inline-flex items-center gap-1 text-xs font-bold ${s.up ? HONEY_TXT : "text-[hsl(250_20%_50%)]"}`}>
                   {s.up ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
                   {s.change}
-                  <span className="text-[hsl(34_18%_50%)] font-medium">vs mes anterior</span>
+                  <span className="text-[hsl(250_20%_55%)] font-medium">vs mes anterior</span>
                 </div>
               </div>
             ))}
