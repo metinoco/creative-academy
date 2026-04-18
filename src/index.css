@@ -1,96 +1,96 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* Academia Creativa — warm editorial design system.
+   Palette: cream, terracotta, mustard, ink. All HSL.
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Warm canvas */
+    --background: 38 40% 96%;
+    --foreground: 24 25% 12%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --surface: 36 35% 92%;
+    --surface-elevated: 38 50% 98%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --card: 38 50% 98%;
+    --card-foreground: 24 25% 12%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --popover: 38 50% 98%;
+    --popover-foreground: 24 25% 12%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Terracotta — primary creative accent */
+    --primary: 14 78% 52%;
+    --primary-foreground: 38 50% 98%;
+    --primary-glow: 18 90% 62%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Mustard — secondary warm */
+    --secondary: 38 80% 60%;
+    --secondary-foreground: 24 30% 14%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Ink — for serious, calm zones */
+    --ink: 24 25% 12%;
+    --ink-foreground: 38 50% 98%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --muted: 36 25% 88%;
+    --muted-foreground: 24 12% 38%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --accent: 38 80% 60%;
+    --accent-foreground: 24 30% 14%;
 
-    --radius: 0.5rem;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 38 50% 98%;
 
-    --sidebar-background: 0 0% 98%;
+    --border: 30 20% 84%;
+    --input: 30 20% 84%;
+    --ring: 14 78% 52%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --radius: 1rem;
 
-    --sidebar-primary: 240 5.9% 10%;
+    /* Gradients */
+    --gradient-warm: linear-gradient(135deg, hsl(14 78% 52%), hsl(28 88% 58%));
+    --gradient-sun: linear-gradient(135deg, hsl(38 90% 65%), hsl(18 85% 58%));
+    --gradient-ink: linear-gradient(135deg, hsl(24 30% 14%), hsl(20 25% 22%));
+    --gradient-cream: linear-gradient(180deg, hsl(38 50% 98%), hsl(36 35% 92%));
 
-    --sidebar-primary-foreground: 0 0% 98%;
+    /* Shadows */
+    --shadow-soft: 0 1px 2px hsl(24 25% 12% / 0.04), 0 8px 24px -8px hsl(24 25% 12% / 0.08);
+    --shadow-card: 0 2px 4px hsl(24 25% 12% / 0.04), 0 16px 40px -16px hsl(24 25% 12% / 0.12);
+    --shadow-glow: 0 20px 60px -20px hsl(14 78% 52% / 0.4);
 
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Sidebar (admin) */
+    --sidebar-background: 24 25% 12%;
+    --sidebar-foreground: 38 30% 88%;
+    --sidebar-primary: 14 78% 52%;
+    --sidebar-primary-foreground: 38 50% 98%;
+    --sidebar-accent: 24 20% 18%;
+    --sidebar-accent-foreground: 38 50% 98%;
+    --sidebar-border: 24 18% 22%;
+    --sidebar-ring: 14 78% 52%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --background: 24 25% 8%;
+    --foreground: 38 40% 96%;
+    --card: 24 22% 12%;
+    --card-foreground: 38 40% 96%;
+    --popover: 24 22% 12%;
+    --popover-foreground: 38 40% 96%;
+    --primary: 14 78% 58%;
+    --primary-foreground: 24 25% 8%;
+    --secondary: 24 20% 18%;
+    --secondary-foreground: 38 40% 96%;
+    --muted: 24 18% 16%;
+    --muted-foreground: 36 20% 64%;
+    --accent: 38 80% 60%;
+    --accent-foreground: 24 25% 8%;
+    --border: 24 18% 20%;
+    --input: 24 18% 20%;
+    --ring: 14 78% 58%;
   }
 }
 
@@ -100,6 +100,25 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-feature-settings: "ss01", "cv11";
   }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: 'Fraunces', 'Times New Roman', serif;
+    font-optical-sizing: auto;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+  .bg-gradient-warm { background-image: var(--gradient-warm); }
+  .bg-gradient-sun { background-image: var(--gradient-sun); }
+  .bg-gradient-ink { background-image: var(--gradient-ink); }
+  .bg-gradient-cream { background-image: var(--gradient-cream); }
+  .shadow-soft { box-shadow: var(--shadow-soft); }
+  .shadow-card { box-shadow: var(--shadow-card); }
+  .shadow-glow { box-shadow: var(--shadow-glow); }
 }
