@@ -197,7 +197,7 @@ const Admin = () => {
             {/* TOP COURSES */}
             <div className={`${ADMIN_CARD} rounded-3xl border ${ADMIN_BORDER} p-6`}>
               <div className="flex items-center justify-between mb-5">
-                <h3 className="font-display text-xl font-black text-[hsl(34_22%_18%)]">Top cursos</h3>
+                <h3 className="font-display text-xl font-black text-[hsl(250_60%_14%)]">Top cursos</h3>
                 <button className={`w-7 h-7 rounded-full hover:${ADMIN_SURFACE} grid place-items-center`}>
                   <MoreHorizontal className="w-4 h-4" />
                 </button>
@@ -205,11 +205,11 @@ const Admin = () => {
               <div className="space-y-4">
                 {courses.slice(0, 4).map((c, i) => (
                   <div key={c.id} className="flex items-center gap-3">
-                    <span className="font-display text-2xl text-[hsl(34_18%_55%)]/60 tabular-nums w-6 font-black">0{i + 1}</span>
+                    <span className="font-display text-2xl text-[hsl(250_20%_60%)]/60 tabular-nums w-6 font-black">0{i + 1}</span>
                     <img src={c.image} alt={c.title} loading="lazy" className="w-12 h-12 rounded-xl object-cover" />
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-bold truncate text-[hsl(34_22%_18%)]">{c.title}</div>
-                      <div className="text-xs text-[hsl(34_18%_45%)]">{c.lessons} lecciones</div>
+                      <div className="text-sm font-bold truncate text-[hsl(250_60%_14%)]">{c.title}</div>
+                      <div className="text-xs text-[hsl(250_20%_50%)]">{c.lessons} lecciones</div>
                     </div>
                     <div className="text-right">
                       <div className="text-sm font-bold">{c.price * 12}€</div>
