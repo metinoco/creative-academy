@@ -54,7 +54,7 @@ const Admin = () => {
       <aside className={`hidden md:flex w-64 ${SIDEBAR_BG} ${SIDEBAR_FG} flex-col fixed inset-y-0`}>
         <div className="p-6">
           <Logo variant="ink" size="sm" />
-          <div className="mt-1 ml-12 text-[10px] uppercase tracking-widest text-[hsl(40_45%_92%/0.55)]">Admin</div>
+          <div className="mt-1 ml-12 text-[10px] uppercase tracking-widest text-[hsl(250_30%_94%/0.55)]">Admin</div>
         </div>
 
         <nav className="flex-1 px-3 space-y-0.5">
