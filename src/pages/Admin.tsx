@@ -88,21 +88,21 @@ const Admin = () => {
       {/* MAIN */}
       <main className="flex-1 md:ml-64">
         {/* TOPBAR */}
-        <header className={`sticky top-0 z-30 ${ADMIN_BG}/85 backdrop-blur border-b ${ADMIN_BORDER}`}>
+        <header className={`sticky top-0 z-30 bg-white/85 backdrop-blur border-b ${ADMIN_BORDER}`}>
           <div className="flex items-center justify-between px-6 lg:px-10 h-16">
             <div className="relative max-w-sm w-full hidden sm:block">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(34_22%_38%)]" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(250_20%_50%)]" />
               <input
                 placeholder="Buscar alumnos, cursos, ventas..."
-                className={`w-full ${ADMIN_SURFACE} rounded-full pl-11 pr-4 py-2 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-[hsl(36_82%_48%)]/40`}
+                className={`w-full ${ADMIN_SURFACE} rounded-full pl-11 pr-4 py-2 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-[hsl(326_85%_55%)]/40`}
               />
             </div>
             <div className="flex items-center gap-3">
-              <button className={`relative w-10 h-10 rounded-full ${ADMIN_SURFACE} hover:bg-[hsl(40_38%_82%)] grid place-items-center transition`}>
+              <button className={`relative w-10 h-10 rounded-full ${ADMIN_SURFACE} hover:bg-[hsl(250_30%_92%)] grid place-items-center transition`}>
                 <Bell className="w-4 h-4" />
                 <span className={`absolute top-2 right-2 w-2 h-2 rounded-full ${HONEY}`} />
               </button>
-              <button className={`inline-flex items-center gap-2 rounded-full ${HONEY} text-white px-4 py-2 text-sm font-bold hover:bg-[hsl(36_82%_44%)] transition`}>
+              <button className={`inline-flex items-center gap-2 rounded-full ${HONEY} text-white px-4 py-2 text-sm font-bold hover:bg-[hsl(326_85%_48%)] transition`}>
                 <Plus className="w-4 h-4" /> Nuevo curso
               </button>
             </div>
