@@ -35,7 +35,7 @@ const SiteFooter = () => (
     </div>
     <div className="border-t border-border/60">
       <div className="container py-5 flex flex-wrap gap-3 justify-between items-center text-xs text-muted-foreground">
-        <span>© 2026 Academia Creativa. Hecho con ☕ y 🥐 en Barcelona.</span>
+        <span>© 2026 Academia Creativa. Hecho con ☕ y 🥐 en Zaragoza.</span>
         <div className="flex gap-5">
           <span>Cookies</span><span>Aviso legal</span>
         </div>
