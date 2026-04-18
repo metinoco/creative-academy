@@ -60,8 +60,8 @@ const SiteHeader = ({ variant = "public" }: { variant?: "public" | "student" }) 
                 <span className="absolute -top-1 -right-1 w-5 h-5 grid place-items-center text-[10px] font-semibold rounded-full bg-primary text-primary-foreground">2</span>
               </button>
               <div className="flex items-center gap-2 pl-2 pr-1 py-1 rounded-full bg-surface">
-                <div className="w-8 h-8 rounded-full bg-gradient-warm grid place-items-center text-primary-foreground text-xs font-semibold">MG</div>
-                <span className="text-sm pr-2 hidden sm:inline">María G.</span>
+                <div className="w-8 h-8 rounded-full bg-gradient-warm grid place-items-center text-primary-foreground text-xs font-semibold">CR</div>
+                <span className="text-sm pr-2 hidden sm:inline">Carlos R.</span>
               </div>
             </>
           )}
