@@ -226,13 +226,13 @@ const Admin = () => {
             <div className={`lg:col-span-3 ${ADMIN_CARD} rounded-3xl border ${ADMIN_BORDER} overflow-hidden`}>
               <div className="p-6 flex items-center justify-between">
                 <div>
-                  <h3 className="font-display text-xl font-black text-[hsl(34_22%_18%)]">Cursos del catálogo</h3>
-                  <p className="text-xs text-[hsl(34_18%_45%)] mt-0.5">16 cursos · 14 publicados · 2 borradores</p>
+                  <h3 className="font-display text-xl font-black text-[hsl(250_60%_14%)]">Cursos del catálogo</h3>
+                  <p className="text-xs text-[hsl(250_20%_50%)] mt-0.5">16 cursos · 14 publicados · 2 borradores</p>
                 </div>
                 <Link to="/cursos" className={`text-xs ${HONEY_TXT} font-bold hover:underline`}>Gestionar</Link>
               </div>
               <table className="w-full">
-                <thead className={`${ADMIN_SURFACE}/60 text-[10px] uppercase tracking-widest text-[hsl(34_18%_45%)]`}>
+                <thead className={`${ADMIN_SURFACE}/60 text-[10px] uppercase tracking-widest text-[hsl(250_20%_50%)]`}>
                   <tr>
                     <th className="text-left font-bold px-6 py-3">Curso</th>
                     <th className="text-left font-bold px-2 py-3">Estado</th>
@@ -247,8 +247,8 @@ const Admin = () => {
                         <div className="flex items-center gap-3">
                           <img src={c.image} alt={c.title} loading="lazy" className="w-10 h-10 rounded-lg object-cover" />
                           <div>
-                            <div className="font-bold text-[hsl(34_22%_18%)]">{c.title}</div>
-                            <div className="text-xs text-[hsl(34_18%_45%)]">{c.price}€</div>
+                            <div className="font-bold text-[hsl(250_60%_14%)]">{c.title}</div>
+                            <div className="text-xs text-[hsl(250_20%_50%)]">{c.price}€</div>
                           </div>
                         </div>
                       </td>
@@ -256,8 +256,8 @@ const Admin = () => {
                         <span
                           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black ${
                             i === 4
-                              ? "bg-[hsl(60_22%_42%)]/15 text-[hsl(60_22%_28%)]"
-                              : "bg-[hsl(36_82%_48%)]/15 text-[hsl(36_82%_38%)]"
+                              ? "bg-[hsl(172_75%_42%)]/15 text-[hsl(172_75%_30%)]"
+                              : "bg-[hsl(326_85%_55%)]/15 text-[hsl(326_85%_45%)]"
                           }`}
                         >
                           <span className={`w-1.5 h-1.5 rounded-full ${i === 4 ? MOSS : HONEY}`} />
