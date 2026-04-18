@@ -154,11 +154,11 @@ const Index = () => {
           ))}
 
           {/* Bottom row of 3 */}
-          {courses.slice(3, 6).map((c, i) => (
-            <Link key={c.id} to="/curso" className={`col-span-12 sm:col-span-6 md:col-span-4 group rounded-[2rem] overflow-hidden ${i === 1 ? "bg-primary text-primary-foreground" : "bg-card border-2 border-ink"} transition hover:-translate-y-1`}>
+          {courses.slice(3, 6).map((c) => (
+            <Link key={c.id} to="/curso" className="col-span-12 sm:col-span-6 md:col-span-4 group rounded-[2rem] overflow-hidden bg-card border-2 border-ink transition hover:-translate-y-1">
               <div className="aspect-[4/3] relative overflow-hidden">
-                <img src={c.image} alt={c.title} loading="lazy" className={`w-full h-full object-cover ${i === 1 ? "mix-blend-luminosity opacity-80" : ""} group-hover:scale-105 transition-transform duration-500`} />
-                <span className={`absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${i === 1 ? "bg-ink text-ink-foreground" : "bg-card text-ink"}`}>
+                <img src={c.image} alt={c.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-card text-ink">
                   {c.category}
                 </span>
               </div>
