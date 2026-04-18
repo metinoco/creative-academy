@@ -156,12 +156,12 @@ const Admin = () => {
             <div className={`lg:col-span-2 ${ADMIN_CARD} rounded-3xl border ${ADMIN_BORDER} p-6`}>
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h3 className="font-display text-2xl font-black text-[hsl(34_22%_18%)]">Ingresos · últimos 30 días</h3>
-                  <p className="text-xs text-[hsl(34_18%_45%)] mt-1">Comparado con periodo anterior</p>
+                  <h3 className="font-display text-2xl font-black text-[hsl(250_60%_14%)]">Ingresos · últimos 30 días</h3>
+                  <p className="text-xs text-[hsl(250_20%_50%)] mt-1">Comparado con periodo anterior</p>
                 </div>
                 <div className="flex items-center gap-4 text-xs">
                   <span className="inline-flex items-center gap-2"><span className={`w-2 h-2 rounded-full ${HONEY}`} />Este mes</span>
-                  <span className="inline-flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[hsl(34_18%_55%)]/40" />Anterior</span>
+                  <span className="inline-flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[hsl(250_20%_60%)]/40" />Anterior</span>
                 </div>
               </div>
 
