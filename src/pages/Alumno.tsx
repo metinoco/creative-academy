@@ -4,6 +4,10 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { courses } from "@/data/courses";
 
+const STREAK_DAYS = 28;
+const WEEK_TIME = "9h12";
+const CERTIFICATES = "07";
+
 const inProgress = [
   { ...courses[0], moduleName: "Módulo 3 · Sistema cromático", progress: 62, completed: 30, lastSeen: "ayer" },
   { ...courses[1], moduleName: "Módulo 1 · Familias tipográficas", progress: 28, completed: 7, lastSeen: "hace 3 días" },
