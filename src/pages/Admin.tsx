@@ -63,8 +63,8 @@ const Admin = () => {
               key={item.label}
               className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition ${
                 item.active
-                  ? `${SIDEBAR_ACCENT} text-[hsl(40_45%_92%)]`
-                  : `text-[hsl(40_45%_92%/0.65)] hover:${SIDEBAR_ACCENT} hover:text-[hsl(40_45%_92%)]`
+                  ? `${SIDEBAR_ACCENT} text-[hsl(250_30%_94%)]`
+                  : `text-[hsl(250_30%_94%/0.65)] hover:${SIDEBAR_ACCENT} hover:text-[hsl(250_30%_94%)]`
               }`}
             >
               <item.icon className="w-4 h-4" />
