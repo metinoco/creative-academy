@@ -4,6 +4,10 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { courses } from "@/data/courses";
 
+const STREAK_DAYS = 28;
+const WEEK_TIME = "9h12";
+const CERTIFICATES = "07";
+
 const inProgress = [
   { ...courses[0], moduleName: "Módulo 3 · Sistema cromático", progress: 62, completed: 30, lastSeen: "ayer" },
   { ...courses[1], moduleName: "Módulo 1 · Familias tipográficas", progress: 28, completed: 7, lastSeen: "hace 3 días" },
@@ -28,7 +32,7 @@ const Alumno = () => {
                 <span className="text-primary">Carlos</span> 👋
               </h1>
               <p className="mt-5 text-ink-foreground/70 max-w-md">
-                Llevas <b className="text-secondary">12 días seguidos</b> aprendiendo. No la rompas hoy.
+                Llevas <b className="text-secondary">{STREAK_DAYS} días seguidos</b> aprendiendo. No la rompas hoy.
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3">
@@ -46,17 +50,17 @@ const Alumno = () => {
           <div className="lg:col-span-5 grid grid-cols-2 gap-5">
             <div className="bg-primary text-primary-foreground rounded-[2rem] p-5 relative overflow-hidden">
               <Flame className="w-7 h-7" />
-              <div className="font-display text-5xl font-black mt-3 leading-none">12</div>
+              <div className="font-display text-5xl font-black mt-3 leading-none">{STREAK_DAYS}</div>
               <div className="text-xs font-bold uppercase tracking-widest mt-1 opacity-80">días de racha</div>
             </div>
             <div className="bg-secondary text-ink rounded-[2rem] p-5 relative overflow-hidden">
               <Clock className="w-7 h-7" />
-              <div className="font-display text-5xl font-black mt-3 leading-none">4h35</div>
+              <div className="font-display text-5xl font-black mt-3 leading-none">{WEEK_TIME}</div>
               <div className="text-xs font-bold uppercase tracking-widest mt-1 opacity-70">esta semana</div>
             </div>
             <div className="bg-card border-2 border-ink rounded-[2rem] p-5">
               <Trophy className="w-7 h-7 text-primary" />
-              <div className="font-display text-5xl font-black mt-3 leading-none">02</div>
+              <div className="font-display text-5xl font-black mt-3 leading-none">{CERTIFICATES}</div>
               <div className="text-xs font-bold uppercase tracking-widest mt-1 text-muted-foreground">certificados</div>
             </div>
             <div className="bg-surface rounded-[2rem] p-5">
