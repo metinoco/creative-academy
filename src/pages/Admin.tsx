@@ -1,8 +1,9 @@
-import { Link } from "react-router-dom";
-import { LayoutDashboard, BookOpen, Users, CreditCard, Settings, BarChart3, Search, Bell, Plus, MoreHorizontal, ArrowUp, ArrowDown, Eye, Pencil, TrendingUp } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { LayoutDashboard, BookOpen, Users, CreditCard, Settings, BarChart3, Search, Bell, Plus, MoreHorizontal, ArrowUp, ArrowDown, Eye, Pencil, TrendingUp, LogOut } from "lucide-react";
 import { courses } from "@/data/courses";
 import lauraImg from "@/assets/avatar-laura.jpg";
 import Logo from "@/components/Logo";
+import { useAuth } from "@/context/AuthContext";
 
 /**
  * Admin — paleta VIBRANTE alternativa al portal:
