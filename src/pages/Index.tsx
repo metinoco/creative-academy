@@ -3,8 +3,11 @@ import { ArrowUpRight, Sparkles, Star, Play, Zap } from "lucide-react";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { courses } from "@/data/courses";
+import { useAuth } from "@/context/AuthContext";
 
 const Index = () => {
+  const { user, role } = useAuth();
+  const panelHref = role === "admin" ? "/admin" : "/alumno";
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader variant="public" />
