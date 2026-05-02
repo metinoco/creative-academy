@@ -3,6 +3,7 @@ import { Flame, Clock, Award, Play, Calendar, Target, ArrowUpRight, Trophy, Mess
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { courses } from "@/data/courses";
+import { useAuth } from "@/context/AuthContext";
 
 const STREAK_DAYS = 28;
 const WEEK_TIME = "9h12";
@@ -15,6 +16,9 @@ const inProgress = [
 ];
 
 const Alumno = () => {
+  const { profile, user } = useAuth();
+  const firstName = profile?.full_name?.split(" ")[0] ?? user?.email?.split("@")[0] ?? "Carlos";
+
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader variant="student" />
@@ -29,7 +33,7 @@ const Alumno = () => {
               <span className="text-xs font-black uppercase tracking-widest text-secondary">Tu panel · Lunes</span>
               <h1 className="mt-3 font-display text-5xl md:text-6xl lg:text-7xl font-black leading-[0.9]">
                 Hola,<br />
-                <span className="text-primary">Carlos</span> 👋
+                <span className="text-primary">{firstName}</span> 👋
               </h1>
               <p className="mt-5 text-ink-foreground/70 max-w-md">
                 Llevas <b className="text-secondary">{STREAK_DAYS} días seguidos</b> aprendiendo. No la rompas hoy.
@@ -39,7 +43,7 @@ const Alumno = () => {
                 <button className="inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-6 py-3 text-sm font-bold hover:bg-primary-glow transition">
                   <Play className="w-4 h-4 fill-current" /> Continuar curso
                 </button>
-                <Link to="/" className="inline-flex items-center gap-2 rounded-full bg-ink-foreground/10 backdrop-blur px-6 py-3 text-sm font-bold hover:bg-ink-foreground/20 transition">
+                <Link to="/cursos" className="inline-flex items-center gap-2 rounded-full bg-ink-foreground/10 backdrop-blur px-6 py-3 text-sm font-bold hover:bg-ink-foreground/20 transition">
                   Explorar más
                 </Link>
               </div>
@@ -209,7 +213,7 @@ const Alumno = () => {
             <span className="text-xs font-black uppercase tracking-widest text-primary">Para ti</span>
             <h2 className="mt-2 font-display text-4xl md:text-5xl font-black">Pensados para tu nivel</h2>
           </div>
-          <Link to="/" className="text-sm font-bold text-primary hover:underline inline-flex items-center gap-1">
+          <Link to="/cursos" className="text-sm font-bold text-primary hover:underline inline-flex items-center gap-1">
             Ver todos <ArrowUpRight className="w-4 h-4" />
           </Link>
         </div>
