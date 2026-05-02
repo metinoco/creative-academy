@@ -1,8 +1,9 @@
-import { Link } from "react-router-dom";
-import { LayoutDashboard, BookOpen, Users, CreditCard, Settings, BarChart3, Search, Bell, Plus, MoreHorizontal, ArrowUp, ArrowDown, Eye, Pencil, TrendingUp } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { LayoutDashboard, BookOpen, Users, CreditCard, Settings, BarChart3, Search, Bell, Plus, MoreHorizontal, ArrowUp, ArrowDown, Eye, Pencil, TrendingUp, LogOut } from "lucide-react";
 import { courses } from "@/data/courses";
 import lauraImg from "@/assets/avatar-laura.jpg";
 import Logo from "@/components/Logo";
+import { useAuth } from "@/context/AuthContext";
 
 /**
  * Admin — paleta VIBRANTE alternativa al portal:
@@ -48,6 +49,15 @@ const recentSales = [
 ];
 
 const Admin = () => {
+  const navigate = useNavigate();
+  const { signOut, profile } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/", { replace: true });
+  };
+
+  const displayName = profile?.full_name ?? "Laura Fernández";
   return (
     <div className={`min-h-screen ${ADMIN_BG} flex`}>
       {/* SIDEBAR */}
@@ -76,12 +86,18 @@ const Admin = () => {
 
         <div className={`p-4 m-3 rounded-2xl ${SIDEBAR_ACCENT}`}>
           <div className="flex items-center gap-3">
-            <img src={lauraImg} alt="Laura" loading="lazy" width={40} height={40} className="w-10 h-10 rounded-full object-cover ring-2 ring-[hsl(326_85%_55%)]" />
+            <img src={lauraImg} alt={displayName} loading="lazy" width={40} height={40} className="w-10 h-10 rounded-full object-cover ring-2 ring-[hsl(326_85%_55%)]" />
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium truncate">Laura Fernández</div>
+              <div className="text-sm font-medium truncate">{displayName}</div>
               <div className="text-[10px] text-[hsl(250_30%_94%/0.6)] truncate">Owner · admin@</div>
             </div>
           </div>
+          <button
+            onClick={handleLogout}
+            className="mt-3 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[hsl(326_85%_55%)] hover:bg-[hsl(326_85%_48%)] text-white px-3 py-2 text-xs font-bold transition"
+          >
+            <LogOut className="w-3.5 h-3.5" /> Cerrar sesión
+          </button>
         </div>
       </aside>
 
