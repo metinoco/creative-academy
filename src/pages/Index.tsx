@@ -40,12 +40,20 @@ const Index = () => {
                 </p>
 
                 <div className="mt-10 flex flex-wrap gap-3">
-                  <Link to="/curso" className="inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-7 py-4 text-sm font-bold hover:bg-primary-glow transition">
-                    Empezar a crear <ArrowUpRight className="w-4 h-4" />
-                  </Link>
-                  <Link to="/alumno" className="inline-flex items-center gap-2 rounded-full bg-ink-foreground/10 backdrop-blur px-7 py-4 text-sm font-bold hover:bg-ink-foreground/20 transition">
-                    Ver mi panel
-                  </Link>
+                  {!user ? (
+                    <Link to="/registro" className="inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-7 py-4 text-sm font-bold hover:bg-primary-glow transition">
+                      Empezar a crear <ArrowUpRight className="w-4 h-4" />
+                    </Link>
+                  ) : (
+                    <>
+                      <Link to={panelHref} className="inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-7 py-4 text-sm font-bold hover:bg-primary-glow transition">
+                        Ver mi panel <ArrowUpRight className="w-4 h-4" />
+                      </Link>
+                      <Link to="/cursos" className="inline-flex items-center gap-2 rounded-full bg-ink-foreground/10 backdrop-blur px-7 py-4 text-sm font-bold hover:bg-ink-foreground/20 transition">
+                        Explorar cursos
+                      </Link>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
