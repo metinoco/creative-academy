@@ -49,6 +49,15 @@ const recentSales = [
 ];
 
 const Admin = () => {
+  const navigate = useNavigate();
+  const { signOut, profile } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/", { replace: true });
+  };
+
+  const displayName = profile?.full_name ?? "Laura Fernández";
   return (
     <div className={`min-h-screen ${ADMIN_BG} flex`}>
       {/* SIDEBAR */}
