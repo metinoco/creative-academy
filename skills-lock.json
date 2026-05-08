@@ -30,6 +30,30 @@
       "sourceType": "github",
       "skillPath": "SKILL.md",
       "computedHash": "99f01a9c7683548cfb9cccccec1193379fdcb2e8eefcd922bc7906e0a11bf958"
+    },
+    "react-router": {
+      "source": "remix-run/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/react-router-declarative-mode/SKILL.md",
+      "computedHash": "cd0d78bfafe0d2f4e130911f9fa43dab08727c9b90336c8879efc9b8860edd17"
+    },
+    "tailwindcss": {
+      "source": "blencorp/claude-code-kit",
+      "sourceType": "github",
+      "skillPath": "cli/kits/tailwindcss/skills/tailwindcss/SKILL.md",
+      "computedHash": "04ceeabe6ef46ace84916b550b5d759a4c4e2e80ef016415eadb867bdbebd282"
+    },
+    "mastering-typescript": {
+      "source": "SpillwaveSolutions/mastering-typescript-skill",
+      "sourceType": "github",
+      "skillPath": "mastering-typescript/SKILL.md",
+      "computedHash": "97d1c5687e75258c6dcaf2f9378975a37293aa289aa45e645395348f1a8fe325"
+    },
+    "shadcn-ui": {
+      "source": "capraidev/shadcn-claude-skill",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "4a46b39789ca9ed7547228582062d0b5a2599ac066dd8b742d812300733419d0"
     }
   }
 }
