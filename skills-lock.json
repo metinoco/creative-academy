@@ -12,6 +12,24 @@
       "sourceType": "github",
       "skillPath": "skills/vite/SKILL.md",
       "computedHash": "1cdc4bbecaa89544e6ef92566b015db989994bf90c4472683ac64f7a114dc3af"
+    },
+    "supabase": {
+      "source": "supabase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/supabase/SKILL.md",
+      "computedHash": "41f4694e5e8114215fb2c4b1b72f373dddec52eb784ec92ed8d8a6885cb0f197"
+    },
+    "tanstack-query": {
+      "source": "DeckardGer/tanstack-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tanstack-query/SKILL.md",
+      "computedHash": "410d81ee0451a56724f76e119cafb5570ac560848b3de6429e23f3f6443e3d44"
+    },
+    "form-builder": {
+      "source": "danielmeppiel/form-builder",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "99f01a9c7683548cfb9cccccec1193379fdcb2e8eefcd922bc7906e0a11bf958"
     }
   }
 }
