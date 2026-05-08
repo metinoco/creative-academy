@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useMemo, useState } from "react";
 import { ArrowUpRight, Search, SlidersHorizontal, Star } from "lucide-react";
 import SiteHeader from "@/components/SiteHeader";
@@ -8,7 +8,11 @@ import { courses } from "@/data/courses";
 const categories = ["Todos", ...Array.from(new Set(courses.map((c) => c.category)))];
 
 const Cursos = () => {
-  const [active, setActive] = useState("Todos");
+  const [searchParams] = useSearchParams();
+  const initialCategory = searchParams.get("categoria");
+  const [active, setActive] = useState(
+    categories.includes(initialCategory ?? "") ? initialCategory! : "Todos"
+  );
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<"populares" | "precio" | "rating">("populares");
 
@@ -137,7 +141,7 @@ const Cursos = () => {
             {filtered.map((c) => (
               <Link
                 key={c.id}
-                to="/curso"
+                to={`/curso/${c.id}`}
                 className="group bg-card rounded-3xl overflow-hidden border-2 border-border hover:border-ink transition flex flex-col"
               >
                 <div className="relative aspect-[4/3] overflow-hidden bg-muted">

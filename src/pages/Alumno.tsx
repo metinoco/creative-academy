@@ -220,7 +220,7 @@ const Alumno = () => {
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {courses.slice(2, 6).map((c) => (
-            <Link key={c.id} to="/curso" className="group bg-card rounded-2xl overflow-hidden border-2 border-border hover:border-primary transition">
+            <Link key={c.id} to={`/curso/${c.id}`} className="group bg-card rounded-2xl overflow-hidden border-2 border-border hover:border-primary transition">
               <div className="relative aspect-[5/4] overflow-hidden bg-muted">
                 <img src={c.image} alt={c.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <button className="absolute top-3 right-3 w-9 h-9 rounded-full bg-card/90 backdrop-blur grid place-items-center hover:bg-primary hover:text-primary-foreground transition">

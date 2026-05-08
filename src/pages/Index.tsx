@@ -117,7 +117,7 @@ const Index = () => {
         {/* BENTO GRID */}
         <div className="grid grid-cols-12 gap-5 auto-rows-[minmax(0,1fr)]">
           {/* Featured big */}
-          <Link to="/curso" className="col-span-12 md:col-span-7 row-span-2 group relative overflow-hidden rounded-[2rem] bg-ink min-h-[420px]">
+          <Link to={`/curso/${courses[0].id}`} className="col-span-12 md:col-span-7 row-span-2 group relative overflow-hidden rounded-[2rem] bg-ink min-h-[420px]">
             <img src={courses[0].image} alt={courses[0].title} className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-700" />
             <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/60 to-transparent" />
             <div className="absolute top-6 left-6 flex items-center gap-2">
@@ -142,7 +142,7 @@ const Index = () => {
 
           {/* Two stacked cards right */}
           {[courses[1], courses[2]].map((c, i) => (
-            <Link key={c.id} to="/curso" className="col-span-12 md:col-span-5 group relative overflow-hidden rounded-[2rem] bg-card border-2 border-ink hover:bg-ink hover:text-ink-foreground transition min-h-[200px]">
+            <Link key={c.id} to={`/curso/${c.id}`} className="col-span-12 md:col-span-5 group relative overflow-hidden rounded-[2rem] bg-card border-2 border-ink hover:bg-ink hover:text-ink-foreground transition min-h-[200px]">
               <div className="flex h-full">
                 <div className="w-2/5 relative overflow-hidden">
                   <img src={c.image} alt={c.title} loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
@@ -166,7 +166,7 @@ const Index = () => {
 
           {/* Bottom row of 3 */}
           {courses.slice(3, 6).map((c) => (
-            <Link key={c.id} to="/curso" className="col-span-12 sm:col-span-6 md:col-span-4 group rounded-[2rem] overflow-hidden bg-card border-2 border-ink transition hover:-translate-y-1">
+            <Link key={c.id} to={`/curso/${c.id}`} className="col-span-12 sm:col-span-6 md:col-span-4 group rounded-[2rem] overflow-hidden bg-card border-2 border-ink transition hover:-translate-y-1">
               <div className="aspect-[4/3] relative overflow-hidden">
                 <img src={c.image} alt={c.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-card text-ink">
