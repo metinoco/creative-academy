@@ -1,22 +1,72 @@
 import { Link } from "react-router-dom";
-import { Flame, Clock, Award, Play, Calendar, Target, ArrowUpRight, Trophy, MessageCircle, Bookmark } from "lucide-react";
+import { Flame, Clock, Play, Calendar, Target, ArrowUpRight, Trophy, MessageCircle, Bookmark, BookOpen } from "lucide-react";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { courses } from "@/data/courses";
 import { useAuth } from "@/context/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const STREAK_DAYS = 28;
 const WEEK_TIME = "9h12";
-const CERTIFICATES = "07";
-
-const inProgress = [
-  { ...courses[0], moduleName: "Módulo 3 · Sistema cromático", progress: 62, completed: 30, lastSeen: "ayer" },
-  { ...courses[1], moduleName: "Módulo 1 · Familias tipográficas", progress: 28, completed: 7, lastSeen: "hace 3 días" },
-  { ...courses[2], moduleName: "Módulo 2 · Color y luz", progress: 85, completed: 27, lastSeen: "hoy" },
-];
+const CERTIFICATES = 2;
 
 const Alumno = () => {
   const { profile, user } = useAuth();
+
+  const { data: enrolledProgress = [], isLoading: loadingProgress } = useQuery({
+    queryKey: ["enrolled-progress", user?.id],
+    queryFn: async () => {
+      // 1. Matrículas activas
+      const { data: enrollments } = await supabase
+        .from("enrollments")
+        .select("course_id, granted_at")
+        .eq("user_id", user!.id)
+        .is("revoked_at", null);
+
+      if (!enrollments?.length) return [];
+      const courseIds = enrollments.map((e) => e.course_id);
+
+      // 2. Datos del curso (slug para navegar)
+      const { data: dbCourses } = await supabase
+        .from("courses")
+        .select("id, slug, title, category")
+        .in("id", courseIds);
+
+      // 3. Total de lecciones por curso
+      const { data: allLessons } = await supabase
+        .from("lessons")
+        .select("id, course_id")
+        .in("course_id", courseIds);
+
+      // 4. Lecciones completadas por el alumno
+      const { data: progressRows } = await supabase
+        .from("lesson_progress")
+        .select("lesson_id, course_id")
+        .eq("user_id", user!.id)
+        .in("course_id", courseIds);
+
+      return enrollments.map((enrollment) => {
+        const dbCourse = dbCourses?.find((c) => c.id === enrollment.course_id);
+        const staticCourse = courses.find((c) => c.id === dbCourse?.slug);
+        const total = allLessons?.filter((l) => l.course_id === enrollment.course_id).length ?? 0;
+        const completed = progressRows?.filter((p) => p.course_id === enrollment.course_id).length ?? 0;
+        const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+        return {
+          courseId: enrollment.course_id,
+          slug: dbCourse?.slug ?? "",
+          title: dbCourse?.title ?? staticCourse?.title ?? "",
+          category: dbCourse?.category ?? staticCourse?.category ?? "",
+          image: staticCourse?.image,
+          progress,
+          completed,
+          total,
+        };
+      });
+    },
+    enabled: !!user?.id,
+  });
   const firstName = profile?.full_name?.split(" ")[0] ?? user?.email?.split("@")[0] ?? "Carlos";
 
   return (
@@ -40,9 +90,9 @@ const Alumno = () => {
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3">
-                <button className="inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-6 py-3 text-sm font-bold hover:bg-primary-glow transition">
+                <Link to={`/alumno/curso/${enrolledProgress[0]?.slug}`} className="inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-6 py-3 text-sm font-bold hover:bg-primary-glow transition">
                   <Play className="w-4 h-4 fill-current" /> Continuar curso
-                </button>
+                </Link>
                 <Link to="/cursos" className="inline-flex items-center gap-2 rounded-full bg-ink-foreground/10 backdrop-blur px-6 py-3 text-sm font-bold hover:bg-ink-foreground/20 transition">
                   Explorar más
                 </Link>
@@ -83,52 +133,81 @@ const Alumno = () => {
       <section className="container pb-16">
         <div className="flex items-end justify-between mb-6">
           <div>
-            <span className="text-xs font-black uppercase tracking-widest text-primary">Tus cursos · 03 activos</span>
+            <span className="text-xs font-black uppercase tracking-widest text-primary">
+              Tus cursos · {enrolledProgress.length.toString().padStart(2, "0")} activos
+            </span>
             <h2 className="mt-2 font-display text-4xl md:text-5xl font-black">Sigue donde lo dejaste</h2>
           </div>
         </div>
 
-        <div className="space-y-3">
-          {inProgress.map((c, i) => (
-            <article key={c.id} className="group bg-card border-2 border-border rounded-3xl overflow-hidden hover:border-primary transition">
-              <div className="grid grid-cols-12 items-stretch">
-                {/* Big number */}
-                <div className="hidden md:flex col-span-1 items-center justify-center bg-surface">
-                  <span className="font-display text-5xl font-black text-muted-foreground/40">0{i + 1}</span>
-                </div>
-
-                {/* Image */}
-                <div className="col-span-12 md:col-span-3 relative aspect-video md:aspect-auto overflow-hidden bg-muted">
-                  <img src={c.image} alt={c.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                </div>
-
-                {/* Info */}
-                <div className="col-span-12 md:col-span-5 p-5 flex flex-col justify-center">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-primary">{c.category}</span>
-                  <h3 className="mt-1 font-display text-2xl font-black leading-tight">{c.title}</h3>
-                  <p className="mt-1 text-xs text-muted-foreground">{c.moduleName}</p>
-                  <p className="mt-2 text-xs text-muted-foreground inline-flex items-center gap-1.5">
-                    <Calendar className="w-3 h-3" /> Última visita {c.lastSeen}
-                  </p>
-                </div>
-
-                {/* Progress + CTA */}
-                <div className="col-span-12 md:col-span-3 p-5 flex flex-col justify-center gap-3 bg-surface/40">
-                  <div className="flex items-baseline justify-between">
-                    <span className="font-display text-3xl font-black">{c.progress}<span className="text-base text-muted-foreground">%</span></span>
-                    <span className="text-xs text-muted-foreground">{c.completed}/{c.lessons}</span>
+        {loadingProgress ? (
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-36 rounded-3xl bg-muted animate-pulse" />
+            ))}
+          </div>
+        ) : enrolledProgress.length === 0 ? (
+          <div className="rounded-3xl border-2 border-dashed border-border p-12 text-center">
+            <BookOpen className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
+            <p className="text-muted-foreground text-sm">Aún no tienes cursos activos.</p>
+            <Link to="/cursos" className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-primary hover:underline">
+              Ver catálogo <ArrowUpRight className="w-4 h-4" />
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {enrolledProgress.map((c, i) => (
+              <article key={c.courseId} className="group bg-card border-2 border-border rounded-3xl overflow-hidden hover:border-primary transition">
+                <div className="grid grid-cols-12 items-stretch">
+                  {/* Big number */}
+                  <div className="hidden md:flex col-span-1 items-center justify-center bg-surface">
+                    <span className="font-display text-5xl font-black text-muted-foreground/40">{String(i + 1).padStart(2, "0")}</span>
                   </div>
-                  <div className="h-2 rounded-full bg-muted overflow-hidden">
-                    <div className="h-full bg-gradient-warm rounded-full" style={{ width: `${c.progress}%` }} />
+
+                  {/* Image */}
+                  <div className="col-span-12 md:col-span-3 relative aspect-video md:aspect-auto overflow-hidden bg-muted">
+                    {c.image && (
+                      <img src={c.image} alt={c.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    )}
                   </div>
-                  <button className="mt-1 inline-flex items-center justify-center gap-2 rounded-full bg-ink text-ink-foreground px-4 py-2.5 text-xs font-bold hover:bg-primary transition">
-                    Continuar <Play className="w-3 h-3 fill-current" />
-                  </button>
+
+                  {/* Info */}
+                  <div className="col-span-12 md:col-span-5 p-5 flex flex-col justify-center">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-primary">{c.category}</span>
+                    <h3 className="mt-1 font-display text-2xl font-black leading-tight">{c.title}</h3>
+                    <p className="mt-2 text-xs text-muted-foreground inline-flex items-center gap-1.5">
+                      <Calendar className="w-3 h-3" />
+                      {c.completed === 0
+                        ? "Sin empezar"
+                        : c.completed === c.total
+                        ? "Completado ✓"
+                        : `${c.completed} lección${c.completed !== 1 ? "es" : ""} completada${c.completed !== 1 ? "s" : ""}`}
+                    </p>
+                  </div>
+
+                  {/* Progress + CTA */}
+                  <div className="col-span-12 md:col-span-3 p-5 flex flex-col justify-center gap-3 bg-surface/40">
+                    <div className="flex items-baseline justify-between">
+                      <span className="font-display text-3xl font-black">
+                        {c.progress}<span className="text-base text-muted-foreground">%</span>
+                      </span>
+                      <span className="text-xs text-muted-foreground">{c.completed}/{c.total}</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-muted overflow-hidden">
+                      <div className="h-full bg-gradient-warm rounded-full transition-all duration-500" style={{ width: `${c.progress}%` }} />
+                    </div>
+                    <Link
+                      to={`/alumno/curso/${c.slug}`}
+                      className="mt-1 inline-flex items-center justify-center gap-2 rounded-full bg-ink text-ink-foreground px-4 py-2.5 text-xs font-bold hover:bg-primary transition"
+                    >
+                      Continuar <Play className="w-3 h-3 fill-current" />
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            </article>
-          ))}
-        </div>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* ACHIEVEMENTS + CALENDAR */}

@@ -1,41 +1,209 @@
-import { Link, useParams, Navigate } from "react-router-dom";
-import { Clock, BookOpen, Star, Lock, Play, Award, Infinity, Users, Check, ArrowUpRight, ChevronRight } from "lucide-react";
+import { Link, useParams, Navigate, useNavigate } from "react-router-dom";
+import {
+  Clock,
+  BookOpen,
+  Star,
+  Lock,
+  Play,
+  Award,
+  Infinity,
+  Users,
+  Check,
+  ArrowUpRight,
+  ChevronRight,
+} from "lucide-react";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { courses } from "@/data/courses";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/context/AuthContext";
 
 const INSTRUCTOR_AVATARS: Record<string, string> = {
-  "Andrés Mora":     "https://randomuser.me/api/portraits/men/32.jpg",
-  "Pablo Soler":     "https://randomuser.me/api/portraits/men/14.jpg",
-  "Tomás Vidal":     "https://randomuser.me/api/portraits/men/67.jpg",
-  "Nicolás Prado":   "https://randomuser.me/api/portraits/men/45.jpg",
-  "Joel Marín":      "https://randomuser.me/api/portraits/men/21.jpg",
-  "Diego Aranda":    "https://randomuser.me/api/portraits/men/58.jpg",
-  "Rubén Lago":      "https://randomuser.me/api/portraits/men/36.jpg",
-  "Inés Calvo":      "https://randomuser.me/api/portraits/women/44.jpg",
-  "Marina Reyes":    "https://randomuser.me/api/portraits/women/17.jpg",
-  "Carla Ríos":      "https://randomuser.me/api/portraits/women/63.jpg",
-  "Lucía Fernández": "https://randomuser.me/api/portraits/women/28.jpg",
-  "Elena Sáez":      "https://randomuser.me/api/portraits/women/51.jpg",
-  "Aitana Bosch":    "https://randomuser.me/api/portraits/women/9.jpg",
-  "Sara Quintana":   "https://randomuser.me/api/portraits/women/72.jpg",
-  "Marta Esteve":    "https://randomuser.me/api/portraits/women/35.jpg",
-  "Clara Vives":     "https://randomuser.me/api/portraits/women/48.jpg",
+  "Andrés Mora":     "https://i.pravatar.cc/600?img=12",
+  "Pablo Soler":     "https://i.pravatar.cc/600?img=11",
+  "Tomás Vidal":     "https://i.pravatar.cc/600?img=14",
+  "Nicolás Prado":   "https://i.pravatar.cc/600?img=15",
+  "Joel Marín":      "https://i.pravatar.cc/600?img=16",
+  "Diego Aranda":    "https://i.pravatar.cc/600?img=17",
+  "Rubén Lago":      "https://i.pravatar.cc/600?img=18",
+  "Inés Calvo":      "https://i.pravatar.cc/600?img=47",
+  "Marina Reyes":    "https://i.pravatar.cc/600?img=48",
+  "Carla Ríos":      "https://i.pravatar.cc/600?img=49",
+  "Lucía Fernández": "https://i.pravatar.cc/600?img=50",
+  "Elena Sáez":      "https://i.pravatar.cc/600?img=44",
+  "Aitana Bosch":    "https://i.pravatar.cc/600?img=52",
+  "Sara Quintana":   "https://i.pravatar.cc/600?img=53",
+  "Marta Esteve":    "https://i.pravatar.cc/600?img=54",
+  "Clara Vives":     "https://i.pravatar.cc/600?img=55",
 };
 
 const Curso = () => {
-  const { id } = useParams<{ id: string }>();
-  const course = courses.find((c) => c.id === id);
+  const { id: slug } = useParams<{ id: string }>();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [openModule, setOpenModule] = useState(0);
 
-  if (!course) {
-    return <Navigate to="/cursos" replace />;
-  }
+  // Datos visuales desde courses.ts (estructura completa: módulos, learns, bio…)
+  const course = courses.find((c) => c.id === slug);
 
-  const instructorAvatar = INSTRUCTOR_AVATARS[course.author] ?? "https://randomuser.me/api/portraits/lego/1.jpg";
+  // UUID del curso en Supabase (necesario para operaciones de matrícula)
+  const { data: courseUuid } = useQuery({
+    queryKey: ["course-uuid", slug],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("courses")
+        .select("id")
+        .eq("slug", slug!)
+        .single();
+      return data?.id ?? null;
+    },
+    enabled: !!slug && !!course,
+  });
+
+  // Estado de matrícula del alumno logueado
+  const { data: enrollment } = useQuery({
+    queryKey: ["enrollment", user?.id, courseUuid],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("enrollments")
+        .select("id")
+        .eq("user_id", user!.id)
+        .eq("course_id", courseUuid!)
+        .is("revoked_at", null)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user?.id && !!courseUuid,
+  });
+
+  // Inscripción provisional (demo, sin Stripe)
+  const enroll = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("enrollments").insert({
+        user_id: user!.id,
+        course_id: courseUuid!,
+        source: "manual",
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["enrollment", user?.id, courseUuid] });
+      navigate(`/alumno/curso/${slug}`);
+    },
+  });
+
+  // Secciones y lecciones reales para el temario público
+  const { data: supabaseSections } = useQuery({
+    queryKey: ["course-sections-public", courseUuid],
+    queryFn: async () => {
+      const [{ data: secs }, { data: lsns }] = await Promise.all([
+        supabase.from("sections").select("id, title, position").eq("course_id", courseUuid!).order("position"),
+        supabase
+          .from("lessons")
+          .select("id, title, duration_minutes, position, is_free_preview, section_id")
+          .eq("course_id", courseUuid!)
+          .order("position"),
+      ]);
+      if (!secs?.length) return null;
+      return secs.map((s) => ({
+        ...s,
+        lessons: (lsns ?? []).filter((l) => l.section_id === s.id),
+      }));
+    },
+    enabled: !!courseUuid,
+  });
+
+  if (!course) return <Navigate to="/cursos" replace />;
+
+  // Usamos datos de Supabase solo cuando el total de lecciones coincide con courses.ts
+  // (evita mostrar seeds incompletos como si fueran el temario real)
+  const supabaseLessonCount =
+    supabaseSections?.reduce((acc, s) => acc + s.lessons.length, 0) ?? 0;
+  const useSupabase = !!supabaseSections && supabaseLessonCount === course.lessons;
+
+  const displayModules = useSupabase
+    ? supabaseSections!.map((sec) => {
+        const totalMin = sec.lessons.reduce((sum, l) => sum + l.duration_minutes, 0);
+        const durationStr =
+          totalMin >= 60
+            ? `${Math.floor(totalMin / 60)}h${totalMin % 60 > 0 ? ` ${totalMin % 60}min` : ""}`
+            : `${totalMin}min`;
+        return {
+          title: sec.title,
+          durationStr,
+          lessons: sec.lessons.map((l) => ({
+            title: l.title,
+            isPreview: l.is_free_preview,
+            durationStr: `${String(l.duration_minutes).padStart(2, "0")}:00`,
+          })),
+        };
+      })
+    : course.modules.map((m, mIdx) => ({
+        title: m.title,
+        durationStr: m.duration,
+        lessons: Array.from({ length: m.lessons }, (_, i) => ({
+          title:
+            i === 0 && mIdx === 0
+              ? "Bienvenida y presentación del curso"
+              : i === 1 && mIdx === 0
+              ? "Conceptos fundamentales (preview gratuito)"
+              : `Lección ${i + 1}`,
+          isPreview: mIdx === 0 && i < 2,
+          durationStr: `${String(((i * 7 + mIdx * 3) % 22) + 7).padStart(2, "0")}:${String(
+            ((i * 13 + 11) % 59) + 1,
+          ).padStart(2, "0")}`,
+        })),
+      }));
+
   const discount = Math.round((1 - course.price / course.originalPrice) * 100);
+  const instructorAvatar =
+    INSTRUCTOR_AVATARS[course.author] ?? "https://randomuser.me/api/portraits/lego/1.jpg";
+
+  const renderCTAButtons = () => {
+    if (enrollment) {
+      return (
+        <Link
+          to={`/alumno/curso/${slug}`}
+          className="w-full rounded-full bg-primary text-primary-foreground py-4 text-sm font-bold hover:bg-primary-glow transition text-center block"
+        >
+          Ir al curso →
+        </Link>
+      );
+    }
+    if (user) {
+      return (
+        <>
+          <button
+            onClick={() => enroll.mutate()}
+            disabled={enroll.isPending}
+            className="w-full rounded-full bg-secondary text-ink py-4 text-sm font-bold hover:opacity-90 transition disabled:opacity-60"
+          >
+            {enroll.isPending ? "Inscribiendo…" : "✦ Inscribir gratis (demo)"}
+          </button>
+          <button className="w-full rounded-full bg-primary text-primary-foreground py-4 text-sm font-bold hover:bg-primary-glow transition">
+            Comprar ahora
+          </button>
+          <button className="w-full rounded-full border-2 border-ink py-4 text-sm font-bold hover:bg-ink hover:text-ink-foreground transition">
+            Añadir al carrito
+          </button>
+        </>
+      );
+    }
+    return (
+      <>
+        <button className="w-full rounded-full bg-primary text-primary-foreground py-4 text-sm font-bold hover:bg-primary-glow transition">
+          Comprar ahora
+        </button>
+        <button className="w-full rounded-full border-2 border-ink py-4 text-sm font-bold hover:bg-ink hover:text-ink-foreground transition">
+          Añadir al carrito
+        </button>
+      </>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -96,7 +264,8 @@ const Curso = () => {
               <img
                 src={instructorAvatar}
                 alt={course.author}
-                loading="lazy"
+                loading="eager"
+                decoding="async"
                 width={48}
                 height={48}
                 className="w-12 h-12 rounded-full object-cover ring-2 ring-secondary"
@@ -128,12 +297,9 @@ const Curso = () => {
                   <span className="ml-auto px-2.5 py-1 rounded-full bg-secondary text-ink text-[10px] font-black uppercase">-{discount}%</span>
                 </div>
 
-                <button className="w-full rounded-full bg-primary text-primary-foreground py-4 text-sm font-bold hover:bg-primary-glow transition">
-                  Comprar ahora
-                </button>
-                <button className="w-full rounded-full border-2 border-ink py-4 text-sm font-bold hover:bg-ink hover:text-ink-foreground transition">
-                  Añadir al carrito
-                </button>
+                <div className="space-y-3">
+                  {renderCTAButtons()}
+                </div>
 
                 <div className="grid grid-cols-2 gap-3 pt-3 border-t border-border">
                   {[
@@ -183,7 +349,7 @@ const Curso = () => {
             <div>
               <span className="text-xs font-black uppercase tracking-widest text-primary">Temario completo</span>
               <h2 className="mt-2 font-display text-4xl font-black">
-                {course.modules.length} módulos · {course.lessons} lecciones
+                {displayModules.length} módulos · {course.lessons} lecciones
               </h2>
             </div>
             <span className="text-sm text-muted-foreground">Las 2 primeras son gratis 👀</span>
@@ -192,7 +358,7 @@ const Curso = () => {
           <div className="grid lg:grid-cols-12 gap-6">
             {/* Module tabs */}
             <div className="lg:col-span-4 space-y-2">
-              {course.modules.map((m, i) => (
+              {displayModules.map((m, i) => (
                 <button
                   key={i}
                   onClick={() => setOpenModule(i)}
@@ -209,7 +375,7 @@ const Curso = () => {
                       </div>
                       <div className="font-display text-lg font-black mt-1 leading-tight">{m.title}</div>
                       <div className={`text-xs mt-1 ${openModule === i ? "text-ink-foreground/60" : "text-muted-foreground"}`}>
-                        {m.lessons} lecciones · {m.duration}
+                        {m.lessons.length} lecciones · {m.durationStr}
                       </div>
                     </div>
                     <ArrowUpRight className={`w-4 h-4 transition shrink-0 ${openModule === i ? "rotate-0 text-secondary" : "rotate-45"}`} />
@@ -221,35 +387,28 @@ const Curso = () => {
             {/* Lessons list */}
             <div className="lg:col-span-8 bg-card rounded-2xl p-2">
               <div className="p-4 border-b border-border flex items-center justify-between">
-                <h3 className="font-display text-xl font-black">{course.modules[openModule].title}</h3>
-                <span className="text-xs text-muted-foreground">{course.modules[openModule].duration}</span>
+                <h3 className="font-display text-xl font-black">{displayModules[openModule].title}</h3>
+                <span className="text-xs text-muted-foreground">{displayModules[openModule].durationStr}</span>
               </div>
               <ul className="divide-y divide-border">
-                {Array.from({ length: course.modules[openModule].lessons }, (_, i) => {
-                  const isPreview = openModule === 0 && i < 2;
-                  return (
-                    <li key={i} className="flex items-center gap-4 px-4 py-4 hover:bg-surface/60 transition rounded-xl">
-                      <div className={`w-10 h-10 rounded-xl grid place-items-center shrink-0 ${isPreview ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                        {isPreview ? <Play className="w-4 h-4 fill-current ml-0.5" /> : <Lock className="w-4 h-4" />}
+                {displayModules[openModule].lessons.map((lesson, i) => (
+                  <li key={i} className="flex items-center gap-4 px-4 py-4 hover:bg-surface/60 transition rounded-xl">
+                    <div className={`w-10 h-10 rounded-xl grid place-items-center shrink-0 ${lesson.isPreview ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                      {lesson.isPreview ? <Play className="w-4 h-4 fill-current ml-0.5" /> : <Lock className="w-4 h-4" />}
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-sm font-bold">
+                        {String(i + 1).padStart(2, "0")} — {lesson.title}
                       </div>
-                      <div className="flex-1">
-                        <div className="text-sm font-bold">
-                          {String(i + 1).padStart(2, "0")} — {
-                            i === 0 && openModule === 0 ? "Bienvenida y presentación del curso" :
-                            i === 1 && openModule === 0 ? "Conceptos fundamentales (preview gratuito)" :
-                            `Lección ${i + 1}`
-                          }
-                        </div>
-                        <div className="text-xs text-muted-foreground mt-0.5">
-                          {isPreview ? "Acceso libre · Preview" : "Requiere compra"}
-                        </div>
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        {lesson.isPreview ? "Acceso libre · Preview" : "Requiere compra"}
                       </div>
-                      <span className="text-xs text-muted-foreground tabular-nums font-bold">
-                        {String(((i * 7 + openModule * 3) % 22) + 7).padStart(2, "0")}:{String(((i * 13 + 11) % 59) + 1).padStart(2, "0")}
-                      </span>
-                    </li>
-                  );
-                })}
+                    </div>
+                    <span className="text-xs text-muted-foreground tabular-nums font-bold">
+                      {lesson.durationStr}
+                    </span>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
@@ -261,7 +420,13 @@ const Curso = () => {
         <div className="grid lg:grid-cols-12 gap-6 items-center">
           <div className="lg:col-span-5 relative">
             <div className="aspect-square rounded-[2.5rem] overflow-hidden bg-secondary relative">
-              <img src={instructorAvatar} alt={course.author} loading="lazy" className="w-full h-full object-cover mix-blend-multiply" />
+              <img
+                src={instructorAvatar}
+                alt={course.author}
+                loading="eager"
+                decoding="async"
+                className="w-full h-full object-cover object-top mix-blend-multiply"
+              />
             </div>
             <div className="absolute -bottom-4 -right-4 bg-primary text-primary-foreground rounded-2xl px-5 py-3 rotate-3 shadow-card">
               <div className="font-display text-2xl font-black leading-none">
@@ -313,9 +478,18 @@ const Curso = () => {
             <div className="font-display text-5xl font-black">
               {course.price}€
             </div>
-            <button className="px-10 py-4 rounded-full bg-primary text-primary-foreground font-bold hover:bg-primary-glow transition text-sm whitespace-nowrap">
-              Comprar ahora
-            </button>
+            {enrollment ? (
+              <Link
+                to={`/alumno/curso/${slug}`}
+                className="px-10 py-4 rounded-full bg-primary text-primary-foreground font-bold hover:bg-primary-glow transition text-sm whitespace-nowrap"
+              >
+                Ir al curso →
+              </Link>
+            ) : (
+              <button className="px-10 py-4 rounded-full bg-primary text-primary-foreground font-bold hover:bg-primary-glow transition text-sm whitespace-nowrap">
+                Comprar ahora
+              </button>
+            )}
             <span className="text-xs text-ink-foreground/50">30 días de garantía · Sin compromisos</span>
           </div>
         </div>

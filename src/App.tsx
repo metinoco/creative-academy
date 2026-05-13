@@ -10,6 +10,7 @@ import Index from "./pages/Index.tsx";
 import Cursos from "./pages/Cursos.tsx";
 import Curso from "./pages/Curso.tsx";
 import Alumno from "./pages/Alumno.tsx";
+import AlumnoCurso from "./pages/AlumnoCurso.tsx";
 import Admin from "./pages/Admin.tsx";
 import Login from "./pages/Login.tsx";
 import Registro from "./pages/Registro.tsx";
@@ -36,6 +37,14 @@ const App = () => (
               element={
                 <ProtectedRoute requireRole="student">
                   <Alumno />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/alumno/curso/:slug"
+              element={
+                <ProtectedRoute requireRole="student">
+                  <AlumnoCurso />
                 </ProtectedRoute>
               }
             />

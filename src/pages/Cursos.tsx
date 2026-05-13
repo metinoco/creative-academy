@@ -1,32 +1,72 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { useMemo, useState } from "react";
 import { ArrowUpRight, Search, SlidersHorizontal, Star } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
-import { courses } from "@/data/courses";
+import { supabase } from "@/integrations/supabase/client";
+import { courses as staticCourses } from "@/data/courses";
 
-const categories = ["Todos", ...Array.from(new Set(courses.map((c) => c.category)))];
+// Slug → local image (los slugs de Supabase coinciden con los IDs de courses.ts)
+const imageBySlug = Object.fromEntries(staticCourses.map((c) => [c.id, c.image]));
+
+interface CourseRow {
+  id: string;
+  slug: string;
+  title: string;
+  category: string | null;
+  author: string | null;
+  image_url: string | null;
+  duration_text: string | null;
+  lessons_count: number;
+  rating: number | null;
+  reviews_count: number;
+  price: number;
+}
 
 const Cursos = () => {
   const [searchParams] = useSearchParams();
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<"populares" | "precio" | "rating">("populares");
+
+  const { data: allCourses = [], isLoading } = useQuery({
+    queryKey: ["courses-catalog"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("courses")
+        .select("id, slug, title, category, author, image_url, duration_text, lessons_count, rating, reviews_count, price")
+        .eq("status", "published")
+        .order("reviews_count", { ascending: false });
+      if (error) throw error;
+      return data as CourseRow[];
+    },
+  });
+
+  const categories = useMemo(
+    () => ["Todos", ...Array.from(new Set(allCourses.map((c) => c.category ?? "").filter(Boolean)))],
+    [allCourses]
+  );
+
   const initialCategory = searchParams.get("categoria");
   const [active, setActive] = useState(
     categories.includes(initialCategory ?? "") ? initialCategory! : "Todos"
   );
-  const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<"populares" | "precio" | "rating">("populares");
 
   const filtered = useMemo(() => {
-    let list = courses.filter((c) => active === "Todos" || c.category === active);
+    let list = allCourses.filter((c) => active === "Todos" || c.category === active);
     if (query.trim()) {
       const q = query.toLowerCase();
-      list = list.filter((c) => c.title.toLowerCase().includes(q) || c.author.toLowerCase().includes(q));
+      list = list.filter(
+        (c) =>
+          c.title.toLowerCase().includes(q) ||
+          (c.author ?? "").toLowerCase().includes(q)
+      );
     }
     if (sort === "precio") list = [...list].sort((a, b) => a.price - b.price);
-    if (sort === "rating") list = [...list].sort((a, b) => b.rating - a.rating);
-    if (sort === "populares") list = [...list].sort((a, b) => b.reviews - a.reviews);
+    if (sort === "rating") list = [...list].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+    if (sort === "populares") list = [...list].sort((a, b) => b.reviews_count - a.reviews_count);
     return list;
-  }, [active, query, sort]);
+  }, [allCourses, active, query, sort]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -37,7 +77,7 @@ const Cursos = () => {
         <div className="grid lg:grid-cols-12 gap-6 items-end">
           <div className="lg:col-span-7">
             <span className="inline-block px-3 py-1 rounded-full bg-secondary/30 text-ink text-[10px] font-black uppercase tracking-widest">
-              Catálogo · {courses.length} cursos
+              Catálogo · {allCourses.length} cursos
             </span>
             <h1 className="mt-4 font-display text-5xl md:text-7xl font-black leading-[0.92]">
               Todos los cursos<br />
@@ -51,13 +91,15 @@ const Cursos = () => {
           {/* Quick stats */}
           <div className="lg:col-span-5 grid grid-cols-3 gap-3">
             {[
-              { v: courses.length, l: "Cursos" },
+              { v: allCourses.length, l: "Cursos" },
               { v: categories.length - 1, l: "Disciplinas" },
               { v: "12K", l: "Alumnos" },
             ].map((s) => (
               <div key={s.l} className="bg-card border-2 border-ink rounded-2xl p-4 text-center">
                 <div className="font-display text-3xl font-black">{s.v}</div>
-                <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1 font-bold">{s.l}</div>
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1 font-bold">
+                  {s.l}
+                </div>
               </div>
             ))}
           </div>
@@ -115,7 +157,9 @@ const Cursos = () => {
               {cat}
               {active === cat && (
                 <span className="ml-2 px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground text-[9px]">
-                  {cat === "Todos" ? courses.length : courses.filter((c) => c.category === cat).length}
+                  {cat === "Todos"
+                    ? allCourses.length
+                    : allCourses.filter((c) => c.category === cat).length}
                 </span>
               )}
             </button>
@@ -127,11 +171,30 @@ const Cursos = () => {
       <section className="container pb-20">
         <div className="flex items-center justify-between mb-5">
           <p className="text-sm text-muted-foreground">
-            <b className="text-foreground">{filtered.length}</b> cursos encontrados
+            {isLoading ? (
+              "Cargando cursos…"
+            ) : (
+              <>
+                <b className="text-foreground">{filtered.length}</b> cursos encontrados
+              </>
+            )}
           </p>
         </div>
 
-        {filtered.length === 0 ? (
+        {isLoading ? (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="bg-card rounded-3xl overflow-hidden border-2 border-border animate-pulse">
+                <div className="aspect-[4/3] bg-muted" />
+                <div className="p-5 space-y-3">
+                  <div className="h-5 bg-muted rounded-lg w-3/4" />
+                  <div className="h-3 bg-muted rounded-lg w-1/2" />
+                  <div className="h-8 bg-muted rounded-lg w-1/3 mt-4" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="bg-surface rounded-3xl p-16 text-center">
             <div className="font-display text-3xl font-black mb-2">Sin resultados</div>
             <p className="text-muted-foreground">Prueba con otra disciplina o limpia los filtros.</p>
@@ -141,12 +204,12 @@ const Cursos = () => {
             {filtered.map((c) => (
               <Link
                 key={c.id}
-                to={`/curso/${c.id}`}
+                to={`/curso/${c.slug}`}
                 className="group bg-card rounded-3xl overflow-hidden border-2 border-border hover:border-ink transition flex flex-col"
               >
                 <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-                  <img
-                    src={c.image}
+                    <img
+                    src={c.image_url ?? imageBySlug[c.slug]}
                     alt={c.title}
                     loading="lazy"
                     width={800}
@@ -156,20 +219,27 @@ const Cursos = () => {
                   <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-card/95 backdrop-blur text-ink text-[10px] font-black uppercase tracking-widest">
                     {c.category}
                   </span>
-                  <span className="absolute top-3 right-3 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-ink/85 text-ink-foreground text-[10px] font-bold">
-                    <Star className="w-2.5 h-2.5 fill-secondary text-secondary" />
-                    {c.rating}
-                  </span>
+                  {c.rating && (
+                    <span className="absolute top-3 right-3 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-ink/85 text-ink-foreground text-[10px] font-bold">
+                      <Star className="w-2.5 h-2.5 fill-secondary text-secondary" />
+                      {c.rating}
+                    </span>
+                  )}
                 </div>
 
                 <div className="p-5 flex-1 flex flex-col">
-                  <h3 className="font-display text-lg font-black leading-tight line-clamp-2">{c.title}</h3>
+                  <h3 className="font-display text-lg font-black leading-tight line-clamp-2">
+                    {c.title}
+                  </h3>
                   <p className="mt-1 text-xs text-muted-foreground">por {c.author}</p>
 
                   <div className="mt-auto pt-4 flex items-center justify-between border-t border-border mt-4">
                     <div>
                       <div className="font-display text-2xl font-black">{c.price}€</div>
-                      <div className="text-[10px] text-muted-foreground">{c.lessons} lecciones · {c.duration}</div>
+                      <div className="text-[10px] text-muted-foreground">
+                        {c.lessons_count} lecciones
+                        {c.duration_text ? ` · ${c.duration_text}` : ""}
+                      </div>
                     </div>
                     <div className="w-9 h-9 rounded-full bg-ink text-ink-foreground grid place-items-center group-hover:bg-primary transition">
                       <ArrowUpRight className="w-4 h-4 group-hover:rotate-45 transition" />
