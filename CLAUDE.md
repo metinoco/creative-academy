@@ -136,12 +136,15 @@ Al crear un usuario en `auth.users`, el trigger `handle_new_user()` crea automá
 | `id` | `uuid` (PK) | |
 | `slug` | `text` (unique) | Identificador de URL |
 | `title` | `text` | |
+| `subtitle` | `text` | Nullable |
+| `description` | `text` | Nullable |
 | `category` | `text` | |
 | `author` | `text` | |
 | `price` | `numeric` | |
 | `rating` | `numeric` | |
 | `reviews_count` | `integer` | |
 | `lessons_count` | `integer` | |
+| `duration_text` | `text` | Nullable (ej. "8h 30min"); mostrado en catálogo |
 | `status` | `course_status` | Enum: `draft` \| `published` |
 | `tone` | `course_tone` | Enum: `warm` \| `cream` \| `sun` \| `ink` |
 | `image_url` | `text` | Nullable |
@@ -257,7 +260,7 @@ Uso extensivo de bordes muy redondeados: `rounded-[2rem]`, `rounded-[2.5rem]`, `
 |--------|-----------|-------------|-------|
 | `Index` (landing) | Completa | Usa `courses.ts` (estáticos) | Pendiente conectar a Supabase |
 | `Cursos` (catálogo) | Completa | **Supabase** (`courses` table, status=published) | Conectado |
-| `Curso` (detalle) | Completa | **Híbrido** | Supabase para secciones/lecciones y estado de matrícula; fallback a `courses.ts` para metadatos |
+| `Curso` (detalle) | Completa | **Híbrido** | Estructura del temario siempre desde `courses.ts`; títulos y flags `is_free_preview` enriquecidos desde Supabase por índice de posición. Estado de matrícula desde Supabase. Metadatos visuales (imagen, bio, learns) siempre desde `courses.ts`. |
 | `Login` | Funcional | Auth real con Supabase | |
 | `Registro` | Funcional | Auth real con Supabase | |
 | `Alumno` (dashboard) | UI completa | **Híbrido** | Matrículas y progreso reales; racha, certificados y actividad siguen siendo mock |

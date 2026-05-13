@@ -126,15 +126,30 @@ CREATE POLICY "Admins manage sections"
   USING (public.has_role(auth.uid(), 'admin'))
   WITH CHECK (public.has_role(auth.uid(), 'admin'));
 
-CREATE POLICY "Lessons readable when course public"
+CREATE POLICY "Anon reads free preview lessons only"
   ON public.lessons FOR SELECT
-  TO anon, authenticated
+  TO anon
   USING (
-    EXISTS (
+    is_free_preview = true
+    AND EXISTS (
       SELECT 1 FROM public.courses c
-      WHERE c.id = course_id
-        AND (c.status = 'published' OR public.has_role(auth.uid(), 'admin'))
+      WHERE c.id = course_id AND c.status = 'published'
     )
+  );
+
+CREATE POLICY "Authenticated reads lessons with access"
+  ON public.lessons FOR SELECT
+  TO authenticated
+  USING (
+    public.has_role(auth.uid(), 'admin')
+    OR (
+      is_free_preview = true
+      AND EXISTS (
+        SELECT 1 FROM public.courses c
+        WHERE c.id = course_id AND c.status = 'published'
+      )
+    )
+    OR public.has_course_access(auth.uid(), course_id)
   );
 
 CREATE POLICY "Admins manage lessons"

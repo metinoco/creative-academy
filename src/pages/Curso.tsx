@@ -119,45 +119,40 @@ const Curso = () => {
 
   if (!course) return <Navigate to="/cursos" replace />;
 
-  // Usamos datos de Supabase solo cuando el total de lecciones coincide con courses.ts
-  // (evita mostrar seeds incompletos como si fueran el temario real)
-  const supabaseLessonCount =
-    supabaseSections?.reduce((acc, s) => acc + s.lessons.length, 0) ?? 0;
-  const useSupabase = !!supabaseSections && supabaseLessonCount === course.lessons;
+  // Lista plana de lecciones de Supabase ordenada por sección → posición
+  const supabaseLessonsFlat = supabaseSections
+    ? supabaseSections.flatMap((sec) =>
+        [...sec.lessons].sort((a, b) => a.position - b.position)
+      )
+    : [];
 
-  const displayModules = useSupabase
-    ? supabaseSections!.map((sec) => {
-        const totalMin = sec.lessons.reduce((sum, l) => sum + l.duration_minutes, 0);
-        const durationStr =
-          totalMin >= 60
-            ? `${Math.floor(totalMin / 60)}h${totalMin % 60 > 0 ? ` ${totalMin % 60}min` : ""}`
-            : `${totalMin}min`;
+  // Siempre usa la estructura de courses.ts (todos los módulos y lecciones visibles,
+  // incluidas las bloqueadas). Enriquece con títulos/flags reales de Supabase por índice global.
+  const displayModules = course.modules.map((m, mIdx) => {
+    const offset = course.modules.slice(0, mIdx).reduce((acc, mod) => acc + mod.lessons, 0);
+    return {
+      title: m.title,
+      durationStr: m.duration,
+      lessons: Array.from({ length: m.lessons }, (_, i) => {
+        const sup = supabaseLessonsFlat[offset + i];
         return {
-          title: sec.title,
-          durationStr,
-          lessons: sec.lessons.map((l) => ({
-            title: l.title,
-            isPreview: l.is_free_preview,
-            durationStr: `${String(l.duration_minutes).padStart(2, "0")}:00`,
-          })),
+          title: sup
+            ? sup.title
+            : i === 0 && mIdx === 0
+            ? "Bienvenida y presentación del curso"
+            : i === 1 && mIdx === 0
+            ? "Conceptos fundamentales (preview gratuito)"
+            : `Lección ${i + 1}`,
+          isPreview: sup ? sup.is_free_preview : mIdx === 0 && i < 2,
+          durationStr: sup
+            ? `${String(sup.duration_minutes).padStart(2, "0")}:00`
+            : `${String(((i * 7 + mIdx * 3) % 22) + 7).padStart(2, "0")}:${String(
+                ((i * 13 + 11) % 59) + 1,
+              ).padStart(2, "0")}`,
         };
-      })
-    : course.modules.map((m, mIdx) => ({
-        title: m.title,
-        durationStr: m.duration,
-        lessons: Array.from({ length: m.lessons }, (_, i) => ({
-          title:
-            i === 0 && mIdx === 0
-              ? "Bienvenida y presentación del curso"
-              : i === 1 && mIdx === 0
-              ? "Conceptos fundamentales (preview gratuito)"
-              : `Lección ${i + 1}`,
-          isPreview: mIdx === 0 && i < 2,
-          durationStr: `${String(((i * 7 + mIdx * 3) % 22) + 7).padStart(2, "0")}:${String(
-            ((i * 13 + 11) % 59) + 1,
-          ).padStart(2, "0")}`,
-        })),
-      }));
+      }),
+    };
+  });
 
   const discount = Math.round((1 - course.price / course.originalPrice) * 100);
   const instructorAvatar =
