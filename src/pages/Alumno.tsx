@@ -9,7 +9,6 @@ import { supabase } from "@/integrations/supabase/client";
 
 const STREAK_DAYS = 28;
 const WEEK_TIME = "9h12";
-const CERTIFICATES = 2;
 
 const Alumno = () => {
   const { profile, user } = useAuth();
@@ -67,6 +66,12 @@ const Alumno = () => {
     },
     enabled: !!user?.id,
   });
+
+  const totalLessons = enrolledProgress.reduce((s, c) => s + c.total, 0);
+  const completedLessons = enrolledProgress.reduce((s, c) => s + c.completed, 0);
+  const globalProgress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+  const completedCourses = enrolledProgress.filter((c) => c.total > 0 && c.completed === c.total).length;
+
   const firstName = profile?.full_name?.split(" ")[0] ?? user?.email?.split("@")[0] ?? "Carlos";
 
   return (
@@ -114,15 +119,17 @@ const Alumno = () => {
             </div>
             <div className="bg-card border-2 border-ink rounded-[2rem] p-5">
               <Trophy className="w-7 h-7 text-primary" />
-              <div className="font-display text-5xl font-black mt-3 leading-none">{CERTIFICATES}</div>
-              <div className="text-xs font-bold uppercase tracking-widest mt-1 text-muted-foreground">certificados</div>
+              <div className="font-display text-5xl font-black mt-3 leading-none">{completedCourses}</div>
+              <div className="text-xs font-bold uppercase tracking-widest mt-1 text-muted-foreground">cursos completados</div>
             </div>
             <div className="bg-surface rounded-[2rem] p-5">
               <Target className="w-7 h-7 text-primary" />
-              <div className="font-display text-5xl font-black mt-3 leading-none">68%</div>
-              <div className="text-xs font-bold uppercase tracking-widest mt-1 text-muted-foreground">meta semanal</div>
+              <div className="font-display text-5xl font-black mt-3 leading-none">{globalProgress}%</div>
+              <div className="text-xs font-bold uppercase tracking-widest mt-1 text-muted-foreground">
+                {completedLessons}/{totalLessons} lecciones
+              </div>
               <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden">
-                <div className="h-full bg-primary rounded-full" style={{ width: "68%" }} />
+                <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${globalProgress}%` }} />
               </div>
             </div>
           </div>
