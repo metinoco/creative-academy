@@ -67,6 +67,12 @@ const Alumno = () => {
     },
     enabled: !!user?.id,
   });
+
+  const totalLessons = enrolledProgress.reduce((s, c) => s + c.total, 0);
+  const completedLessons = enrolledProgress.reduce((s, c) => s + c.completed, 0);
+  const globalProgress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+  const completedCourses = enrolledProgress.filter((c) => c.total > 0 && c.completed === c.total).length;
+
   const firstName = profile?.full_name?.split(" ")[0] ?? user?.email?.split("@")[0] ?? "Carlos";
 
   return (
