@@ -120,15 +120,17 @@ const Alumno = () => {
             </div>
             <div className="bg-card border-2 border-ink rounded-[2rem] p-5">
               <Trophy className="w-7 h-7 text-primary" />
-              <div className="font-display text-5xl font-black mt-3 leading-none">{CERTIFICATES}</div>
-              <div className="text-xs font-bold uppercase tracking-widest mt-1 text-muted-foreground">certificados</div>
+              <div className="font-display text-5xl font-black mt-3 leading-none">{completedCourses}</div>
+              <div className="text-xs font-bold uppercase tracking-widest mt-1 text-muted-foreground">cursos completados</div>
             </div>
             <div className="bg-surface rounded-[2rem] p-5">
               <Target className="w-7 h-7 text-primary" />
-              <div className="font-display text-5xl font-black mt-3 leading-none">68%</div>
-              <div className="text-xs font-bold uppercase tracking-widest mt-1 text-muted-foreground">meta semanal</div>
+              <div className="font-display text-5xl font-black mt-3 leading-none">{globalProgress}%</div>
+              <div className="text-xs font-bold uppercase tracking-widest mt-1 text-muted-foreground">
+                {completedLessons}/{totalLessons} lecciones
+              </div>
               <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden">
-                <div className="h-full bg-primary rounded-full" style={{ width: "68%" }} />
+                <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${globalProgress}%` }} />
               </div>
             </div>
           </div>
