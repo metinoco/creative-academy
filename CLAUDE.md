@@ -35,9 +35,10 @@ src/
 ├── App.tsx                  # Router raíz + providers
 ├── pages/                   # Una página por ruta
 │   ├── Index.tsx            # Home / landing
-│   ├── Cursos.tsx           # Catálogo de cursos
-│   ├── Curso.tsx            # Detalle de un curso (hardcoded: "Marca magnética")
+│   ├── Cursos.tsx           # Catálogo de cursos (conectado a Supabase)
+│   ├── Curso.tsx            # Detalle de curso con ruta dinámica (:id = slug)
 │   ├── Alumno.tsx           # Dashboard del alumno (protegida: rol student)
+│   ├── AlumnoCurso.tsx      # Reproductor de curso para alumno (protegida: rol student)
 │   ├── Admin.tsx            # Dashboard admin (protegida: rol admin)
 │   ├── Login.tsx            # Autenticación
 │   ├── Registro.tsx         # Registro de nuevos usuarios
@@ -54,7 +55,7 @@ src/
 ├── context/
 │   └── AuthContext.tsx      # Sesión, usuario, perfil, rol, signIn/Up/Out
 ├── data/
-│   └── courses.ts           # 16 cursos hardcodeados (TEMPORAL — ver Gap Analysis)
+│   └── courses.ts           # 16 cursos estáticos (usado como fallback en Curso.tsx y Alumno.tsx)
 ├── integrations/supabase/
 │   ├── client.ts            # Singleton del cliente Supabase
 │   └── types.ts             # Tipos autogenerados por Supabase CLI
@@ -64,6 +65,9 @@ src/
 ├── lib/
 │   └── utils.ts             # clsx + tailwind-merge (cn helper)
 └── assets/                  # Imágenes de cursos (course-*.jpg) y avatar
+
+supabase/
+└── migrations/              # 3 archivos SQL (schema completo aplicado)
 ```
 
 ---
@@ -74,19 +78,16 @@ src/
 |------|-----------|--------|
 | `/` | `Index` | Público |
 | `/cursos` | `Cursos` | Público |
-| `/curso` | `Curso` | Público (sin parámetro de ID aún) |
+| `/curso/:id` | `Curso` | Público (`:id` = slug del curso) |
 | `/login` | `Login` | Público |
 | `/registro` | `Registro` | Público |
 | `/alumno` | `Alumno` | Protegida (rol: `student`) |
+| `/alumno/curso/:slug` | `AlumnoCurso` | Protegida (rol: `student`) |
 | `/admin` | `Admin` | Protegida (rol: `admin`) |
-
-> **PENDIENTE:** la ruta `/curso` no acepta parámetro dinámico (`:id`). Siempre muestra el curso "Marca magnética" con datos hardcodeados.
 
 ---
 
 ## Autenticación y roles
-
-El sistema de auth está implementado sobre Supabase Auth + tablas propias.
 
 ### Flujo
 1. `supabase.auth.signInWithPassword` / `signUp` → sesión en `localStorage`
@@ -96,7 +97,7 @@ El sistema de auth está implementado sobre Supabase Auth + tablas propias.
 
 ### Roles disponibles (`app_role` enum)
 - `admin` — acceso a `/admin`
-- `student` — acceso a `/alumno`
+- `student` — acceso a `/alumno` y `/alumno/curso/:slug`
 
 Un usuario puede tener múltiples roles en `user_roles`. La lógica actual prioriza `admin` sobre `student`.
 
@@ -129,16 +130,92 @@ Al crear un usuario en `auth.users`, el trigger `handle_new_user()` crea automá
 | `created_at` | `timestamptz` | |
 | `updated_at` | `timestamptz` | |
 
+**`courses`**
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | `uuid` (PK) | |
+| `slug` | `text` (unique) | Identificador de URL |
+| `title` | `text` | |
+| `category` | `text` | |
+| `author` | `text` | |
+| `price` | `numeric` | |
+| `rating` | `numeric` | |
+| `reviews_count` | `integer` | |
+| `lessons_count` | `integer` | |
+| `status` | `course_status` | Enum: `draft` \| `published` |
+| `tone` | `course_tone` | Enum: `warm` \| `cream` \| `sun` \| `ink` |
+| `image_url` | `text` | Nullable |
+| `created_at` | `timestamptz` | |
+| `updated_at` | `timestamptz` | |
+
+**`sections`**
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | `uuid` (PK) | |
+| `course_id` | `uuid` | FK → `courses.id` |
+| `title` | `text` | |
+| `position` | `integer` | Orden dentro del curso |
+
+**`lessons`**
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | `uuid` (PK) | |
+| `section_id` | `uuid` | FK → `sections.id` |
+| `course_id` | `uuid` | FK → `courses.id` |
+| `title` | `text` | |
+| `description` | `text` | Nullable |
+| `video_url` | `text` | Nullable (Vimeo o URL directa) |
+| `content` | `text` | Nullable (HTML/texto) |
+| `duration_minutes` | `integer` | Nullable |
+| `position` | `integer` | Orden dentro de la sección |
+| `is_free_preview` | `boolean` | Si es visible sin matrícula |
+
+**`enrollments`**
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | `uuid` (PK) | |
+| `user_id` | `uuid` | FK → `auth.users.id` |
+| `course_id` | `uuid` | FK → `courses.id` |
+| `source` | `enrollment_source` | Enum: `purchase` \| `manual` \| `seed` |
+| `granted_at` | `timestamptz` | |
+| `revoked_at` | `timestamptz` | Nullable; `NULL` = acceso activo |
+
+**`lesson_progress`**
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | `uuid` (PK) | |
+| `user_id` | `uuid` | FK → `auth.users.id` |
+| `lesson_id` | `uuid` | FK → `lessons.id` |
+| `course_id` | `uuid` | FK → `courses.id` |
+| `completed` | `boolean` | |
+| `completed_at` | `timestamptz` | Nullable |
+
+### Vistas
+- `lessons_public` — Lecciones con `security_invoker = on` para consultas públicas seguras
+
 ### Funciones / triggers
 - `handle_new_user()` — trigger `AFTER INSERT ON auth.users` → crea `profile` + rol `student`
 - `touch_updated_at()` — trigger en tablas con `updated_at`
 - `has_role(uuid, app_role)` — SECURITY DEFINER para uso en políticas RLS
+- `has_course_access(_user_id, _course_id)` — devuelve `boolean`; consulta `enrollments`
+- `get_lesson_content(_lesson_id)` — devuelve datos de la lección con control de acceso (preview gratuito, admin, o matriculado)
+
+### Enums
+- `app_role` — `admin`, `student`
+- `course_status` — `draft`, `published`
+- `course_tone` — `warm`, `cream`, `sun`, `ink`
+- `enrollment_source` — `purchase`, `manual`, `seed`
 
 ### RLS
-Todas las tablas tienen RLS habilitado. Las políticas permiten a cada usuario leer y modificar solo sus propios datos. `has_role` es accesible por usuarios `authenticated`.
+Todas las tablas tienen RLS habilitado:
+- **`courses`/`sections`/`lessons`:** cursos publicados son públicos; admins gestionan todo
+- **`enrollments`:** cada usuario ve sus propias matrículas; admins ven todas
+- **`lesson_progress`:** cada usuario gestiona su propio progreso; admins ven todo
+- **`profiles`/`user_roles`:** cada usuario lee y modifica solo sus propios datos
 
 ### Tablas PENDIENTES de crear
-Ver sección Gap Analysis.
+- `payments` / `orders` — Registro de transacciones (integración con Stripe pendiente)
+- `certificates` — Certificados emitidos al completar un curso
 
 ---
 
@@ -148,7 +225,6 @@ Ver sección Gap Analysis.
 - **Display y body:** `Nunito Sans` (Google Fonts). Clase: `font-display` y `font-sans`.
 
 ### Paleta de colores (CSS custom properties en `index.css`)
-Los colores se definen como variables HSL y se consumen vía Tailwind:
 
 | Token | Uso |
 |-------|-----|
@@ -175,53 +251,41 @@ Uso extensivo de bordes muy redondeados: `rounded-[2rem]`, `rounded-[2.5rem]`, `
 
 ---
 
-## Estado actual de la UI (qué está construido como UI/prototipo)
+## Estado actual de la UI y datos
 
-Las páginas siguientes están construidas como UI estática o semi-funcional. Los datos mostrados son hardcodeados o mockeados:
-
-| Página | Estado UI | Datos reales |
-|--------|-----------|-------------|
-| `Index` (landing) | Completa | Usa `courses.ts` (estáticos) |
-| `Cursos` (catálogo) | Completa | Usa `courses.ts` (estáticos) |
-| `Curso` (detalle) | Completa | 100% hardcoded (solo "Marca magnética") |
-| `Login` | Funcional | Auth real con Supabase |
-| `Registro` | Funcional | Auth real con Supabase |
-| `Alumno` (dashboard) | UI completa | Datos mockeados (progreso, racha, certificados, actividad) |
-| `Admin` (dashboard) | UI completa | Datos mockeados (métricas, ventas, cursos, tabla) |
+| Página | Estado UI | Datos reales | Notas |
+|--------|-----------|-------------|-------|
+| `Index` (landing) | Completa | Usa `courses.ts` (estáticos) | Pendiente conectar a Supabase |
+| `Cursos` (catálogo) | Completa | **Supabase** (`courses` table, status=published) | Conectado |
+| `Curso` (detalle) | Completa | **Híbrido** | Supabase para secciones/lecciones y estado de matrícula; fallback a `courses.ts` para metadatos |
+| `Login` | Funcional | Auth real con Supabase | |
+| `Registro` | Funcional | Auth real con Supabase | |
+| `Alumno` (dashboard) | UI completa | **Híbrido** | Matrículas y progreso reales; racha, certificados y actividad siguen siendo mock |
+| `AlumnoCurso` (reproductor) | UI completa | **Supabase** | Lecciones, progreso, control de acceso por matrícula; Q&A y notas son locales (no persistidos) |
+| `Admin` (dashboard) | UI completa | Mock | Métricas y tabla hardcodeadas; pendiente conectar a BD |
 
 ---
 
 ## Gap Analysis — Lo que falta implementar
 
-### Base de datos
-Las siguientes tablas no existen aún y son necesarias para funcionalidad real:
-
-- `courses` — Catálogo de cursos (actualmente en `src/data/courses.ts`)
-- `modules` — Módulos dentro de un curso
-- `lessons` — Lecciones dentro de un módulo (con URL de vídeo, tipo, duración)
-- `enrollments` — Relación alumno ↔ curso (con fecha de compra, estado de acceso)
-- `lesson_progress` — Progreso de lección por alumno (completada, timestamp)
-- `payments` / `orders` — Registro de transacciones (integración con Stripe pendiente)
-- `certificates` — Certificados emitidos al completar un curso
-
 ### Funcionalidades pendientes (Fase 1 — críticas)
 
 | Funcionalidad | Estado | Notas |
 |---------------|--------|-------|
-| Rutas dinámicas de curso (`/curso/:id`) | Pendiente | Actualmente `/curso` sin parámetro |
-| Catálogo de cursos desde BD | Pendiente | Leer de tabla `courses` de Supabase |
-| Reproductor de lecciones real | Pendiente | Embed de Vimeo o reproductor custom |
-| Sistema de progreso por lección | Pendiente | Tabla `lesson_progress` + UI ya esbozada |
-| Dashboard alumno con datos reales | Pendiente | Conectar a BD en lugar de mock |
 | Proceso de compra integrado | Pendiente | Integración con Stripe (checkout, webhooks) |
-| Acceso al curso tras compra | Pendiente | Tabla `enrollments`, validación en rutas |
-| Revocación de acceso | Pendiente | Cambiar estado en `enrollments` |
-| Certificado de finalización | Pendiente | Lógica de detección de curso completado + generación PDF |
-| Panel admin con datos reales | Pendiente | Métricas y tablas conectadas a BD |
-| CRUD de cursos desde admin | Pendiente | Crear/editar cursos, módulos y lecciones |
-| Gestión de alumnos desde admin | Pendiente | Buscar, ver estado, dar acceso manual |
+| Tabla `payments`/`orders` | Pendiente | Registrar transacciones |
+| Acceso automático al curso tras compra | Pendiente | Webhook Stripe → insertar en `enrollments` |
+| Revocación de acceso | Parcial | Columna `revoked_at` existe; falta UI admin para usarla |
+| Certificado de finalización | Pendiente | Tabla `certificates` + lógica de detección de curso completado + generación PDF |
+| Racha y estadísticas reales del alumno | Pendiente | `Alumno.tsx` aún muestra valores mock para racha, certificados y actividad |
+| Q&A en reproductor de lecciones | Pendiente | `AlumnoCurso.tsx` tiene UI pero no persiste preguntas/respuestas |
+| Notas en reproductor | Pendiente | `AlumnoCurso.tsx` tiene UI pero guarda en estado local, no en BD |
+| Panel admin con datos reales | Pendiente | `Admin.tsx` completamente mock |
+| CRUD de cursos desde admin | Pendiente | Crear/editar cursos, secciones y lecciones |
+| Gestión de alumnos desde admin | Pendiente | Buscar, ver estado, dar/revocar acceso manual |
 | Emails automáticos | Pendiente | Bienvenida, confirmación compra, recordatorio |
 | Migración de 2.400 alumnos existentes | Pendiente | Proceso de importación desde sistema anterior |
+| Landing page conectada a Supabase | Pendiente | `Index.tsx` usa `courses.ts` estático; debería leer de BD |
 
 ### Funcionalidades pendientes (Fase 2 — deseables)
 
@@ -242,6 +306,7 @@ Las siguientes tablas no existen aún y son necesarias para funcionalidad real:
 - No hay barrel files (`index.ts`) por convención de Lovable.
 - Queries de Supabase: directamente en componentes o en custom hooks. Aún no hay capa de servicios/repositorios centralizada.
 - No hay servidor Express ni API routes propias; toda la lógica de backend va a través del cliente Supabase con RLS.
+- `courses.ts` se mantiene como fallback estático para imágenes y metadatos hasta que todos los cursos tengan datos completos en la BD.
 
 ---
 
@@ -271,8 +336,11 @@ npm test             # Vitest
 
 ## Notas para QA
 
-- Las páginas `Alumno` y `Admin` requieren sesión activa. Usar flujo de registro en `/registro` para crear un usuario de prueba (se asigna rol `student` automáticamente).
+- Las páginas `Alumno`, `AlumnoCurso` y `Admin` requieren sesión activa.
+- Usar el flujo de registro en `/registro` para crear un usuario de prueba (se asigna rol `student` automáticamente).
 - Para probar rutas de admin, asignar manualmente el rol `admin` en la tabla `user_roles` de Supabase Studio.
-- Los datos mostrados en `Admin.tsx` y `Alumno.tsx` son completamente mockeados. No reflejan datos reales de la BD.
-- La página `/curso` siempre muestra el curso "Marca magnética" independientemente de la URL.
-- El catálogo en `/cursos` muestra 16 cursos del archivo estático `src/data/courses.ts`, no de Supabase.
+- Para probar el reproductor (`/alumno/curso/:slug`), el usuario debe tener una fila en `enrollments` con `revoked_at IS NULL` para el curso deseado.
+- Las lecciones con `is_free_preview = true` son accesibles sin matrícula.
+- Los datos de racha, certificados y actividad en `Alumno.tsx` son mock. No reflejan la BD.
+- Los datos en `Admin.tsx` son completamente mock.
+- `courses.ts` actúa como fallback cuando faltan datos en Supabase; no eliminar hasta que la BD tenga todos los cursos completos.
