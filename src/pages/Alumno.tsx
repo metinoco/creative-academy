@@ -9,7 +9,6 @@ import { supabase } from "@/integrations/supabase/client";
 
 const STREAK_DAYS = 28;
 const WEEK_TIME = "9h12";
-const CERTIFICATES = 2;
 
 const Alumno = () => {
   const { profile, user } = useAuth();
