@@ -24,6 +24,7 @@ Plataforma de cursos online para Academia Creativa (cliente: Laura Martínez). S
 | Gráficos | Recharts |
 | Testing | Vitest + Testing Library |
 | Package manager | npm (también compatible con bun) |
+| Hosting | Vercel (SPA con rewrites en `vercel.json`) |
 | Generado con | Lovable (lovable-tagger en devDependencies) |
 
 ---
@@ -68,6 +69,8 @@ src/
 
 supabase/
 └── migrations/              # 4 archivos SQL (schema completo + seed de secciones/lecciones)
+
+vercel.json                  # Rewrite catch-all → /index.html (necesario para React Router en Vercel)
 ```
 
 ---
@@ -335,6 +338,12 @@ npm run preview      # Preview del build
 npm run lint         # ESLint
 npm test             # Vitest
 ```
+
+---
+
+## Despliegue
+
+La aplicación se despliega en **Vercel**. El archivo `vercel.json` en la raíz configura un rewrite catch-all (`/(.*) → /index.html`) imprescindible para que React Router gestione las rutas en el cliente sin que Vercel devuelva 404 en acceso directo a subrutas.
 
 ---
 
