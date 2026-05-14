@@ -67,7 +67,7 @@ src/
 └── assets/                  # Imágenes de cursos (course-*.jpg) y avatar
 
 supabase/
-└── migrations/              # 3 archivos SQL (schema completo aplicado)
+└── migrations/              # 4 archivos SQL (schema completo + seed de secciones/lecciones)
 ```
 
 ---
@@ -128,7 +128,6 @@ Al crear un usuario en `auth.users`, el trigger `handle_new_user()` crea automá
 | `user_id` | `uuid` | FK → `auth.users.id` |
 | `role` | `app_role` | Enum: `admin` \| `student` |
 | `created_at` | `timestamptz` | |
-| `updated_at` | `timestamptz` | |
 
 **`courses`**
 | Columna | Tipo | Notas |
@@ -211,10 +210,12 @@ Al crear un usuario en `auth.users`, el trigger `handle_new_user()` crea automá
 
 ### RLS
 Todas las tablas tienen RLS habilitado:
-- **`courses`/`sections`/`lessons`:** cursos publicados son públicos; admins gestionan todo
+- **`courses`/`sections`:** cursos publicados visibles a `anon` y `authenticated`; admins gestionan todo
+- **`lessons`:** política separada por rol — `anon` solo ve lecciones con `is_free_preview = true` en cursos publicados; `authenticated` ve además todo el contenido de cursos en los que está matriculado (`has_course_access`) y admins ven todo
 - **`enrollments`:** cada usuario ve sus propias matrículas; admins ven todas
-- **`lesson_progress`:** cada usuario gestiona su propio progreso; admins ven todo
-- **`profiles`/`user_roles`:** cada usuario lee y modifica solo sus propios datos
+- **`lesson_progress`:** cada usuario gestiona su propio progreso (INSERT requiere matrícula activa); admins ven todo
+- **`profiles`:** SELECT y UPDATE restringidos al propio usuario o admin
+- **`user_roles`:** SELECT restringido al propio usuario o admin; admins gestionan todo
 
 ### Tablas PENDIENTES de crear
 - `payments` / `orders` — Registro de transacciones (integración con Stripe pendiente)
@@ -263,7 +264,7 @@ Uso extensivo de bordes muy redondeados: `rounded-[2rem]`, `rounded-[2.5rem]`, `
 | `Curso` (detalle) | Completa | **Híbrido** | Estructura del temario siempre desde `courses.ts`; títulos y flags `is_free_preview` enriquecidos desde Supabase por índice de posición. Estado de matrícula desde Supabase. Metadatos visuales (imagen, bio, learns) siempre desde `courses.ts`. |
 | `Login` | Funcional | Auth real con Supabase | |
 | `Registro` | Funcional | Auth real con Supabase | |
-| `Alumno` (dashboard) | UI completa | **Híbrido** | Matrículas y progreso reales; racha, certificados y actividad siguen siendo mock |
+| `Alumno` (dashboard) | UI completa | **Híbrido** | Matrículas, lecciones completadas, progreso global y cursos completados son datos reales de Supabase. Racha y actividad reciente siguen siendo mock. |
 | `AlumnoCurso` (reproductor) | UI completa | **Supabase** | Lecciones, progreso, control de acceso por matrícula; Q&A y notas son locales (no persistidos) |
 | `Admin` (dashboard) | UI completa | Mock | Métricas y tabla hardcodeadas; pendiente conectar a BD |
 
@@ -280,7 +281,7 @@ Uso extensivo de bordes muy redondeados: `rounded-[2rem]`, `rounded-[2.5rem]`, `
 | Acceso automático al curso tras compra | Pendiente | Webhook Stripe → insertar en `enrollments` |
 | Revocación de acceso | Parcial | Columna `revoked_at` existe; falta UI admin para usarla |
 | Certificado de finalización | Pendiente | Tabla `certificates` + lógica de detección de curso completado + generación PDF |
-| Racha y estadísticas reales del alumno | Pendiente | `Alumno.tsx` aún muestra valores mock para racha, certificados y actividad |
+| Racha y actividad reciente del alumno | Pendiente | `Alumno.tsx` ya muestra progreso y cursos completados reales; la racha diaria y la actividad reciente siguen siendo mock |
 | Q&A en reproductor de lecciones | Pendiente | `AlumnoCurso.tsx` tiene UI pero no persiste preguntas/respuestas |
 | Notas en reproductor | Pendiente | `AlumnoCurso.tsx` tiene UI pero guarda en estado local, no en BD |
 | Panel admin con datos reales | Pendiente | `Admin.tsx` completamente mock |
@@ -344,6 +345,6 @@ npm test             # Vitest
 - Para probar rutas de admin, asignar manualmente el rol `admin` en la tabla `user_roles` de Supabase Studio.
 - Para probar el reproductor (`/alumno/curso/:slug`), el usuario debe tener una fila en `enrollments` con `revoked_at IS NULL` para el curso deseado.
 - Las lecciones con `is_free_preview = true` son accesibles sin matrícula.
-- Los datos de racha, certificados y actividad en `Alumno.tsx` son mock. No reflejan la BD.
+- Los tiles de progreso global, lecciones completadas y cursos completados en `Alumno.tsx` ya usan datos reales de Supabase. La racha y la actividad reciente siguen siendo mock.
 - Los datos en `Admin.tsx` son completamente mock.
 - `courses.ts` actúa como fallback cuando faltan datos en Supabase; no eliminar hasta que la BD tenga todos los cursos completos.
