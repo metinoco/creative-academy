@@ -29,16 +29,6 @@ const Login = () => {
     navigate(from && from !== "/login" ? from : "/alumno", { replace: true });
   };
 
-  const fillDemo = (kind: "admin" | "student") => {
-    if (kind === "admin") {
-      setEmail("admin@demo.com");
-      setPassword("demo1234");
-    } else {
-      setEmail("carlos@demo.com");
-      setPassword("demo1234");
-    }
-  };
-
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-background">
       {/* LEFT — visual */}
@@ -114,20 +104,6 @@ const Login = () => {
             </button>
           </form>
 
-          <div className="mt-8 pt-6 border-t-2 border-dashed border-border">
-            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3">Acceso demo</p>
-            <div className="flex flex-wrap gap-2">
-              <button onClick={() => fillDemo("student")} className="text-xs font-bold px-4 py-2 rounded-full bg-secondary text-ink hover:bg-secondary/80 transition">
-                Rellenar como Carlos (estudiante)
-              </button>
-              <button onClick={() => fillDemo("admin")} className="text-xs font-bold px-4 py-2 rounded-full bg-primary text-primary-foreground hover:bg-primary-glow transition">
-                Rellenar como Admin
-              </button>
-            </div>
-            <p className="mt-3 text-[11px] text-muted-foreground">
-              Contraseña demo: <code className="px-1.5 py-0.5 rounded bg-muted">demo1234</code>
-            </p>
-          </div>
         </div>
       </main>
     </div>

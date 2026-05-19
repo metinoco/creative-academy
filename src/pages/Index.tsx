@@ -9,11 +9,11 @@ const Index = () => {
   const { user, role } = useAuth();
   const panelHref = role === "admin" ? "/admin" : "/alumno";
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <SiteHeader variant="public" />
 
       {/* HERO ASIMÉTRICO */}
-      <section className="container pt-12 pb-16">
+      <section className="container min-h-[calc(100vh-5rem)] flex flex-col justify-center py-10">
         <div className="grid lg:grid-cols-12 gap-6">
           {/* Big text block */}
           <div className="lg:col-span-7 relative">
