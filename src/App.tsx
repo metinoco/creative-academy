@@ -14,6 +14,7 @@ import AlumnoCurso from "./pages/AlumnoCurso.tsx";
 import Admin from "./pages/Admin.tsx";
 import Login from "./pages/Login.tsx";
 import Registro from "./pages/Registro.tsx";
+import Profesores from "./pages/Profesores.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/curso/:id" element={<Curso />} />
             <Route path="/login" element={<Login />} />
             <Route path="/registro" element={<Registro />} />
+            <Route path="/profesores" element={<Profesores />} />
             <Route
               path="/alumno"
               element={

@@ -8,7 +8,10 @@ const SiteHeader = ({ variant = "public" }: { variant?: "public" | "student" }) 
   const navigate = useNavigate();
   const { user, role, profile, signOut } = useAuth();
 
-  const links: { to: string; label: string }[] = [{ to: "/cursos", label: "Cursos" }];
+  const links: { to: string; label: string }[] = [
+    { to: "/cursos", label: "Catálogo" },
+    { to: "/profesores", label: "Nuestros Profesores" },
+  ];
   if (role === "student") links.push({ to: "/alumno", label: "Mis cursos" });
   if (role === "admin") links.push({ to: "/admin", label: "Admin" });
 

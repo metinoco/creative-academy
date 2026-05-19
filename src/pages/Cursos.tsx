@@ -25,7 +25,7 @@ interface CourseRow {
 }
 
 const Cursos = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<"populares" | "precio" | "rating">("populares");
 
@@ -47,10 +47,7 @@ const Cursos = () => {
     [allCourses]
   );
 
-  const initialCategory = searchParams.get("categoria");
-  const [active, setActive] = useState(
-    categories.includes(initialCategory ?? "") ? initialCategory! : "Todos"
-  );
+  const active = searchParams.get("categoria") ?? "Todos";
 
   const filtered = useMemo(() => {
     let list = allCourses.filter((c) => active === "Todos" || c.category === active);
@@ -147,7 +144,7 @@ const Cursos = () => {
           {categories.map((cat) => (
             <button
               key={cat}
-              onClick={() => setActive(cat)}
+              onClick={() => setSearchParams(cat === "Todos" ? {} : { categoria: cat })}
               className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider border-2 transition ${
                 active === cat
                   ? "bg-ink text-ink-foreground border-ink"
