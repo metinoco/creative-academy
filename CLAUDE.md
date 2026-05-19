@@ -67,6 +67,9 @@ src/
 │   └── utils.ts             # clsx + tailwind-merge (cn helper)
 └── assets/                  # Imágenes de cursos (course-*.jpg) y avatar
 
+public/
+└── favicon.svg              # Favicon SVG derivado del logo de marca
+
 supabase/
 └── migrations/              # 4 archivos SQL (schema completo + seed de secciones/lecciones)
 
@@ -350,7 +353,7 @@ La aplicación se despliega en **Vercel**. El archivo `vercel.json` en la raíz 
 ## Notas para QA
 
 - Las páginas `Alumno`, `AlumnoCurso` y `Admin` requieren sesión activa.
-- Usar el flujo de registro en `/registro` para crear un usuario de prueba (se asigna rol `student` automáticamente).
+- Usar el flujo de registro en `/registro` para crear un usuario de prueba (se asigna rol `student` automáticamente). No hay credenciales de demo precargadas; usar cuenta real.
 - Para probar rutas de admin, asignar manualmente el rol `admin` en la tabla `user_roles` de Supabase Studio.
 - Para probar el reproductor (`/alumno/curso/:slug`), el usuario debe tener una fila en `enrollments` con `revoked_at IS NULL` para el curso deseado.
 - Las lecciones con `is_free_preview = true` son accesibles sin matrícula.
