@@ -38,6 +38,7 @@ src/
 │   ├── Index.tsx            # Home / landing
 │   ├── Cursos.tsx           # Catálogo de cursos (conectado a Supabase)
 │   ├── Curso.tsx            # Detalle de curso con ruta dinámica (:id = slug)
+│   ├── Profesores.tsx       # Directorio de instructores (datos derivados de courses.ts)
 │   ├── Alumno.tsx           # Dashboard del alumno (protegida: rol student)
 │   ├── AlumnoCurso.tsx      # Reproductor de curso para alumno (protegida: rol student)
 │   ├── Admin.tsx            # Dashboard admin (protegida: rol admin)
@@ -85,6 +86,7 @@ vercel.json                  # Rewrite catch-all → /index.html (necesario para
 | `/` | `Index` | Público |
 | `/cursos` | `Cursos` | Público |
 | `/curso/:id` | `Curso` | Público (`:id` = slug del curso) |
+| `/profesores` | `Profesores` | Público |
 | `/login` | `Login` | Público |
 | `/registro` | `Registro` | Público |
 | `/alumno` | `Alumno` | Protegida (rol: `student`) |
@@ -268,6 +270,7 @@ Uso extensivo de bordes muy redondeados: `rounded-[2rem]`, `rounded-[2.5rem]`, `
 | `Index` (landing) | Completa | Usa `courses.ts` (estáticos) | Pendiente conectar a Supabase |
 | `Cursos` (catálogo) | Completa | **Supabase** (`courses` table, status=published) | Conectado |
 | `Curso` (detalle) | Completa | **Híbrido** | Estructura del temario siempre desde `courses.ts`; títulos y flags `is_free_preview` enriquecidos desde Supabase por índice de posición. Estado de matrícula desde Supabase. Metadatos visuales (imagen, bio, learns) siempre desde `courses.ts`. |
+| `Profesores` (directorio) | Completa | Estático (`courses.ts`) | Deriva instructores y métricas de `courses.ts`; avatares con pravatar |
 | `Login` | Funcional | Auth real con Supabase | |
 | `Registro` | Funcional | Auth real con Supabase | |
 | `Alumno` (dashboard) | UI completa | **Híbrido** | Matrículas, lecciones completadas, progreso global y cursos completados son datos reales de Supabase. Racha y actividad reciente siguen siendo mock. |

@@ -19,7 +19,8 @@ Plataforma LMS propia para Academia Creativa (cliente: Laura Martínez). Reempla
 | Notificaciones | Sonner + shadcn Toaster |
 | Gráficos | Recharts |
 | Testing | Vitest + Testing Library |
-| Package manager | npm |
+| Package manager | npm (compatible con bun) |
+| Hosting | Vercel (SPA, `vercel.json` con rewrite catch-all) |
 
 ## Requisitos previos
 
@@ -57,6 +58,7 @@ npm test           # Vitest
 | `/` | Público | Landing page |
 | `/cursos` | Público | Catálogo de cursos |
 | `/curso/:id` | Público | Detalle de curso (`:id` = slug) |
+| `/profesores` | Público | Directorio de instructores |
 | `/login` | Público | Inicio de sesión |
 | `/registro` | Público | Registro de nuevos usuarios |
 | `/alumno` | Rol `student` | Dashboard del alumno |
@@ -90,6 +92,7 @@ Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se control
 | Landing (`/`) | Estático | Pendiente conectar a Supabase |
 | Catálogo (`/cursos`) | Supabase | Conectado |
 | Detalle curso (`/curso/:id`) | Híbrido | Metadatos de `courses.ts`; matrículas y previews desde Supabase |
+| Profesores (`/profesores`) | Estático | Derivado de `courses.ts`; avatares con pravatar |
 | Dashboard alumno (`/alumno`) | Híbrido | Progreso y cursos completados reales; racha y actividad son mock |
 | Reproductor (`/alumno/curso/:slug`) | Supabase | Acceso controlado por matrícula |
 | Admin (`/admin`) | Mock | Pendiente conectar a BD |
