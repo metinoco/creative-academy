@@ -27,7 +27,7 @@ const Index = () => {
                   16 cursos disponibles
                 </span>
 
-                <h1 className="mt-8 font-display text-6xl md:text-7xl lg:text-[6.5rem] leading-[0.9] font-black">
+                <h1 className="mt-8 font-display text-[2.75rem] sm:text-6xl md:text-7xl lg:text-[6.5rem] leading-[0.9] font-black">
                   Crea.
                   <br />
                   <span className="text-primary">Diseña.</span>
@@ -105,7 +105,7 @@ const Index = () => {
             <span className="inline-block px-3 py-1 rounded-full bg-secondary/30 text-ink text-[10px] font-black uppercase tracking-widest">
               Catálogo · 16 cursos
             </span>
-            <h2 className="mt-4 font-display text-5xl md:text-6xl font-black leading-[0.95]">
+            <h2 className="mt-4 font-display text-3xl sm:text-5xl md:text-6xl font-black leading-[0.95]">
               Elige tu próxima<br /><span className="text-primary italic">obsesión creativa</span>.
             </h2>
           </div>
@@ -191,7 +191,7 @@ const Index = () => {
           <div className="absolute top-6 right-6">
             <Zap className="w-12 h-12 text-ink" strokeWidth={2.5} />
           </div>
-          <h2 className="font-display text-5xl md:text-6xl font-black text-ink leading-[0.95] max-w-2xl">
+          <h2 className="font-display text-3xl sm:text-5xl md:text-6xl font-black text-ink leading-[0.95] max-w-2xl">
             Por qué la gente <span className="italic">vuelve</span> a Academia Creativa.
           </h2>
 

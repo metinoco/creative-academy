@@ -76,7 +76,7 @@ const Cursos = () => {
             <span className="inline-block px-3 py-1 rounded-full bg-secondary/30 text-ink text-[10px] font-black uppercase tracking-widest">
               Catálogo · {allCourses.length} cursos
             </span>
-            <h1 className="mt-4 font-display text-5xl md:text-7xl font-black leading-[0.92]">
+            <h1 className="mt-4 font-display text-3xl sm:text-5xl md:text-7xl font-black leading-[0.92]">
               Todos los cursos<br />
               <span className="italic text-primary">a un click</span>.
             </h1>

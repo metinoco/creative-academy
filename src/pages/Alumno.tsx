@@ -86,7 +86,7 @@ const Alumno = () => {
             <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-primary/30 blur-3xl" />
             <div className="relative">
               <span className="text-xs font-black uppercase tracking-widest text-secondary">Tu panel · Lunes</span>
-              <h1 className="mt-3 font-display text-5xl md:text-6xl lg:text-7xl font-black leading-[0.9]">
+              <h1 className="mt-3 font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-[0.9]">
                 Hola,<br />
                 <span className="text-primary">{firstName}</span> 👋
               </h1>

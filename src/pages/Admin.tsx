@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { LayoutDashboard, BookOpen, Users, CreditCard, Settings, BarChart3, Search, Bell, Plus, MoreHorizontal, ArrowUp, ArrowDown, Eye, Pencil, TrendingUp, LogOut } from "lucide-react";
+import { LayoutDashboard, BookOpen, Users, CreditCard, Settings, BarChart3, Search, Bell, Plus, MoreHorizontal, ArrowUp, ArrowDown, Eye, Pencil, TrendingUp, LogOut, Menu } from "lucide-react";
 import { courses } from "@/data/courses";
 import lauraImg from "@/assets/avatar-laura.jpg";
 import Logo from "@/components/Logo";
 import { useAuth } from "@/context/AuthContext";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 /**
  * Admin — paleta VIBRANTE alternativa al portal:
@@ -58,68 +60,93 @@ const Admin = () => {
   };
 
   const displayName = profile?.full_name ?? "Laura Fernández";
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const SidebarNav = ({ onNavigate }: { onNavigate?: () => void }) => (
+    <div className="flex flex-col flex-1 min-h-0">
+      <div className="p-6 shrink-0">
+        <Logo variant="ink" size="sm" />
+        <div className="mt-1 ml-12 text-[10px] uppercase tracking-widest text-[hsl(250_30%_94%/0.55)]">Admin</div>
+      </div>
+      <nav className="flex-1 overflow-y-auto px-3 space-y-0.5 min-h-0">
+        {navItems.map((item) => (
+          <button
+            key={item.label}
+            onClick={onNavigate}
+            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition ${
+              item.active
+                ? `${SIDEBAR_ACCENT} text-[hsl(250_30%_94%)]`
+                : `text-[hsl(250_30%_94%/0.65)] hover:${SIDEBAR_ACCENT} hover:text-[hsl(250_30%_94%)]`
+            }`}
+          >
+            <item.icon className="w-4 h-4" />
+            {item.label}
+            {item.active && <span className={`ml-auto w-1.5 h-1.5 rounded-full ${HONEY}`} />}
+          </button>
+        ))}
+      </nav>
+      <div className={`p-4 m-3 rounded-2xl shrink-0 ${SIDEBAR_ACCENT}`}>
+        <div className="flex items-center gap-3">
+          <img src={lauraImg} alt={displayName} loading="lazy" width={40} height={40} className="w-10 h-10 rounded-full object-cover ring-2 ring-[hsl(326_85%_55%)]" />
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-medium truncate">{displayName}</div>
+            <div className="text-[10px] text-[hsl(250_30%_94%/0.6)] truncate">Owner · admin@</div>
+          </div>
+        </div>
+        <button
+          onClick={handleLogout}
+          className="mt-3 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[hsl(326_85%_55%)] hover:bg-[hsl(326_85%_48%)] text-white px-3 py-2 text-xs font-bold transition"
+        >
+          <LogOut className="w-3.5 h-3.5" /> Cerrar sesión
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div className={`min-h-screen ${ADMIN_BG} flex`}>
-      {/* SIDEBAR */}
+      {/* SIDEBAR — desktop */}
       <aside className={`hidden md:flex w-64 ${SIDEBAR_BG} ${SIDEBAR_FG} flex-col fixed inset-y-0`}>
-        <div className="p-6">
-          <Logo variant="ink" size="sm" />
-          <div className="mt-1 ml-12 text-[10px] uppercase tracking-widest text-[hsl(250_30%_94%/0.55)]">Admin</div>
-        </div>
-
-        <nav className="flex-1 px-3 space-y-0.5">
-          {navItems.map((item) => (
-            <button
-              key={item.label}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition ${
-                item.active
-                  ? `${SIDEBAR_ACCENT} text-[hsl(250_30%_94%)]`
-                  : `text-[hsl(250_30%_94%/0.65)] hover:${SIDEBAR_ACCENT} hover:text-[hsl(250_30%_94%)]`
-              }`}
-            >
-              <item.icon className="w-4 h-4" />
-              {item.label}
-              {item.active && <span className={`ml-auto w-1.5 h-1.5 rounded-full ${HONEY}`} />}
-            </button>
-          ))}
-        </nav>
-
-        <div className={`p-4 m-3 rounded-2xl ${SIDEBAR_ACCENT}`}>
-          <div className="flex items-center gap-3">
-            <img src={lauraImg} alt={displayName} loading="lazy" width={40} height={40} className="w-10 h-10 rounded-full object-cover ring-2 ring-[hsl(326_85%_55%)]" />
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium truncate">{displayName}</div>
-              <div className="text-[10px] text-[hsl(250_30%_94%/0.6)] truncate">Owner · admin@</div>
-            </div>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="mt-3 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[hsl(326_85%_55%)] hover:bg-[hsl(326_85%_48%)] text-white px-3 py-2 text-xs font-bold transition"
-          >
-            <LogOut className="w-3.5 h-3.5" /> Cerrar sesión
-          </button>
-        </div>
+        <SidebarNav />
       </aside>
+
+      {/* SIDEBAR — mobile sheet */}
+      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+        <SheetContent side="left" className={`w-72 p-0 flex flex-col overflow-hidden ${SIDEBAR_BG} ${SIDEBAR_FG} border-0`}>
+          <SidebarNav onNavigate={() => setSidebarOpen(false)} />
+        </SheetContent>
+      </Sheet>
 
       {/* MAIN */}
       <main className="flex-1 md:ml-64">
         {/* TOPBAR */}
         <header className={`sticky top-0 z-30 bg-white/85 backdrop-blur border-b ${ADMIN_BORDER}`}>
-          <div className="flex items-center justify-between px-6 lg:px-10 h-16">
-            <div className="relative max-w-sm w-full hidden sm:block">
+          <div className="flex items-center gap-3 px-4 md:px-6 lg:px-10 h-16">
+            {/* Mobile hamburger */}
+            <button
+              aria-label="Abrir menú"
+              onClick={() => setSidebarOpen(true)}
+              className={`md:hidden grid place-items-center w-10 h-10 rounded-full ${ADMIN_SURFACE} hover:bg-[hsl(250_30%_92%)] transition shrink-0`}
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+
+            <div className="relative flex-1 max-w-sm hidden sm:block">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(250_20%_50%)]" />
               <input
                 placeholder="Buscar alumnos, cursos, ventas..."
                 className={`w-full ${ADMIN_SURFACE} rounded-full pl-11 pr-4 py-2 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-[hsl(326_85%_55%)]/40`}
               />
             </div>
-            <div className="flex items-center gap-3">
+
+            <div className="ml-auto flex items-center gap-2 md:gap-3">
               <button className={`relative w-10 h-10 rounded-full ${ADMIN_SURFACE} hover:bg-[hsl(250_30%_92%)] grid place-items-center transition`}>
                 <Bell className="w-4 h-4" />
                 <span className={`absolute top-2 right-2 w-2 h-2 rounded-full ${HONEY}`} />
               </button>
-              <button className={`inline-flex items-center gap-2 rounded-full ${HONEY} text-white px-4 py-2 text-sm font-bold hover:bg-[hsl(326_85%_48%)] transition`}>
-                <Plus className="w-4 h-4" /> Nuevo curso
+              <button className={`inline-flex items-center gap-2 rounded-full ${HONEY} text-white px-3 py-2 md:px-4 text-sm font-bold hover:bg-[hsl(326_85%_48%)] transition`}>
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:inline">Nuevo curso</span>
               </button>
             </div>
           </div>
@@ -239,7 +266,7 @@ const Admin = () => {
 
           {/* COURSES TABLE + RECENT SALES */}
           <div className="grid lg:grid-cols-5 gap-5">
-            <div className={`lg:col-span-3 ${ADMIN_CARD} rounded-3xl border ${ADMIN_BORDER} overflow-hidden`}>
+            <div className={`lg:col-span-3 ${ADMIN_CARD} rounded-3xl border ${ADMIN_BORDER}`}>
               <div className="p-6 flex items-center justify-between">
                 <div>
                   <h3 className="font-display text-xl font-black text-[hsl(250_60%_14%)]">Cursos del catálogo</h3>
@@ -247,6 +274,7 @@ const Admin = () => {
                 </div>
                 <Link to="/cursos" className={`text-xs ${HONEY_TXT} font-bold hover:underline`}>Gestionar</Link>
               </div>
+              <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className={`${ADMIN_SURFACE}/60 text-[10px] uppercase tracking-widest text-[hsl(250_20%_50%)]`}>
                   <tr>
@@ -291,6 +319,7 @@ const Admin = () => {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
 
             {/* RECENT SALES */}
