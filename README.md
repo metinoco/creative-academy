@@ -87,21 +87,66 @@ Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se control
 
 ## Estado actual del proyecto
 
+| Área | Progreso |
+|------|---------|
+| UI / frontend | 100 % |
+| Schema Supabase | 100 % |
+| Auth + roles | 100 % |
+| Datos reales en catálogo | 100 % |
+| Datos reales en reproductor | 100 % |
+| Datos reales en dashboard alumno | 70 % |
+| Datos reales en panel admin | 0 % |
+| Sistema de pagos | 0 % |
+| Certificados | 0 % |
+
+### Detalle por página
+
 | Página | Datos | Notas |
 |--------|-------|-------|
 | Landing (`/`) | Estático | Pendiente conectar a Supabase |
 | Catálogo (`/cursos`) | Supabase | Conectado |
 | Detalle curso (`/curso/:id`) | Híbrido | Metadatos de `courses.ts`; matrículas y previews desde Supabase |
 | Profesores (`/profesores`) | Estático | Derivado de `courses.ts`; avatares con pravatar |
-| Dashboard alumno (`/alumno`) | Híbrido | Progreso y cursos completados reales; racha y actividad son mock |
-| Reproductor (`/alumno/curso/:slug`) | Supabase | Acceso controlado por matrícula |
-| Admin (`/admin`) | Mock | Pendiente conectar a BD |
+| Dashboard alumno (`/alumno`) | Híbrido | Progreso, lecciones y cursos completados son reales; racha y actividad reciente son mock |
+| Reproductor (`/alumno/curso/:slug`) | Supabase | Acceso controlado por matrícula; Q&A y notas sin persistencia |
+| Admin (`/admin`) | Mock | UI completa; pendiente conectar a BD |
 
-## Próximas funcionalidades
+## Roadmap
 
-- Integración con Stripe (pagos + webhooks → matrículas automáticas)
-- Certificados de finalización
-- Panel admin con datos reales y CRUD de cursos
-- Q&A y notas persistidas en el reproductor
-- Emails automáticos (bienvenida, confirmación de compra)
-- Migración de ~2.400 alumnos del sistema anterior
+### Fase 1 — Crítico (para lanzar)
+
+| # | Tarea | Complejidad |
+|---|-------|------------|
+| 1.1 | Racha y actividad reciente del alumno | Baja (1–2 h) |
+| 1.2 | Landing conectada a Supabase | Baja (1 h) |
+| 1.3 | Panel admin con datos reales | Media (4–6 h) |
+| 1.4 | Q&A y Notas persistentes en el reproductor | Media (3–5 h) |
+| 1.5 | Integración de pagos con Stripe | Alta (1–2 días) |
+| 1.6 | Certificados de finalización | Alta (2–3 días) |
+| 1.7 | Migración de ~2.400 alumnos existentes | Alta (1–2 días) |
+| 1.8 | Emails automáticos (Resend / SendGrid) | Media (1 día) |
+
+Dependencias clave:
+- **1.5 Stripe** → desbloquea 1.3 (métricas reales) y 1.8 (confirmación de compra)
+- **1.6 Certificados** → requiere 1.8 (email de certificado)
+- **1.7 Migración** → requiere 1.8 (bienvenida a alumnos)
+
+### Fase 2 — Deseable (post-lanzamiento)
+
+- CRUD de cursos desde el panel admin
+- Sistema de cupones y descuentos
+- Suscripción mensual (Stripe Billing)
+- Foro / comunidad interna (sustituye Discord)
+- Sistema de afiliados
+- Tabla propia de instructores (reemplaza datos derivados de `courses.ts`)
+- App móvil (React Native / Expo)
+
+## Notas para QA
+
+- Usar `/registro` para crear un usuario de prueba (rol `student` asignado automáticamente).
+- Para probar rutas de admin, asignar rol `admin` manualmente en `user_roles` desde Supabase Studio.
+- Para probar el reproductor, insertar una fila en `enrollments` con `revoked_at = null` para el curso deseado.
+- Las lecciones con `is_free_preview = true` son accesibles sin matrícula.
+- `courses.ts` actúa como fallback para imágenes y metadatos; no eliminar hasta que la BD tenga `image_url` en todos los cursos.
+
+Para el detalle completo del plan de implementación, ver [PLAN.md](./PLAN.md).
