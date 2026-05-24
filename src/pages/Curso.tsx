@@ -11,6 +11,7 @@ import {
   Check,
   ArrowUpRight,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -51,7 +52,7 @@ const Curso = () => {
   const course = courses.find((c) => c.id === slug);
 
   // UUID del curso en Supabase (necesario para operaciones de matrícula)
-  const { data: courseUuid } = useQuery({
+  const { data: courseUuid, isLoading: courseUuidLoading } = useQuery({
     queryKey: ["course-uuid", slug],
     queryFn: async () => {
       const { data } = await supabase
@@ -65,7 +66,7 @@ const Curso = () => {
   });
 
   // Estado de matrícula del alumno logueado
-  const { data: enrollment } = useQuery({
+  const { data: enrollment, isLoading: enrollmentLoading } = useQuery({
     queryKey: ["enrollment", user?.id, courseUuid],
     queryFn: async () => {
       const { data } = await supabase
@@ -159,6 +160,14 @@ const Curso = () => {
     INSTRUCTOR_AVATARS[course.author] ?? "https://randomuser.me/api/portraits/lego/1.jpg";
 
   const renderCTAButtons = () => {
+    if (user && (courseUuidLoading || enrollmentLoading)) {
+      return (
+        <>
+          <div className="h-14 rounded-full bg-muted animate-pulse" />
+          <div className="h-14 rounded-full bg-muted animate-pulse" />
+        </>
+      );
+    }
     if (enrollment) {
       return (
         <Link

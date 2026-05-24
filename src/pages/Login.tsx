@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ArrowUpRight, Sparkles } from "lucide-react";
+import { ArrowUpRight, Sparkles, Loader2 } from "lucide-react";
 import Logo from "@/components/Logo";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "@/hooks/use-toast";
@@ -100,7 +100,7 @@ const Login = () => {
               disabled={submitting}
               className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-ink text-ink-foreground px-6 py-4 text-sm font-bold hover:bg-primary hover:text-primary-foreground transition disabled:opacity-60"
             >
-              {submitting ? "Entrando…" : <>Entrar <ArrowUpRight className="w-4 h-4" /></>}
+              {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Entrando…</> : <>Entrar <ArrowUpRight className="w-4 h-4" /></>}
             </button>
           </form>
 

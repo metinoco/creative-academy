@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Flame, Clock, Play, Calendar, Target, ArrowUpRight, Trophy, MessageCircle, Bookmark, BookOpen } from "lucide-react";
+import { Flame, Clock, Play, Calendar, Target, ArrowUpRight, Trophy, MessageCircle, Bookmark, BookOpen, AlertCircle } from "lucide-react";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { courses } from "@/data/courses";
@@ -13,7 +13,7 @@ const WEEK_TIME = "9h12";
 const Alumno = () => {
   const { profile, user } = useAuth();
 
-  const { data: enrolledProgress = [], isLoading: loadingProgress } = useQuery({
+  const { data: enrolledProgress = [], isLoading: loadingProgress, isError: errorProgress, refetch: refetchProgress } = useQuery({
     queryKey: ["enrolled-progress", user?.id],
     queryFn: async () => {
       // 1. Matrículas activas
@@ -153,12 +153,32 @@ const Alumno = () => {
               <div key={i} className="h-36 rounded-3xl bg-muted animate-pulse" />
             ))}
           </div>
+        ) : errorProgress ? (
+          <div className="rounded-3xl border-2 border-border bg-card p-14 text-center">
+            <AlertCircle className="w-12 h-12 text-destructive/50 mx-auto mb-4" />
+            <h3 className="font-display text-xl font-black mb-2">No pudimos cargar tus cursos</h3>
+            <p className="text-muted-foreground text-sm mb-6">Revisa tu conexión e intenta de nuevo.</p>
+            <button
+              onClick={() => refetchProgress()}
+              className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-border bg-card px-8 py-3 text-sm font-bold hover:border-ink transition"
+            >
+              Reintentar
+            </button>
+          </div>
         ) : enrolledProgress.length === 0 ? (
-          <div className="rounded-3xl border-2 border-dashed border-border p-12 text-center">
-            <BookOpen className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
-            <p className="text-muted-foreground text-sm">Aún no tienes cursos activos.</p>
-            <Link to="/cursos" className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-primary hover:underline">
-              Ver catálogo <ArrowUpRight className="w-4 h-4" />
+          <div className="rounded-3xl border-2 border-dashed border-border bg-card/50 p-16 text-center">
+            <div className="w-20 h-20 rounded-full bg-primary/10 grid place-items-center mx-auto mb-5">
+              <BookOpen className="w-10 h-10 text-primary/60" />
+            </div>
+            <h3 className="font-display text-2xl font-black mb-3">¡Tu aventura creativa empieza aquí!</h3>
+            <p className="text-muted-foreground max-w-sm mx-auto mb-8">
+              Explora el catálogo y encuentra el curso perfecto para ti. Más de 16 cursos de diseño, ilustración y branding te esperan.
+            </p>
+            <Link
+              to="/cursos"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary text-primary-foreground px-8 py-3 text-sm font-bold hover:bg-primary-glow transition"
+            >
+              Ver cursos disponibles <ArrowUpRight className="w-4 h-4" />
             </Link>
           </div>
         ) : (

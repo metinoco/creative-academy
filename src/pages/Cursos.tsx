@@ -1,6 +1,6 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { useMemo, useState } from "react";
-import { ArrowUpRight, Search, SlidersHorizontal, Star } from "lucide-react";
+import { ArrowUpRight, Search, SlidersHorizontal, Star, SearchX, AlertCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -29,7 +29,7 @@ const Cursos = () => {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<"populares" | "precio" | "rating">("populares");
 
-  const { data: allCourses = [], isLoading } = useQuery({
+  const { data: allCourses = [], isLoading, isError, refetch } = useQuery({
     queryKey: ["courses-catalog"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -191,10 +191,29 @@ const Cursos = () => {
               </div>
             ))}
           </div>
+        ) : isError ? (
+          <div className="bg-card border-2 border-border rounded-3xl p-16 text-center">
+            <AlertCircle className="w-12 h-12 text-destructive/50 mx-auto mb-4" />
+            <h3 className="font-display text-2xl font-black mb-2">No pudimos cargar el catálogo</h3>
+            <p className="text-muted-foreground mb-8">Verifica tu conexión e intenta de nuevo.</p>
+            <button
+              onClick={() => refetch()}
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-ink text-ink-foreground px-8 py-3 text-sm font-bold hover:bg-primary hover:text-primary-foreground transition"
+            >
+              Reintentar
+            </button>
+          </div>
         ) : filtered.length === 0 ? (
           <div className="bg-surface rounded-3xl p-16 text-center">
+            <SearchX className="w-12 h-12 text-muted-foreground/40 mx-auto mb-4" />
             <div className="font-display text-3xl font-black mb-2">Sin resultados</div>
-            <p className="text-muted-foreground">Prueba con otra disciplina o limpia los filtros.</p>
+            <p className="text-muted-foreground mb-8">Prueba con otra disciplina o limpia los filtros.</p>
+            <button
+              onClick={() => { setQuery(""); setSearchParams({}); }}
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-ink text-ink-foreground px-8 py-3 text-sm font-bold hover:bg-primary hover:text-primary-foreground transition"
+            >
+              Limpiar filtros
+            </button>
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">

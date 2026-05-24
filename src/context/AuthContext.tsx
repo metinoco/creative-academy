@@ -31,13 +31,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   const fetchUserData = async (uid: string) => {
-    const [{ data: prof }, { data: roleRows }] = await Promise.all([
-      supabase.from("profiles").select("id, full_name, avatar_url").eq("id", uid).maybeSingle(),
-      supabase.from("user_roles").select("role").eq("user_id", uid),
-    ]);
-    setProfile(prof ?? null);
-    const roles = (roleRows ?? []).map((r) => r.role as AppRole);
-    setRole(roles.includes("admin") ? "admin" : roles.includes("student") ? "student" : null);
+    try {
+      const [{ data: prof }, { data: roleRows }] = await Promise.all([
+        supabase.from("profiles").select("id, full_name, avatar_url").eq("id", uid).maybeSingle(),
+        supabase.from("user_roles").select("role").eq("user_id", uid),
+      ]);
+      setProfile(prof ?? null);
+      const roles = (roleRows ?? []).map((r) => r.role as AppRole);
+      setRole(roles.includes("admin") ? "admin" : roles.includes("student") ? "student" : null);
+    } catch {
+      setProfile(null);
+      setRole(null);
+    }
   };
 
   useEffect(() => {
