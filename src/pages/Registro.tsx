@@ -39,7 +39,11 @@ const Registro = () => {
   };
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-background">
+    <div className="relative min-h-screen grid lg:grid-cols-2 bg-[hsl(38_62%_93%)] lg:bg-background overflow-hidden">
+      {/* Mobile decorative blobs */}
+      <div aria-hidden className="lg:hidden absolute -top-24 -right-16 w-96 h-96 rounded-full bg-secondary/25 blur-3xl pointer-events-none" />
+      <div aria-hidden className="lg:hidden absolute -bottom-24 -left-16 w-80 h-80 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
+
       <aside className="hidden lg:flex relative bg-secondary text-ink p-12 flex-col justify-between overflow-hidden">
         <div className="absolute -top-32 -right-20 w-96 h-96 rounded-full bg-primary/30 blur-3xl" />
         <div className="absolute -bottom-32 -left-20 w-96 h-96 rounded-full bg-ink/10 blur-3xl" />

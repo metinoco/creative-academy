@@ -30,7 +30,11 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-background">
+    <div className="relative min-h-screen grid lg:grid-cols-2 bg-background overflow-hidden">
+      {/* Mobile decorative blobs */}
+      <div aria-hidden className="lg:hidden absolute -top-28 -right-20 w-80 h-80 rounded-full bg-ink/[0.06] blur-3xl pointer-events-none" />
+      <div aria-hidden className="lg:hidden absolute -bottom-28 -left-20 w-72 h-72 rounded-full bg-primary/[0.07] blur-3xl pointer-events-none" />
+
       {/* LEFT — visual */}
       <aside className="hidden lg:flex relative bg-ink text-ink-foreground p-12 flex-col justify-between overflow-hidden">
         <div className="absolute -top-32 -left-20 w-96 h-96 rounded-full bg-primary/30 blur-3xl" />
