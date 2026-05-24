@@ -544,6 +544,7 @@
         <a class="ds-nav-link" href="#typography">Tipografía</a>
         <a class="ds-nav-link" href="#spacing">Sombras & Radio</a>
         <a class="ds-nav-link" href="#gradients">Gradientes</a>
+        <a class="ds-nav-link" href="#sizes">Espaciado & Tamaños</a>
       </div>
       <div class="ds-nav-section">
         <div class="ds-nav-label">Componentes</div>
@@ -773,6 +774,180 @@
         <div style="border-radius:16px; overflow:hidden; border:1px solid var(--border);">
           <div style="height:80px; background:var(--grad-cream); border-bottom:1px solid var(--border);"></div>
           <div style="padding:10px 12px; background:var(--card);"><div style="font-size:12px; font-weight:800;">gradient-cream</div><div class="mono" style="margin-top:4px;">--grad-cream</div></div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider"/>
+
+    <!-- ══ SPACING & SIZES ═══════════════════════════════ -->
+    <section class="section" id="sizes">
+      <div class="section-tag">Fundamentos</div>
+      <h2 class="section-title">Espaciado & Tamaños</h2>
+      <p class="section-desc">Escala de 4 px base. Todos los espacios, alturas de componente y anchuras fijas derivan de este grid, garantizando consistencia vertical y horizontal.</p>
+
+      <!-- Escala de espaciado -->
+      <h4 style="margin-bottom:16px;">Escala de espaciado (base 4 px)</h4>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:36px;">
+        <style>
+          .sp-row{display:flex;align-items:center;gap:16px;}
+          .sp-label{width:56px;font-size:11px;font-weight:800;color:var(--muted-fg);flex-shrink:0;text-align:right;}
+          .sp-token{width:96px;font-size:10.5px;font-family:monospace;background:var(--surface);padding:2px 7px;border-radius:5px;flex-shrink:0;}
+          .sp-bar{height:20px;background:var(--grad-warm);border-radius:6px;opacity:.82;}
+          .sp-px{font-size:11px;color:var(--muted-fg);}
+        </style>
+        <div class="sp-row"><span class="sp-label">1</span><span class="sp-token">space-1</span><div class="sp-bar" style="width:4px;"></div><span class="sp-px">4 px</span></div>
+        <div class="sp-row"><span class="sp-label">2</span><span class="sp-token">space-2</span><div class="sp-bar" style="width:8px;"></div><span class="sp-px">8 px</span></div>
+        <div class="sp-row"><span class="sp-label">3</span><span class="sp-token">space-3</span><div class="sp-bar" style="width:12px;"></div><span class="sp-px">12 px</span></div>
+        <div class="sp-row"><span class="sp-label">4</span><span class="sp-token">space-4</span><div class="sp-bar" style="width:16px;"></div><span class="sp-px">16 px — gap base entre ítems</span></div>
+        <div class="sp-row"><span class="sp-label">5</span><span class="sp-token">space-5</span><div class="sp-bar" style="width:20px;"></div><span class="sp-px">20 px</span></div>
+        <div class="sp-row"><span class="sp-label">6</span><span class="sp-token">space-6</span><div class="sp-bar" style="width:24px;"></div><span class="sp-px">24 px — padding de card</span></div>
+        <div class="sp-row"><span class="sp-label">8</span><span class="sp-token">space-8</span><div class="sp-bar" style="width:32px;"></div><span class="sp-px">32 px</span></div>
+        <div class="sp-row"><span class="sp-label">10</span><span class="sp-token">space-10</span><div class="sp-bar" style="width:40px;"></div><span class="sp-px">40 px — separación entre secciones internas</span></div>
+        <div class="sp-row"><span class="sp-label">12</span><span class="sp-token">space-12</span><div class="sp-bar" style="width:48px;"></div><span class="sp-px">48 px — padding vertical de página</span></div>
+        <div class="sp-row"><span class="sp-label">16</span><span class="sp-token">space-16</span><div class="sp-bar" style="width:64px;"></div><span class="sp-px">64 px — separación entre bloques mayores</span></div>
+        <div class="sp-row"><span class="sp-label">20</span><span class="sp-token">space-20</span><div class="sp-bar" style="width:80px;"></div><span class="sp-px">80 px</span></div>
+        <div class="sp-row"><span class="sp-label">24</span><span class="sp-token">space-24</span><div class="sp-bar" style="width:96px;"></div><span class="sp-px">96 px — separación entre secciones de página</span></div>
+      </div>
+
+      <!-- Alturas de componentes -->
+      <h4 style="margin-bottom:16px;">Alturas de componente</h4>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:36px;max-width:560px;">
+        <style>
+          .ch-row{display:flex;align-items:center;gap:16px;}
+          .ch-name{width:160px;font-size:12px;font-weight:700;flex-shrink:0;}
+          .ch-bar{background:hsl(14 78% 52%/.12);border:1.5px solid hsl(14 78% 52%/.3);border-radius:8px;display:flex;align-items:center;padding:0 12px;}
+          .ch-val{font-size:11px;font-family:monospace;color:var(--primary);font-weight:700;margin-left:auto;}
+        </style>
+        <div class="ch-row">
+          <span class="ch-name">Botón pequeño (sm)</span>
+          <div class="ch-bar" style="height:32px;width:120px;"><span class="ch-val">32 px</span></div>
+        </div>
+        <div class="ch-row">
+          <span class="ch-name">Botón normal</span>
+          <div class="ch-bar" style="height:40px;width:148px;"><span class="ch-val">40 px</span></div>
+        </div>
+        <div class="ch-row">
+          <span class="ch-name">Botón grande (lg)</span>
+          <div class="ch-bar" style="height:48px;width:172px;"><span class="ch-val">48 px</span></div>
+        </div>
+        <div class="ch-row">
+          <span class="ch-name">Input / Select</span>
+          <div class="ch-bar" style="height:40px;width:220px;background:hsl(38 80% 60%/.1);border-color:hsl(38 80% 60%/.3);"><span class="ch-val" style="color:hsl(32 85% 38%);">40 px</span></div>
+        </div>
+        <div class="ch-row">
+          <span class="ch-name">Textarea (min)</span>
+          <div class="ch-bar" style="height:80px;width:220px;background:hsl(38 80% 60%/.1);border-color:hsl(38 80% 60%/.3);"><span class="ch-val" style="color:hsl(32 85% 38%);align-self:flex-start;margin-top:8px;">80 px</span></div>
+        </div>
+        <div class="ch-row">
+          <span class="ch-name">Nav item (sidebar)</span>
+          <div class="ch-bar" style="height:38px;width:196px;background:hsl(24 20% 18%/.12);border-color:hsl(24 25% 12%/.2);"><span class="ch-val" style="color:var(--fg);">38 px</span></div>
+        </div>
+        <div class="ch-row">
+          <span class="ch-name">Header / Topbar</span>
+          <div class="ch-bar" style="height:64px;width:280px;background:hsl(24 25% 12%/.08);border-color:hsl(24 25% 12%/.15);"><span class="ch-val" style="color:var(--fg);">64 px</span></div>
+        </div>
+      </div>
+
+      <!-- Tamaños de avatar e ícono -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-bottom:36px;">
+        <div>
+          <h4 style="margin-bottom:16px;">Avatares</h4>
+          <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;">
+            <div style="text-align:center;">
+              <div style="width:24px;height:24px;border-radius:6px;background:var(--grad-warm);margin:0 auto 6px;"></div>
+              <div style="font-size:10px;color:var(--muted-fg);">24px<br/><b>xs</b></div>
+            </div>
+            <div style="text-align:center;">
+              <div style="width:32px;height:32px;border-radius:8px;background:var(--grad-warm);margin:0 auto 6px;"></div>
+              <div style="font-size:10px;color:var(--muted-fg);">32px<br/><b>sm</b></div>
+            </div>
+            <div style="text-align:center;">
+              <div style="width:40px;height:40px;border-radius:10px;background:var(--grad-warm);margin:0 auto 6px;"></div>
+              <div style="font-size:10px;color:var(--muted-fg);">40px<br/><b>md</b></div>
+            </div>
+            <div style="text-align:center;">
+              <div style="width:48px;height:48px;border-radius:12px;background:var(--grad-warm);margin:0 auto 6px;"></div>
+              <div style="font-size:10px;color:var(--muted-fg);">48px<br/><b>lg</b></div>
+            </div>
+            <div style="text-align:center;">
+              <div style="width:64px;height:64px;border-radius:16px;background:var(--grad-warm);margin:0 auto 6px;"></div>
+              <div style="font-size:10px;color:var(--muted-fg);">64px<br/><b>xl</b></div>
+            </div>
+            <div style="text-align:center;">
+              <div style="width:80px;height:80px;border-radius:20px;background:var(--grad-warm);margin:0 auto 6px;"></div>
+              <div style="font-size:10px;color:var(--muted-fg);">80px<br/><b>2xl</b></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <h4 style="margin-bottom:16px;">Íconos</h4>
+          <div style="display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;">
+            <div style="text-align:center;">
+              <div style="width:14px;height:14px;background:var(--primary);border-radius:3px;margin:0 auto 6px;opacity:.8;"></div>
+              <div style="font-size:10px;color:var(--muted-fg);">14px<br/><b>xs</b><br/><span style="color:var(--muted-fg);">inline</span></div>
+            </div>
+            <div style="text-align:center;">
+              <div style="width:16px;height:16px;background:var(--primary);border-radius:3px;margin:0 auto 6px;opacity:.8;"></div>
+              <div style="font-size:10px;color:var(--muted-fg);">16px<br/><b>sm</b><br/><span style="color:var(--muted-fg);">badge</span></div>
+            </div>
+            <div style="text-align:center;">
+              <div style="width:20px;height:20px;background:var(--primary);border-radius:4px;margin:0 auto 6px;opacity:.8;"></div>
+              <div style="font-size:10px;color:var(--muted-fg);">20px<br/><b>md</b><br/><span style="color:var(--muted-fg);">nav</span></div>
+            </div>
+            <div style="text-align:center;">
+              <div style="width:24px;height:24px;background:var(--primary);border-radius:5px;margin:0 auto 6px;opacity:.8;"></div>
+              <div style="font-size:10px;color:var(--muted-fg);">24px<br/><b>lg</b><br/><span style="color:var(--muted-fg);">button</span></div>
+            </div>
+            <div style="text-align:center;">
+              <div style="width:32px;height:32px;background:var(--primary);border-radius:7px;margin:0 auto 6px;opacity:.8;"></div>
+              <div style="font-size:10px;color:var(--muted-fg);">32px<br/><b>xl</b><br/><span style="color:var(--muted-fg);">hero</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Anchuras fijas -->
+      <h4 style="margin-bottom:16px;">Anchuras & contenedores</h4>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <style>
+          .cw-row{display:flex;align-items:center;gap:14px;}
+          .cw-label{width:200px;font-size:12px;font-weight:700;flex-shrink:0;}
+          .cw-track{flex:1;height:28px;background:var(--surface);border-radius:8px;overflow:hidden;position:relative;}
+          .cw-fill{height:100%;border-radius:8px;display:flex;align-items:center;padding:0 10px;}
+          .cw-px{font-size:10.5px;font-weight:800;font-family:monospace;}
+        </style>
+        <div class="cw-row">
+          <span class="cw-label">Sidebar (DS doc)</span>
+          <div class="cw-track"><div class="cw-fill" style="width:14.6%;background:hsl(24 25% 12%/.15);"><span class="cw-px">220 px</span></div></div>
+        </div>
+        <div class="cw-row">
+          <span class="cw-label">Sidebar admin</span>
+          <div class="cw-track"><div class="cw-fill" style="width:16%;background:hsl(24 25% 12%/.15);"><span class="cw-px">240 px</span></div></div>
+        </div>
+        <div class="cw-row">
+          <span class="cw-label">Sidebar alumno</span>
+          <div class="cw-track"><div class="cw-fill" style="width:17.3%;background:hsl(24 25% 12%/.15);"><span class="cw-px">260 px</span></div></div>
+        </div>
+        <div class="cw-row">
+          <span class="cw-label">Icon rail</span>
+          <div class="cw-track"><div class="cw-fill" style="width:4.5%;background:hsl(14 78% 52%/.15);"><span class="cw-px">68 px</span></div></div>
+        </div>
+        <div class="cw-row">
+          <span class="cw-label">Contenido máx. (main)</span>
+          <div class="cw-track"><div class="cw-fill" style="width:64%;background:hsl(14 78% 52%/.12);"><span class="cw-px">960 px</span></div></div>
+        </div>
+        <div class="cw-row">
+          <span class="cw-label">Contenedor 2xl</span>
+          <div class="cw-track"><div class="cw-fill" style="width:93.3%;background:hsl(38 80% 60%/.15);"><span class="cw-px">1400 px</span></div></div>
+        </div>
+        <div class="cw-row">
+          <span class="cw-label">Formularios (máx.)</span>
+          <div class="cw-track"><div class="cw-fill" style="width:32%;background:hsl(150 60% 42%/.12);"><span class="cw-px">480 px</span></div></div>
+        </div>
+        <div class="cw-row">
+          <span class="cw-label">Course card (min)</span>
+          <div class="cw-track"><div class="cw-fill" style="width:18.6%;background:hsl(150 60% 42%/.12);"><span class="cw-px">280 px</span></div></div>
         </div>
       </div>
     </section>
