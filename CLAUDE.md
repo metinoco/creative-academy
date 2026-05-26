@@ -233,8 +233,10 @@ Todas las tablas tienen RLS habilitado:
 
 ## Sistema de diseño
 
-### Fuente
-- **Display y body:** `Nunito Sans` (Google Fonts). Clase: `font-display` y `font-sans`.
+### Fuentes
+- **H1, H2 y titulares (`font-display`):** `DM Serif Display` (Google Fonts, serif elegante)
+- **Body y resto de UI (`font-sans`):** `Nunito Sans` (Google Fonts, sans-serif redondeada)
+- Ambas se importan en `index.css` desde Google Fonts.
 
 ### Paleta de colores (CSS custom properties en `index.css`)
 
@@ -255,6 +257,9 @@ Todas las tablas tienen RLS habilitado:
 
 El panel de administración (`Admin.tsx`) usa una paleta diferente definida inline con HSL hardcodeados (índigo profundo, magenta eléctrico, violeta, turquesa). Esto es una divergencia intencional del design system del portal.
 
+### Referencia visual
+El archivo `design-system.html` en la raíz es un documento HTML estático con scroll-spy que documenta colores, tipografía, espaciado, componentes y stat cards. Ábrete directamente en el navegador; no requiere servidor.
+
 ### Gradientes utilitarios
 Clase `bg-gradient-warm` usada en barras de progreso del alumno.
 
@@ -268,14 +273,15 @@ Uso extensivo de bordes muy redondeados: `rounded-[2rem]`, `rounded-[2.5rem]`, `
 | Página | Estado UI | Datos reales | Notas |
 |--------|-----------|-------------|-------|
 | `Index` (landing) | Completa | Usa `courses.ts` (estáticos) | Pendiente conectar a Supabase |
-| `Cursos` (catálogo) | Completa | **Supabase** (`courses` table, status=published) | Conectado |
-| `Curso` (detalle) | Completa | **Híbrido** | Estructura del temario siempre desde `courses.ts`; títulos y flags `is_free_preview` enriquecidos desde Supabase por índice de posición. Estado de matrícula desde Supabase. Metadatos visuales (imagen, bio, learns) siempre desde `courses.ts`. |
+| `Cursos` (catálogo) | Completa | **Supabase** (`courses` table, status=published) | Conectado; empty state (SearchX + limpiar filtros) y error state implementados |
+| `Curso` (detalle) | Completa | **Híbrido** | Temario siempre desde `courses.ts` enriquecido desde Supabase. Skeleton en CTAs mientras carga matrícula. |
 | `Profesores` (directorio) | Completa | Estático (`courses.ts`) | Deriva instructores y métricas de `courses.ts`; avatares con pravatar |
-| `Login` | Funcional | Auth real con Supabase | |
-| `Registro` | Funcional | Auth real con Supabase | |
-| `Alumno` (dashboard) | UI completa | **Híbrido** | Matrículas, lecciones completadas, progreso global y cursos completados son datos reales de Supabase. Racha y actividad reciente siguen siendo mock. |
+| `Login` | Funcional | Auth real con Supabase | Spinner Loader2 en botón durante envío |
+| `Registro` | Funcional | Auth real con Supabase | Spinner Loader2 en botón durante envío |
+| `Alumno` (dashboard) | UI completa | **Híbrido** | Matrículas, lecciones completadas, progreso global y cursos completados son datos reales de Supabase. Racha y actividad reciente siguen siendo mock. Empty state motivacional + error state con reintentar. |
 | `AlumnoCurso` (reproductor) | UI completa | **Supabase** | Lecciones, progreso, control de acceso por matrícula; Q&A y notas son locales (no persistidos) |
-| `Admin` (dashboard) | UI completa | Mock | Métricas y tabla hardcodeadas; pendiente conectar a BD |
+| `Admin` (dashboard) | UI completa | Mock | Métricas y tabla hardcodeadas; pendiente conectar a BD. Menú hamburguesa en móvil. |
+| `NotFound` (404) | Completa | — | Layout split con ilustración 3D de artista en pánico |
 
 ---
 
@@ -320,6 +326,8 @@ Uso extensivo de bordes muy redondeados: `rounded-[2rem]`, `rounded-[2.5rem]`, `
 - Queries de Supabase: directamente en componentes o en custom hooks. Aún no hay capa de servicios/repositorios centralizada.
 - No hay servidor Express ni API routes propias; toda la lógica de backend va a través del cliente Supabase con RLS.
 - `courses.ts` se mantiene como fallback estático para imágenes y metadatos hasta que todos los cursos tengan datos completos en la BD.
+- **Code splitting:** todas las páginas se importan con `lazy()` + `Suspense` en `App.tsx`. El build usa `manualChunks` en `vite.config.ts` para separar vendors (react, query, supabase, recharts, radix-ui).
+- **Menú móvil:** `SiteHeader` y el panel `Admin` usan el componente `Sheet` de shadcn/ui como drawer de navegación en viewports pequeños.
 
 ---
 
@@ -363,3 +371,5 @@ La aplicación se despliega en **Vercel**. El archivo `vercel.json` en la raíz 
 - Los tiles de progreso global, lecciones completadas y cursos completados en `Alumno.tsx` ya usan datos reales de Supabase. La racha y la actividad reciente siguen siendo mock.
 - Los datos en `Admin.tsx` son completamente mock.
 - `courses.ts` actúa como fallback cuando faltan datos en Supabase; no eliminar hasta que la BD tenga todos los cursos completos.
+- Los estados vacíos y de error están implementados en `Cursos.tsx` y `Alumno.tsx`; la carga del formulario (Loader2) en `Login.tsx` y `Registro.tsx`.
+- `design-system.html` sirve como referencia de diseño; no está servido por la app React.

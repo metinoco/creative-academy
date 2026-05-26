@@ -7,7 +7,7 @@ Plataforma LMS propia para Academia Creativa (cliente: Laura Martínez). Reempla
 | Capa | Tecnología |
 |------|-----------|
 | Framework | React 18 + TypeScript |
-| Build | Vite 5 + SWC |
+| Build | Vite 5 + SWC + code splitting (lazy + manualChunks) |
 | Estilos | Tailwind CSS 3 + CSS custom properties |
 | Componentes UI | shadcn/ui (Radix UI primitives) |
 | Iconos | Lucide React |
@@ -104,12 +104,13 @@ Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se control
 | Página | Datos | Notas |
 |--------|-------|-------|
 | Landing (`/`) | Estático | Pendiente conectar a Supabase |
-| Catálogo (`/cursos`) | Supabase | Conectado |
-| Detalle curso (`/curso/:id`) | Híbrido | Metadatos de `courses.ts`; matrículas y previews desde Supabase |
+| Catálogo (`/cursos`) | Supabase | Conectado; empty state + error state implementados |
+| Detalle curso (`/curso/:id`) | Híbrido | Metadatos de `courses.ts`; matrículas y previews desde Supabase; skeleton en CTAs |
 | Profesores (`/profesores`) | Estático | Derivado de `courses.ts`; avatares con pravatar |
-| Dashboard alumno (`/alumno`) | Híbrido | Progreso, lecciones y cursos completados son reales; racha y actividad reciente son mock |
+| Dashboard alumno (`/alumno`) | Híbrido | Progreso, lecciones y cursos completados reales; racha y actividad reciente son mock; empty + error state implementados |
 | Reproductor (`/alumno/curso/:slug`) | Supabase | Acceso controlado por matrícula; Q&A y notas sin persistencia |
-| Admin (`/admin`) | Mock | UI completa; pendiente conectar a BD |
+| Admin (`/admin`) | Mock | UI completa + menú hamburguesa móvil; pendiente conectar a BD |
+| 404 | — | Diseño split con ilustración 3D |
 
 ## Roadmap
 
@@ -150,3 +151,7 @@ Dependencias clave:
 - `courses.ts` actúa como fallback para imágenes y metadatos; no eliminar hasta que la BD tenga `image_url` en todos los cursos.
 
 Para el detalle completo del plan de implementación, ver [PLAN.md](./PLAN.md).
+
+## Design system
+
+El archivo [design-system.html](./design-system.html) en la raíz documenta de forma interactiva los colores, tipografía, componentes, espaciado y patrones de la plataforma. Ábrete directamente en el navegador; no requiere servidor.
