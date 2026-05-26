@@ -35,7 +35,7 @@ Los tipos en `src/integrations/supabase/types.ts` siguen siendo válidos porque 
 
 ### Paso 2 — Aplicar el schema (SQL Editor de Supabase, sin CLI)
 
-Ir a **SQL Editor** del nuevo proyecto y ejecutar los 3 archivos en orden:
+Ir a **SQL Editor** del nuevo proyecto y ejecutar los 4 archivos en orden:
 
 **Migración 1** — pegar y ejecutar:
 `supabase/migrations/20260502082240_56062459-e3ec-45ce-94bd-15f6f3c7deb4.sql`
@@ -49,7 +49,11 @@ Ir a **SQL Editor** del nuevo proyecto y ejecutar los 3 archivos en orden:
 `supabase/migrations/20260508133721_3b7aefb8-71cd-4e06-ad85-fa754481969a.sql`
 → Crea: tablas `courses`, `sections`, `lessons`, `enrollments`, `lesson_progress`, vista `lessons_public`, funciones `has_course_access()` y `get_lesson_content()`, políticas RLS, y seed con 16 cursos
 
-> El orden importa: migración 3 depende de funciones creadas en migración 1.
+**Migración 4** — pegar y ejecutar:
+`supabase/migrations/20260513163652_891c8508-ae1e-43d6-96cb-679f27f1f400.sql`
+→ Seed de secciones y lecciones para los 13 cursos restantes + enrolamiento del usuario de prueba (Carlos) con progreso inicial
+
+> El orden importa: cada migración depende de las anteriores.
 
 ### Paso 3 — Actualizar `.env`
 
