@@ -18,13 +18,14 @@ const Login = () => {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    const { error } = await signIn(email.trim(), password);
+    const { error, role } = await signIn(email.trim(), password);
     setSubmitting(false);
     if (error) {
       toast({ title: "No pudimos iniciar sesión", description: error, variant: "destructive" });
       return;
     }
-    toast({ title: "¡Bienvenido de vuelta!", description: "Continúa donde lo dejaste.", variant: "info" });
+    const description = role === "admin" ? "Buenas. Academia Creativa te espera." : "Continúa donde lo dejaste.";
+    toast({ title: "¡Bienvenido de vuelta!", description, variant: "info" });
     // Redirect: respect requested route, else send by role (decided in /alumno fallback)
     navigate(from && from !== "/login" ? from : "/alumno", { replace: true });
   };
