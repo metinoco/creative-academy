@@ -71,6 +71,8 @@ Al registrarse, el trigger `handle_new_user()` asigna automáticamente el rol `s
 
 Roles disponibles: `admin`, `student`.
 
+`signIn` resuelve el rol inmediatamente tras el login y lo retorna; `Login.tsx` usa ese valor para mostrar un mensaje de bienvenida diferenciado (admin vs. alumno).
+
 ## Base de datos
 
 Las migraciones están en `supabase/migrations/`. Tablas principales:
@@ -93,6 +95,7 @@ Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se control
 | Schema Supabase | 100 % |
 | Auth + roles | 100 % |
 | Datos reales en catálogo | 100 % |
+| Datos reales en landing | 100 % |
 | Datos reales en reproductor | 100 % |
 | Datos reales en dashboard alumno | 70 % |
 | Datos reales en panel admin | 0 % |
@@ -103,7 +106,7 @@ Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se control
 
 | Página | Datos | Notas |
 |--------|-------|-------|
-| Landing (`/`) | Estático | Pendiente conectar a Supabase |
+| Landing (`/`) | Supabase | Cursos destacados en tiempo real; fallback a `courses.ts` para imágenes |
 | Catálogo (`/cursos`) | Supabase | Conectado; empty state + error state implementados |
 | Detalle curso (`/curso/:id`) | Híbrido | Metadatos de `courses.ts`; matrículas y previews desde Supabase; skeleton en CTAs |
 | Profesores (`/profesores`) | Estático | Derivado de `courses.ts`; avatares con pravatar |
@@ -119,7 +122,7 @@ Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se control
 | # | Tarea | Complejidad |
 |---|-------|------------|
 | 1.1 | Racha y actividad reciente del alumno | Baja (1–2 h) |
-| 1.2 | Landing conectada a Supabase | Baja (1 h) |
+| ~~1.2~~ | ~~Landing conectada a Supabase~~ | ✅ Completado |
 | 1.3 | Panel admin con datos reales | Media (4–6 h) |
 | 1.4 | Q&A y Notas persistentes en el reproductor | Media (3–5 h) |
 | 1.5 | Integración de pagos con Stripe | Alta (1–2 días) |
