@@ -1,8 +1,8 @@
-# Academia Creativa — Plataforma de cursos online
+# 🎨 Academia Creativa — Plataforma de cursos online
 
 Plataforma LMS propia para Academia Creativa (cliente: Laura Martínez). Reemplaza una infraestructura provisional basada en Notion + Vimeo + Systeme.io + Google Sheets.
 
-## Stack tecnológico
+## 🛠️ Stack tecnológico
 
 | Capa | Tecnología |
 |------|-----------|
@@ -22,13 +22,13 @@ Plataforma LMS propia para Academia Creativa (cliente: Laura Martínez). Reempla
 | Package manager | npm (compatible con bun) |
 | Hosting | Vercel (SPA, `vercel.json` con rewrite catch-all) |
 
-## Requisitos previos
+## ⚙️ Requisitos previos
 
 - Node.js 18+
 - Cuenta en [Supabase](https://supabase.com)
 - Variables de entorno configuradas (ver sección siguiente)
 
-## Variables de entorno
+## 🔑 Variables de entorno
 
 Crea un archivo `.env` en la raíz del proyecto con:
 
@@ -40,7 +40,7 @@ VITE_SUPABASE_PROJECT_ID=<tu-project-id>
 
 Solo el `PUBLISHABLE_KEY` (anon key) se expone al cliente. Nunca usar la `service_role` key en el frontend.
 
-## Instalación y desarrollo
+## 🚀 Instalación y desarrollo
 
 ```bash
 npm install
@@ -51,7 +51,7 @@ npm run lint       # ESLint
 npm test           # Vitest
 ```
 
-## Rutas de la aplicación
+## 🗺️ Rutas de la aplicación
 
 | Ruta | Acceso | Descripción |
 |------|--------|-------------|
@@ -65,7 +65,7 @@ npm test           # Vitest
 | `/alumno/curso/:slug` | Rol `student` | Reproductor de lecciones |
 | `/admin` | Rol `admin` | Panel de administración |
 
-## Autenticación y roles
+## 🔐 Autenticación y roles
 
 Al registrarse, el trigger `handle_new_user()` asigna automáticamente el rol `student`. Para acceder al panel de admin, asigna manualmente el rol `admin` en la tabla `user_roles` de Supabase Studio.
 
@@ -73,7 +73,7 @@ Roles disponibles: `admin`, `student`.
 
 `signIn` resuelve el rol inmediatamente tras el login y lo retorna; `Login.tsx` usa ese valor para mostrar un mensaje de bienvenida diferenciado (admin vs. alumno).
 
-## Base de datos
+## 🗄️ Base de datos
 
 Las migraciones están en `supabase/migrations/`. Tablas principales:
 
@@ -87,7 +87,7 @@ Las migraciones están en `supabase/migrations/`. Tablas principales:
 
 Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se controla mediante la función `has_course_access()`.
 
-## Estado actual del proyecto
+## 📊 Estado actual del proyecto
 
 | Área | Progreso |
 |------|---------|
@@ -115,7 +115,7 @@ Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se control
 | Admin (`/admin`) | Mock | UI completa + menú hamburguesa móvil; pendiente conectar a BD |
 | 404 | — | Diseño split con ilustración 3D |
 
-## Roadmap
+## 🛣️ Roadmap
 
 ### Fase 1 — Crítico (para lanzar)
 
@@ -145,7 +145,7 @@ Dependencias clave:
 - Tabla propia de instructores (reemplaza datos derivados de `courses.ts`)
 - App móvil (React Native / Expo)
 
-## Notas para QA
+## 🧪 Notas para QA
 
 - Usar `/registro` para crear un usuario de prueba (rol `student` asignado automáticamente).
 - Para probar rutas de admin, asignar rol `admin` manualmente en `user_roles` desde Supabase Studio.
@@ -155,6 +155,6 @@ Dependencias clave:
 
 Para el detalle completo del plan de implementación, ver [PLAN.md](./PLAN.md).
 
-## Design system
+## 🎨 Design system
 
 El archivo [design-system.html](./design-system.html) en la raíz documenta de forma interactiva los colores, tipografía, componentes, espaciado y patrones de la plataforma. Ábrete directamente en el navegador; no requiere servidor.
