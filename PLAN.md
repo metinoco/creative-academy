@@ -1,6 +1,6 @@
 # Academia Creativa — Guía de avance del proyecto
 
-> **Última revisión:** 22 mayo 2026  
+> **Última revisión:** 28 mayo 2026  
 > **Rama activa:** `development` → `main`  
 > **Deploy:** Vercel (SPA con `vercel.json`)  
 > **Backend:** Supabase (PostgreSQL + Auth)

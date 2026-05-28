@@ -266,6 +266,20 @@ Clase `bg-gradient-warm` usada en barras de progreso del alumno.
 ### Border radius
 Uso extensivo de bordes muy redondeados: `rounded-[2rem]`, `rounded-[2.5rem]`, `rounded-3xl`. El sistema usa `--radius` como variable base.
 
+### Sistema de notificaciones (toasts)
+Se usan dos proveedores montados en `App.tsx`: **shadcn Toaster** (activo) y **Sonner** (montado pero sin uso activo en páginas). Todas las notificaciones de usuario pasan por `useToast()` del hook `src/hooks/use-toast.ts`.
+
+Variantes disponibles en `toast.tsx`:
+| Variante | Borde lateral | Uso |
+|----------|--------------|-----|
+| `default` | ninguno | Mensajes neutros |
+| `success` | verde `hsl(150 60% 42%)` | Registro exitoso, acción completada |
+| `info` | azul `hsl(210 80% 52%)` | Bienvenida al hacer login |
+| `warning` | amarillo `hsl(38 80% 60%)` | Cuenta creada pero con advertencia |
+| `destructive` | rojo `hsl(0 70% 50%)` | Errores de auth, validación fallida |
+
+El viewport está fijado en `bottom-right`; los toasts tienen `rounded-[14px]` y altura compacta.
+
 ---
 
 ## Estado actual de la UI y datos
@@ -371,5 +385,6 @@ La aplicación se despliega en **Vercel**. El archivo `vercel.json` en la raíz 
 - Los tiles de progreso global, lecciones completadas y cursos completados en `Alumno.tsx` ya usan datos reales de Supabase. La racha y la actividad reciente siguen siendo mock.
 - Los datos en `Admin.tsx` son completamente mock.
 - `courses.ts` actúa como fallback cuando faltan datos en Supabase; no eliminar hasta que la BD tenga todos los cursos completos.
-- Los estados vacíos y de error están implementados en `Cursos.tsx` y `Alumno.tsx`; la carga del formulario (Loader2) en `Login.tsx` y `Registro.tsx`.
+- Los estados vacíos y de error están implementados en `Cursos.tsx` y `Alumno.tsx`; la carga del formulario (Loader2) en `Login.tsx` y `Registro.tsx`. Las 4 queries de `Alumno.tsx` (enrollments, courses, lessons, progress) lanzan el error en lugar de ignorarlo, lo que permite que React Query active el error state correctamente.
+- `Login.tsx` y `Registro.tsx` usan las variantes de toast tipadas (`success`, `info`, `warning`, `destructive`) del sistema de notificaciones rediseñado.
 - `design-system.html` sirve como referencia de diseño; no está servido por la app React.

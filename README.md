@@ -16,7 +16,7 @@ Plataforma LMS propia para Academia Creativa (cliente: Laura Martínez). Reempla
 | Estado cliente | React Context (AuthContext) |
 | Formularios | React Hook Form 7 + Zod |
 | Backend / Auth / DB | Supabase (PostgreSQL + Supabase Auth) |
-| Notificaciones | Sonner + shadcn Toaster |
+| Notificaciones | shadcn Toaster (variantes: success / info / warning / destructive) + Sonner (montado) |
 | Gráficos | Recharts |
 | Testing | Vitest + Testing Library |
 | Package manager | npm (compatible con bun) |
@@ -107,7 +107,7 @@ Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se control
 | Catálogo (`/cursos`) | Supabase | Conectado; empty state + error state implementados |
 | Detalle curso (`/curso/:id`) | Híbrido | Metadatos de `courses.ts`; matrículas y previews desde Supabase; skeleton en CTAs |
 | Profesores (`/profesores`) | Estático | Derivado de `courses.ts`; avatares con pravatar |
-| Dashboard alumno (`/alumno`) | Híbrido | Progreso, lecciones y cursos completados reales; racha y actividad reciente son mock; empty + error state implementados |
+| Dashboard alumno (`/alumno`) | Híbrido | Progreso, lecciones y cursos completados reales; racha y actividad reciente son mock; empty + error state implementados; queries propagan errores correctamente a React Query |
 | Reproductor (`/alumno/curso/:slug`) | Supabase | Acceso controlado por matrícula; Q&A y notas sin persistencia |
 | Admin (`/admin`) | Mock | UI completa + menú hamburguesa móvil; pendiente conectar a BD |
 | 404 | — | Diseño split con ilustración 3D |
