@@ -1,6 +1,6 @@
 # Academia Creativa — Guía de avance del proyecto
 
-> **Última revisión:** 28 mayo 2026  
+> **Última revisión:** 28 mayo 2026 (rev. 2)  
 > **Rama activa:** `development` → `main`  
 > **Deploy:** Vercel (SPA con `vercel.json`)  
 > **Backend:** Supabase (PostgreSQL + Auth)
@@ -15,6 +15,7 @@
 | Schema Supabase | ████████████ 100 % |
 | Auth + roles | ████████████ 100 % |
 | Datos reales en catálogo | ████████████ 100 % |
+| Datos reales en landing | ████████████ 100 % |
 | Datos reales en reproductor | ████████████ 100 % |
 | Datos reales en dashboard alumno | ████████░░░░ 70 % |
 | Datos reales en panel admin | ░░░░░░░░░░░░ 0 % |
@@ -38,6 +39,16 @@
 - [x] Rutas protegidas por rol (`ProtectedRoute`)
 - [x] Favicon SVG de marca
 - [x] `vercel.json` para SPA routing en Vercel
+- [x] Sistema de toasts tipados: variantes `success`, `info`, `warning`, `destructive` con borde lateral e iconos
+- [x] Empty state + error state en `Cursos.tsx` (SearchX + limpiar filtros; reintentar)
+- [x] Empty state + error state en `Alumno.tsx` (motivacional con CTA; reintentar)
+- [x] Skeleton en CTAs de `Curso.tsx` mientras verifica matrícula
+- [x] Spinner `Loader2` en botones de `Login.tsx` y `Registro.tsx` durante envío
+- [x] Tipografía dual: DM Serif Display (titulares) + Nunito Sans (body)
+- [x] Responsividad móvil: menú hamburguesa (`Sheet`) en `SiteHeader` y `Admin`
+- [x] Code splitting: `lazy()` + `Suspense` en `App.tsx`; `manualChunks` en `vite.config.ts`
+- [x] `NotFound.tsx` rediseñada: layout split con ilustración 3D
+- [x] `design-system.html`: referencia visual interactiva con scroll-spy
 
 ### Backend / Supabase
 - [x] Schema completo: `profiles`, `user_roles`, `courses`, `sections`, `lessons`, `enrollments`, `lesson_progress`
@@ -51,6 +62,7 @@
 
 ### Datos reales conectados
 - [x] `Cursos.tsx` — lee de tabla `courses` (status=published)
+- [x] `Index.tsx` — cursos destacados desde `courses` (status=published, orden por reviews_count); fallback a `courses.ts` para imágenes
 - [x] `AlumnoCurso.tsx` — lecciones, progreso, control de acceso por matrícula
 - [x] `Alumno.tsx` — matrículas, progreso por curso, lecciones completadas, cursos completados (tiles reales)
 
@@ -63,7 +75,6 @@
 | `Alumno.tsx` | Racha diaria (28 días) | Requiere tabla o lógica de `lesson_progress` por fecha |
 | `Alumno.tsx` | Actividad reciente | Requiere query ordenada por `completed_at` |
 | `Admin.tsx` | Todas las métricas y tabla de ventas | Pendiente conectar a BD |
-| `Index.tsx` | Cursos destacados | Usa `courses.ts` estático; debería leer de Supabase |
 | `Curso.tsx` | Metadatos visuales (imagen, bio, "aprenderás") | `courses.ts` como fuente; parcialmente enriquecido con Supabase |
 | `Profesores.tsx` | Todo | Derivado de `courses.ts`; Supabase no tiene tabla de instructores |
 | `AlumnoCurso.tsx` | Q&A y Notas | UI presente, sin persistencia en BD |
@@ -83,13 +94,8 @@
 
 ---
 
-### 1.2 Landing conectada a Supabase
-**Archivo:** `src/pages/Index.tsx`  
-**Qué hacer:**
-- Query a `courses` (status=published, limit 4-6, order by reviews_count) con TanStack Query
-- Mantener `courses.ts` solo para imágenes locales mientras no haya `image_url` en todos los cursos
-
-**Complejidad:** Baja (1 hora)
+### ~~1.2 Landing conectada a Supabase~~ ✅ COMPLETADO
+`cd5343c` — `Index.tsx` lee cursos en tiempo real desde Supabase; `courses.ts` como fallback de imágenes.
 
 ---
 
