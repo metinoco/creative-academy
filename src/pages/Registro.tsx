@@ -30,11 +30,11 @@ const Registro = () => {
     const res = await signIn(email.trim(), password);
     setSubmitting(false);
     if (res.error) {
-      toast({ title: "Cuenta creada. Inicia sesión.", description: res.error });
+      toast({ title: "Cuenta creada. Inicia sesión.", description: res.error, variant: "warning" });
       navigate("/login", { replace: true });
       return;
     }
-    toast({ title: `¡Bienvenido, ${fullName.split(" ")[0] || "creador"}!` });
+    toast({ title: `¡Bienvenido, ${fullName.split(" ")[0] || "creador"}!`, description: "Tu cuenta está lista. ¡A aprender!", variant: "success" });
     navigate("/alumno", { replace: true });
   };
 

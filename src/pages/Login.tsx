@@ -24,7 +24,7 @@ const Login = () => {
       toast({ title: "No pudimos iniciar sesión", description: error, variant: "destructive" });
       return;
     }
-    toast({ title: "¡Bienvenido de vuelta!" });
+    toast({ title: "¡Bienvenido de vuelta!", description: "Continúa donde lo dejaste.", variant: "info" });
     // Redirect: respect requested route, else send by role (decided in /alumno fallback)
     navigate(from && from !== "/login" ? from : "/alumno", { replace: true });
   };
