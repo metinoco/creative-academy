@@ -17,33 +17,37 @@ const Alumno = () => {
     queryKey: ["enrolled-progress", user?.id],
     queryFn: async () => {
       // 1. Matrículas activas
-      const { data: enrollments } = await supabase
+      const { data: enrollments, error: enrollmentsError } = await supabase
         .from("enrollments")
         .select("course_id, granted_at")
         .eq("user_id", user!.id)
         .is("revoked_at", null);
+      if (enrollmentsError) throw enrollmentsError;
 
       if (!enrollments?.length) return [];
       const courseIds = enrollments.map((e) => e.course_id);
 
       // 2. Datos del curso (slug para navegar)
-      const { data: dbCourses } = await supabase
+      const { data: dbCourses, error: coursesError } = await supabase
         .from("courses")
         .select("id, slug, title, category")
         .in("id", courseIds);
+      if (coursesError) throw coursesError;
 
       // 3. Total de lecciones por curso
-      const { data: allLessons } = await supabase
+      const { data: allLessons, error: lessonsError } = await supabase
         .from("lessons")
         .select("id, course_id")
         .in("course_id", courseIds);
+      if (lessonsError) throw lessonsError;
 
       // 4. Lecciones completadas por el alumno
-      const { data: progressRows } = await supabase
+      const { data: progressRows, error: progressError } = await supabase
         .from("lesson_progress")
         .select("lesson_id, course_id")
         .eq("user_id", user!.id)
         .in("course_id", courseIds);
+      if (progressError) throw progressError;
 
       return enrollments.map((enrollment) => {
         const dbCourse = dbCourses?.find((c) => c.id === enrollment.course_id);
