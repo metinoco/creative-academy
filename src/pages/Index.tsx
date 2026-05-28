@@ -77,7 +77,7 @@ const Index = () => {
             <div className="bg-card border-2 border-ink rounded-[2.5rem] p-8 relative overflow-hidden">
               <Star className="w-7 h-7 fill-secondary text-secondary" />
               <div className="mt-4 font-display text-6xl font-black leading-none">4,9<span className="text-primary">/5</span></div>
-              <div className="mt-3 text-sm text-muted-foreground">
+              <div className="mt-3 text-md text-muted-foreground">
                 Más de 3.200 valoraciones reales de alumnos que han terminado un curso.
               </div>
             </div>
