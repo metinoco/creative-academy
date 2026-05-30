@@ -7,8 +7,62 @@ import { useAuth } from "@/context/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-const STREAK_DAYS = 28;
-const WEEK_TIME = "9h12";
+interface ActivityRow {
+  completed_at: string;
+  duration_minutes: number;
+}
+
+function toDateStr(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function calcStreak(timestamps: string[]): number {
+  if (!timestamps.length) return 0;
+  const today = toDateStr(new Date());
+  const dates = new Set(timestamps.map(t => toDateStr(new Date(t))));
+  const sorted = [...dates].sort().reverse();
+  const cur = new Date();
+  if (!dates.has(today)) cur.setDate(cur.getDate() - 1);
+  let streak = 0;
+  for (const d of sorted) {
+    if (d === toDateStr(cur)) { streak++; cur.setDate(cur.getDate() - 1); }
+    else if (d < toDateStr(cur)) break;
+  }
+  return streak;
+}
+
+function fmtMinutes(total: number): string {
+  if (total === 0) return "0min";
+  const h = Math.floor(total / 60);
+  const m = total % 60;
+  if (h === 0) return `${m}min`;
+  if (m === 0) return `${h}h`;
+  return `${h}h${String(m).padStart(2, "0")}`;
+}
+
+function calcWeekMinutes(rows: ActivityRow[]): number {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 7);
+  return rows.filter(r => new Date(r.completed_at) >= cutoff).reduce((s, r) => s + r.duration_minutes, 0);
+}
+
+function calcMonthMinutes(rows: ActivityRow[]): number {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  return rows.filter(r => new Date(r.completed_at) >= start).reduce((s, r) => s + r.duration_minutes, 0);
+}
+
+function calcActivityGrid(timestamps: string[]): number[] {
+  const counts: Record<string, number> = {};
+  timestamps.forEach(t => { const d = toDateStr(new Date(t)); counts[d] = (counts[d] ?? 0) + 1; });
+  const now = new Date();
+  return Array.from({ length: 35 }, (_, i) => {
+    const d = new Date(now);
+    d.setDate(d.getDate() - (34 - i));
+    const n = counts[toDateStr(d)] ?? 0;
+    return n === 0 ? 0 : n <= 2 ? 1 : n <= 5 ? 2 : 3;
+  });
+}
 
 const Alumno = () => {
   const { profile, user } = useAuth();
@@ -71,12 +125,62 @@ const Alumno = () => {
     enabled: !!user?.id,
   });
 
+  const { data: activityRows = [] } = useQuery({
+    queryKey: ["student-activity", user?.id],
+    queryFn: async () => {
+      const { data: progressData, error } = await supabase
+        .from("lesson_progress")
+        .select("completed_at, lesson_id")
+        .eq("user_id", user!.id)
+        .order("completed_at", { ascending: false });
+      if (error) throw error;
+      if (!progressData?.length) return [] as ActivityRow[];
+      const lessonIds = progressData.map(r => r.lesson_id);
+      const { data: lessonsData } = await supabase
+        .from("lessons")
+        .select("id, duration_minutes")
+        .in("id", lessonIds);
+      const durMap = new Map((lessonsData ?? []).map(l => [l.id, l.duration_minutes ?? 0]));
+      return progressData.map(r => ({
+        completed_at: r.completed_at,
+        duration_minutes: durMap.get(r.lesson_id) ?? 0,
+      }));
+    },
+    enabled: !!user?.id,
+  });
+
   const totalLessons = enrolledProgress.reduce((s, c) => s + c.total, 0);
   const completedLessons = enrolledProgress.reduce((s, c) => s + c.completed, 0);
   const globalProgress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
   const completedCourses = enrolledProgress.filter((c) => c.total > 0 && c.completed === c.total).length;
 
   const firstName = profile?.full_name?.split(" ")[0] ?? user?.email?.split("@")[0] ?? "Carlos";
+
+  const timestamps = activityRows.map(r => r.completed_at);
+  const streakDays = calcStreak(timestamps);
+  const weekTime = fmtMinutes(calcWeekMinutes(activityRows));
+  const monthHours = fmtMinutes(calcMonthMinutes(activityRows));
+  const activityGrid = calcActivityGrid(timestamps);
+  const displayDay = (() => {
+    const d = new Date().toLocaleDateString("es-ES", { weekday: "long" });
+    return d.charAt(0).toUpperCase() + d.slice(1);
+  })();
+
+  const achievements = [
+    { icon: "🔥", label: "Racha 7d",      on: streakDays >= 7 },
+    { icon: "⚡", label: "Racha 30d",     on: streakDays >= 30 },
+    { icon: "🎓", label: "Primer cert.",  on: completedCourses >= 1 },
+    { icon: "🏆", label: "5 cursos",      on: completedCourses >= 5 },
+    { icon: "🎨", label: "Branding pro",  on: true },
+    { icon: "✏️", label: "Ilustrador",   on: true },
+    { icon: "📐", label: "Tipográfico",  on: true },
+    { icon: "🚀", label: "Top 1%",        on: false },
+    { icon: "💬", label: "Comentarista",  on: false },
+    { icon: "⭐", label: "Reseña",        on: false },
+    { icon: "🎬", label: "Motion",        on: false },
+    { icon: "👑", label: "Maestro",       on: false },
+  ];
+  const unlockedCount = achievements.filter(a => a.on).length;
 
   return (
     <div className="min-h-screen bg-background">
@@ -89,13 +193,13 @@ const Alumno = () => {
           <div className="lg:col-span-7 bg-ink text-ink-foreground rounded-[2.5rem] p-8 md:p-10 relative overflow-hidden">
             <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-primary/30 blur-3xl" />
             <div className="relative">
-              <span className="text-xs font-black uppercase tracking-widest text-secondary">Tu panel · Lunes</span>
+              <span className="text-xs font-black uppercase tracking-widest text-secondary">Tu panel · {displayDay}</span>
               <h1 className="mt-3 font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-[0.9]">
                 Hola,<br />
                 <span className="text-primary">{firstName}</span> 👋
               </h1>
               <p className="mt-5 text-ink-foreground/70 max-w-md">
-                Llevas <b className="text-secondary">{STREAK_DAYS} días seguidos</b> aprendiendo. No la rompas hoy.
+                Llevas <b className="text-secondary">{streakDays} días seguidos</b> aprendiendo. No la rompas hoy.
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3">
@@ -113,12 +217,12 @@ const Alumno = () => {
           <div className="lg:col-span-5 grid grid-cols-2 gap-5">
             <div className="bg-primary text-primary-foreground rounded-[2rem] p-5 relative overflow-hidden">
               <Flame className="w-7 h-7" />
-              <div className="font-display text-5xl font-black mt-3 leading-none">{STREAK_DAYS}</div>
+              <div className="font-display text-5xl font-black mt-3 leading-none">{streakDays}</div>
               <div className="text-xs font-bold uppercase tracking-widest mt-1 opacity-80">días de racha</div>
             </div>
             <div className="bg-secondary text-ink rounded-[2rem] p-5 relative overflow-hidden">
               <Clock className="w-7 h-7" />
-              <div className="font-display text-5xl font-black mt-3 leading-none">{WEEK_TIME}</div>
+              <div className="font-display text-5xl font-black mt-3 leading-none">{weekTime}</div>
               <div className="text-xs font-bold uppercase tracking-widest mt-1 opacity-70">esta semana</div>
             </div>
             <div className="bg-card border-2 border-ink rounded-[2rem] p-5">
@@ -250,24 +354,11 @@ const Alumno = () => {
               <span className="text-xs font-black uppercase tracking-widest text-primary">Logros</span>
               <h3 className="font-display text-3xl font-black mt-1">Tus medallas</h3>
             </div>
-            <span className="text-xs text-muted-foreground">5 / 12 desbloqueadas</span>
+            <span className="text-xs text-muted-foreground">{unlockedCount} / {achievements.length} desbloqueadas</span>
           </div>
 
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-            {[
-              { icon: "🔥", label: "Racha 7d", on: true },
-              { icon: "⚡", label: "Racha 30d", on: false },
-              { icon: "🎓", label: "Primer cert.", on: true },
-              { icon: "🏆", label: "5 cursos", on: false },
-              { icon: "🎨", label: "Branding pro", on: true },
-              { icon: "✏️", label: "Ilustrador", on: true },
-              { icon: "📐", label: "Tipográfico", on: true },
-              { icon: "🚀", label: "Top 1%", on: false },
-              { icon: "💬", label: "Comentarista", on: false },
-              { icon: "⭐", label: "Reseña", on: false },
-              { icon: "🎬", label: "Motion", on: false },
-              { icon: "👑", label: "Maestro", on: false },
-            ].map((a, i) => (
+            {achievements.map((a, i) => (
               <div key={i} className={`aspect-square rounded-2xl flex flex-col items-center justify-center gap-1 border-2 transition ${
                 a.on ? "bg-secondary border-ink" : "bg-surface border-transparent grayscale opacity-40"
               }`}>
@@ -286,8 +377,7 @@ const Alumno = () => {
             <h3 className="font-display text-3xl font-black mt-1">Últimas 5 semanas</h3>
 
             <div className="mt-6 grid grid-cols-7 gap-1.5">
-              {Array.from({ length: 35 }).map((_, i) => {
-                const intensity = Math.floor(Math.random() * 4);
+              {activityGrid.map((intensity, i) => {
                 const colors = ["bg-ink-foreground/10", "bg-secondary/40", "bg-secondary/70", "bg-primary"];
                 return <div key={i} className={`aspect-square rounded-md ${colors[intensity]}`} />;
               })}
@@ -305,7 +395,7 @@ const Alumno = () => {
 
             <div className="mt-6 pt-6 border-t border-ink-foreground/10 flex items-center justify-between">
               <div>
-                <div className="font-display text-3xl font-black">42h</div>
+                <div className="font-display text-3xl font-black">{monthHours}</div>
                 <div className="text-xs text-ink-foreground/60">total este mes</div>
               </div>
               <button className="rounded-full bg-secondary text-ink px-4 py-2 text-xs font-bold hover:bg-secondary/80 transition">

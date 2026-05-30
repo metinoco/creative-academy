@@ -97,7 +97,7 @@ Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se control
 | Datos reales en catálogo | 100 % |
 | Datos reales en landing | 100 % |
 | Datos reales en reproductor | 100 % |
-| Datos reales en dashboard alumno | 70 % |
+| Datos reales en dashboard alumno | 100 % |
 | Datos reales en panel admin | 0 % |
 | Sistema de pagos | 0 % |
 | Certificados | 0 % |
@@ -110,7 +110,7 @@ Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se control
 | Catálogo (`/cursos`) | Supabase | Conectado; empty state + error state implementados |
 | Detalle curso (`/curso/:id`) | Híbrido | Metadatos de `courses.ts`; matrículas y previews desde Supabase; skeleton en CTAs |
 | Profesores (`/profesores`) | Estático | Derivado de `courses.ts`; avatares con pravatar |
-| Dashboard alumno (`/alumno`) | Híbrido | Progreso, lecciones y cursos completados reales; racha y actividad reciente son mock; empty + error state implementados; queries propagan errores correctamente a React Query |
+| Dashboard alumno (`/alumno`) | **Supabase** | Todos los datos reales: progreso, racha diaria, tiempo semanal/mensual, grid de actividad; empty + error state implementados |
 | Reproductor (`/alumno/curso/:slug`) | Supabase | Acceso controlado por matrícula; Q&A y notas sin persistencia |
 | Admin (`/admin`) | Mock | UI completa + menú hamburguesa móvil; pendiente conectar a BD |
 | 404 | — | Diseño split con ilustración 3D |
@@ -121,7 +121,7 @@ Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se control
 
 | # | Tarea | Complejidad |
 |---|-------|------------|
-| 1.1 | Racha y actividad reciente del alumno | Baja (1–2 h) |
+| ~~1.1~~ | ~~Racha y actividad reciente del alumno~~ | ✅ Completado |
 | ~~1.2~~ | ~~Landing conectada a Supabase~~ | ✅ Completado |
 | 1.3 | Panel admin con datos reales | Media (4–6 h) |
 | 1.4 | Q&A y Notas persistentes en el reproductor | Media (3–5 h) |

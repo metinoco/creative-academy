@@ -69,7 +69,8 @@ src/
 └── assets/                  # Imágenes de cursos (course-*.jpg) y avatar
 
 public/
-└── favicon.svg              # Favicon SVG derivado del logo de marca
+├── favicon.svg              # Favicon SVG derivado del logo de marca
+└── apple-touch-icon.png     # Icono 180×180 para pantalla de inicio iOS
 
 supabase/
 └── migrations/              # 5 archivos SQL (schema completo + seed de 16 cursos con secciones/lecciones)
@@ -292,7 +293,7 @@ El viewport está fijado en `bottom-right`; los toasts tienen `rounded-[14px]` y
 | `Profesores` (directorio) | Completa | Estático (`courses.ts`) | Deriva instructores y métricas de `courses.ts`; avatares con pravatar |
 | `Login` | Funcional | Auth real con Supabase | Spinner Loader2 en botón durante envío |
 | `Registro` | Funcional | Auth real con Supabase | Spinner Loader2 en botón durante envío |
-| `Alumno` (dashboard) | UI completa | **Híbrido** | Matrículas, lecciones completadas, progreso global y cursos completados son datos reales de Supabase. Racha y actividad reciente siguen siendo mock. Empty state motivacional + error state con reintentar. |
+| `Alumno` (dashboard) | UI completa | **Supabase** | Todos los datos reales: matrículas, progreso, lecciones completadas, cursos completados, racha diaria, tiempo semanal/mensual y grid de actividad (query `student-activity`). Empty state motivacional + error state con reintentar. |
 | `AlumnoCurso` (reproductor) | UI completa | **Supabase** | Lecciones, progreso, control de acceso por matrícula; Q&A y notas son locales (no persistidos) |
 | `Admin` (dashboard) | UI completa | Mock | Métricas y tabla hardcodeadas; pendiente conectar a BD. Menú hamburguesa en móvil. |
 | `NotFound` (404) | Completa | — | Layout split con ilustración 3D de artista en pánico |
@@ -310,7 +311,7 @@ El viewport está fijado en `bottom-right`; los toasts tienen `rounded-[14px]` y
 | Acceso automático al curso tras compra | Pendiente | Webhook Stripe → insertar en `enrollments` |
 | Revocación de acceso | Parcial | Columna `revoked_at` existe; falta UI admin para usarla |
 | Certificado de finalización | Pendiente | Tabla `certificates` + lógica de detección de curso completado + generación PDF |
-| Racha y actividad reciente del alumno | Pendiente | `Alumno.tsx` ya muestra progreso y cursos completados reales; la racha diaria y la actividad reciente siguen siendo mock |
+| Racha y actividad reciente del alumno | **Completado** | `Alumno.tsx` calcula racha, tiempo y grid de actividad desde `lesson_progress` |
 | Q&A en reproductor de lecciones | Pendiente | `AlumnoCurso.tsx` tiene UI pero no persiste preguntas/respuestas |
 | Notas en reproductor | Pendiente | `AlumnoCurso.tsx` tiene UI pero guarda en estado local, no en BD |
 | Panel admin con datos reales | Pendiente | `Admin.tsx` completamente mock |
@@ -382,7 +383,7 @@ La aplicación se despliega en **Vercel**. El archivo `vercel.json` en la raíz 
 - Para probar rutas de admin, asignar manualmente el rol `admin` en la tabla `user_roles` de Supabase Studio.
 - Para probar el reproductor (`/alumno/curso/:slug`), el usuario debe tener una fila en `enrollments` con `revoked_at IS NULL` para el curso deseado.
 - Las lecciones con `is_free_preview = true` son accesibles sin matrícula.
-- Los tiles de progreso global, lecciones completadas y cursos completados en `Alumno.tsx` ya usan datos reales de Supabase. La racha y la actividad reciente siguen siendo mock.
+- Todos los datos de `Alumno.tsx` son reales: progreso, racha, tiempo semanal/mensual y grid de actividad se calculan desde `lesson_progress`.
 - Los datos en `Admin.tsx` son completamente mock.
 - `courses.ts` actúa como fallback cuando faltan datos en Supabase; no eliminar hasta que la BD tenga todos los cursos completos.
 - Los estados vacíos y de error están implementados en `Cursos.tsx` y `Alumno.tsx`; la carga del formulario (Loader2) en `Login.tsx` y `Registro.tsx`. Las 4 queries de `Alumno.tsx` (enrollments, courses, lessons, progress) lanzan el error en lugar de ignorarlo, lo que permite que React Query active el error state correctamente.

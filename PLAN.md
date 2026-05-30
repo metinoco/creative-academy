@@ -1,6 +1,6 @@
 # Academia Creativa — Guía de avance del proyecto
 
-> **Última revisión:** 28 mayo 2026 (rev. 2)  
+> **Última revisión:** 30 mayo 2026  
 > **Rama activa:** `development` → `main`  
 > **Deploy:** Vercel (SPA con `vercel.json`)  
 > **Backend:** Supabase (PostgreSQL + Auth)
@@ -17,7 +17,7 @@
 | Datos reales en catálogo | ████████████ 100 % |
 | Datos reales en landing | ████████████ 100 % |
 | Datos reales en reproductor | ████████████ 100 % |
-| Datos reales en dashboard alumno | ████████░░░░ 70 % |
+| Datos reales en dashboard alumno | ████████████ 100 % |
 | Datos reales en panel admin | ░░░░░░░░░░░░ 0 % |
 | Sistema de pagos | ░░░░░░░░░░░░ 0 % |
 | Certificados | ░░░░░░░░░░░░ 0 % |
@@ -64,7 +64,8 @@
 - [x] `Cursos.tsx` — lee de tabla `courses` (status=published)
 - [x] `Index.tsx` — cursos destacados desde `courses` (status=published, orden por reviews_count); fallback a `courses.ts` para imágenes
 - [x] `AlumnoCurso.tsx` — lecciones, progreso, control de acceso por matrícula
-- [x] `Alumno.tsx` — matrículas, progreso por curso, lecciones completadas, cursos completados (tiles reales)
+- [x] `Alumno.tsx` — matrículas, progreso, lecciones y cursos completados (tiles reales)
+- [x] `Alumno.tsx` — racha diaria, tiempo semanal/mensual y grid de actividad calculados desde `lesson_progress` (query `student-activity`)
 
 ---
 
@@ -72,8 +73,6 @@
 
 | Componente | Dato mock | Nota |
 |-----------|-----------|------|
-| `Alumno.tsx` | Racha diaria (28 días) | Requiere tabla o lógica de `lesson_progress` por fecha |
-| `Alumno.tsx` | Actividad reciente | Requiere query ordenada por `completed_at` |
 | `Admin.tsx` | Todas las métricas y tabla de ventas | Pendiente conectar a BD |
 | `Curso.tsx` | Metadatos visuales (imagen, bio, "aprenderás") | `courses.ts` como fuente; parcialmente enriquecido con Supabase |
 | `Profesores.tsx` | Todo | Derivado de `courses.ts`; Supabase no tiene tabla de instructores |
@@ -83,14 +82,8 @@
 
 ## Fase 1 — Crítico (para lanzar)
 
-### 1.1 Racha y actividad reciente del alumno
-**Archivo:** `src/pages/Alumno.tsx`  
-**Qué hacer:**
-- Query a `lesson_progress` ordenada por `completed_at DESC` para actividad reciente
-- Calcular racha diaria contando días consecutivos con al menos una lección completada
-- Reemplazar constantes `STREAK_DAYS` y `WEEK_TIME` por valores reales
-
-**Complejidad:** Baja (1–2 horas)
+### ~~1.1 Racha y actividad reciente del alumno~~ ✅ COMPLETADO
+Query `student-activity` en `Alumno.tsx`: lee `lesson_progress` + `lessons` (duration_minutes). Calcula racha diaria (`calcStreak`), tiempo semanal/mensual (`calcWeekMinutes`/`calcMonthMinutes`) y grid de actividad 5 semanas (`calcActivityGrid`).
 
 ---
 
