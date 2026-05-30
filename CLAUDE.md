@@ -73,7 +73,7 @@ public/
 └── apple-touch-icon.png     # Icono 180×180 para pantalla de inicio iOS
 
 supabase/
-└── migrations/              # 5 archivos SQL (schema completo + seed de 16 cursos con secciones/lecciones)
+└── migrations/              # 6 archivos SQL (schema completo + seed de 16 cursos + tablas Q&A/notas)
 
 vercel.json                  # Rewrite catch-all → /index.html (necesario para React Router en Vercel)
 ```
@@ -201,6 +201,48 @@ Al crear un usuario en `auth.users`, el trigger `handle_new_user()` crea automá
 | `completed` | `boolean` | |
 | `completed_at` | `timestamptz` | Nullable |
 
+**`lesson_notes`**
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | `uuid` (PK) | |
+| `user_id` | `uuid` | FK → `profiles.id` |
+| `lesson_id` | `uuid` | FK → `lessons.id` |
+| `body` | `text` | Contenido de la nota |
+| `updated_at` | `timestamptz` | Auto-actualizado por trigger |
+
+Índice único `(user_id, lesson_id)` — una nota por alumno/lección.
+
+**`lesson_questions`**
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | `uuid` (PK) | |
+| `user_id` | `uuid` | FK → `profiles.id` |
+| `lesson_id` | `uuid` | FK → `lessons.id` |
+| `course_id` | `uuid` | FK → `courses.id` |
+| `body` | `text` | |
+| `votes_count` | `integer` | Mantenido por la función `toggle_question_vote()` |
+| `created_at` | `timestamptz` | |
+
+**`lesson_answers`**
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | `uuid` (PK) | |
+| `question_id` | `uuid` | FK → `lesson_questions.id` |
+| `user_id` | `uuid` | FK → `profiles.id` |
+| `body` | `text` | |
+| `is_instructor_answer` | `boolean` | Si la respuesta es del instructor |
+| `created_at` | `timestamptz` | |
+
+**`lesson_question_votes`**
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | `uuid` (PK) | |
+| `question_id` | `uuid` | FK → `lesson_questions.id` |
+| `user_id` | `uuid` | FK → `profiles.id` |
+| `created_at` | `timestamptz` | |
+
+Constraint único `(question_id, user_id)` — un voto por alumno/pregunta.
+
 ### Vistas
 - `lessons_public` — Lecciones con `security_invoker = on` para consultas públicas seguras
 
@@ -210,6 +252,7 @@ Al crear un usuario en `auth.users`, el trigger `handle_new_user()` crea automá
 - `has_role(uuid, app_role)` — SECURITY DEFINER para uso en políticas RLS
 - `has_course_access(_user_id, _course_id)` — devuelve `boolean`; consulta `enrollments`
 - `get_lesson_content(_lesson_id)` — devuelve datos de la lección con control de acceso (preview gratuito, admin, o matriculado)
+- `toggle_question_vote(_question_id)` — RPC SECURITY DEFINER; alterna voto y actualiza `votes_count` atómicamente
 
 ### Enums
 - `app_role` — `admin`, `student`
@@ -294,7 +337,7 @@ El viewport está fijado en `bottom-right`; los toasts tienen `rounded-[14px]` y
 | `Login` | Funcional | Auth real con Supabase | Spinner Loader2 en botón durante envío |
 | `Registro` | Funcional | Auth real con Supabase | Spinner Loader2 en botón durante envío |
 | `Alumno` (dashboard) | UI completa | **Supabase** | Todos los datos reales: matrículas, progreso, lecciones completadas, cursos completados, racha diaria, tiempo semanal/mensual y grid de actividad (query `student-activity`). Empty state motivacional + error state con reintentar. |
-| `AlumnoCurso` (reproductor) | UI completa | **Supabase** | Lecciones, progreso, control de acceso por matrícula; Q&A y notas son locales (no persistidos) |
+| `AlumnoCurso` (reproductor) | UI completa | **Supabase** | Lecciones, progreso, control de acceso por matrícula; Q&A y notas persistidos en BD (`lesson_questions`, `lesson_answers`, `lesson_notes`) |
 | `Admin` (dashboard) | UI completa | Mock | Métricas y tabla hardcodeadas; pendiente conectar a BD. Menú hamburguesa en móvil. |
 | `NotFound` (404) | Completa | — | Layout split con ilustración 3D de artista en pánico |
 
@@ -312,8 +355,8 @@ El viewport está fijado en `bottom-right`; los toasts tienen `rounded-[14px]` y
 | Revocación de acceso | Parcial | Columna `revoked_at` existe; falta UI admin para usarla |
 | Certificado de finalización | Pendiente | Tabla `certificates` + lógica de detección de curso completado + generación PDF |
 | Racha y actividad reciente del alumno | **Completado** | `Alumno.tsx` calcula racha, tiempo y grid de actividad desde `lesson_progress` |
-| Q&A en reproductor de lecciones | Pendiente | `AlumnoCurso.tsx` tiene UI pero no persiste preguntas/respuestas |
-| Notas en reproductor | Pendiente | `AlumnoCurso.tsx` tiene UI pero guarda en estado local, no en BD |
+| Q&A en reproductor de lecciones | **Completado** | `AlumnoCurso.tsx` lee/escribe `lesson_questions` y `lesson_answers`; votos vía `toggle_question_vote()` |
+| Notas en reproductor | **Completado** | `AlumnoCurso.tsx` upserta en `lesson_notes` con índice único `(user_id, lesson_id)` |
 | Panel admin con datos reales | Pendiente | `Admin.tsx` completamente mock |
 | CRUD de cursos desde admin | Pendiente | Crear/editar cursos, secciones y lecciones |
 | Gestión de alumnos desde admin | Pendiente | Buscar, ver estado, dar/revocar acceso manual |
@@ -387,5 +430,6 @@ La aplicación se despliega en **Vercel**. El archivo `vercel.json` en la raíz 
 - Los datos en `Admin.tsx` son completamente mock.
 - `courses.ts` actúa como fallback cuando faltan datos en Supabase; no eliminar hasta que la BD tenga todos los cursos completos.
 - Los estados vacíos y de error están implementados en `Cursos.tsx` y `Alumno.tsx`; la carga del formulario (Loader2) en `Login.tsx` y `Registro.tsx`. Las 4 queries de `Alumno.tsx` (enrollments, courses, lessons, progress) lanzan el error en lugar de ignorarlo, lo que permite que React Query active el error state correctamente.
+- `Login.tsx` y `Registro.tsx` usan las variantes de toast tipadas (`success`, `info`, `warning`, `destructive`) del sistema de notificaciones rediseñado. Las 4 queries de `Alumno.tsx` (enrollments, courses, lessons, progress) lanzan el error en lugar de ignorarlo, lo que permite que React Query active el error state correctamente.
 - `Login.tsx` y `Registro.tsx` usan las variantes de toast tipadas (`success`, `info`, `warning`, `destructive`) del sistema de notificaciones rediseñado.
 - `design-system.html` sirve como referencia de diseño; no está servido por la app React.

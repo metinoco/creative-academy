@@ -59,40 +59,35 @@ interface LessonContent {
   is_free_preview: boolean;
 }
 
-/* ─── mock Q&A (until backend is ready) ─────────────────── */
-interface QAEntry {
-  id: number;
-  author: string;
-  avatar: string;
-  time: string;
-  question: string;
-  answer: string | null;
-  likes: number;
-  liked: boolean;
+interface QAAnswer {
+  id: string;
+  body: string;
+  is_instructor_answer: boolean;
+  created_at: string;
+  profiles: { full_name: string | null; avatar_url: string | null } | null;
 }
 
-const INITIAL_QA: QAEntry[] = [
-  {
-    id: 1,
-    author: "Sara M.",
-    avatar: "https://i.pravatar.cc/40?img=47",
-    time: "hace 3 días",
-    question: "¿En qué herramienta recomiendas practicar los ejercicios de esta lección?",
-    answer: "Puedes usar Figma, Illustrator o incluso papel y lápiz. Lo importante es interiorizar el proceso, la herramienta es secundaria.",
-    likes: 14,
-    liked: false,
-  },
-  {
-    id: 2,
-    author: "Carlos R.",
-    avatar: "https://i.pravatar.cc/40?img=12",
-    time: "hace 1 semana",
-    question: "¿Existe alguna diferencia práctica entre los métodos que se ven aquí y los que usarías en proyectos reales de cliente?",
-    answer: null,
-    likes: 7,
-    liked: false,
-  },
-];
+interface QAQuestion {
+  id: string;
+  body: string;
+  votes_count: number;
+  created_at: string;
+  my_voted: boolean;
+  profiles: { full_name: string | null; avatar_url: string | null } | null;
+  lesson_answers: QAAnswer[];
+}
+
+/* ─── helpers ────────────────────────────────────────────── */
+function relativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return "ahora";
+  if (m < 60) return `hace ${m} min`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `hace ${h}h`;
+  const d = Math.floor(h / 24);
+  return `hace ${d} día${d !== 1 ? "s" : ""}`;
+}
 
 /* ─── component ─────────────────────────────────────────── */
 const AlumnoCurso = () => {
@@ -104,7 +99,7 @@ const AlumnoCurso = () => {
   const [openSections, setOpenSections] = useState<Set<string>>(new Set());
   const [notes, setNotes] = useState("");
   const [notesSaved, setNotesSaved] = useState(false);
-  const [qaList, setQaList] = useState<QAEntry[]>(INITIAL_QA);
+  const [notesSaving, setNotesSaving] = useState(false);
   const [newQuestion, setNewQuestion] = useState("");
   const notesTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -186,6 +181,61 @@ const AlumnoCurso = () => {
     enabled: !!activeLessonId,
   });
 
+  /* ── notes query ── */
+  const { data: noteData } = useQuery({
+    queryKey: ["lesson-note", user?.id, activeLessonId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("lesson_notes")
+        .select("id, body")
+        .eq("user_id", user!.id)
+        .eq("lesson_id", activeLessonId!)
+        .maybeSingle();
+      return data as { id: string; body: string } | null;
+    },
+    enabled: !!user?.id && !!activeLessonId,
+  });
+
+  /* ── Q&A query ── */
+  const { data: qaList = [] } = useQuery({
+    queryKey: ["lesson-qa", activeLessonId, user?.id],
+    queryFn: async () => {
+      const { data: questions, error } = await supabase
+        .from("lesson_questions")
+        .select(`
+          id, body, votes_count, created_at,
+          profiles(full_name, avatar_url),
+          lesson_answers(id, body, is_instructor_answer, created_at, profiles(full_name, avatar_url))
+        `)
+        .eq("lesson_id", activeLessonId!)
+        .order("created_at");
+      if (error) throw error;
+
+      const ids = (questions ?? []).map((q) => q.id);
+      let voted = new Set<string>();
+      if (ids.length > 0) {
+        const { data: votes } = await supabase
+          .from("lesson_question_votes")
+          .select("question_id")
+          .in("question_id", ids)
+          .eq("user_id", user!.id);
+        voted = new Set((votes ?? []).map((v) => v.question_id));
+      }
+
+      return (questions ?? []).map((q) => ({
+        ...q,
+        my_voted: voted.has(q.id),
+        profiles: q.profiles as QAQuestion["profiles"],
+        lesson_answers: (q.lesson_answers ?? []).map((a) => ({
+          ...a,
+          profiles: a.profiles as QAAnswer["profiles"],
+        })) as QAAnswer[],
+      })) as QAQuestion[];
+    },
+    enabled: !!activeLessonId && !!enrollment && !!user?.id,
+  });
+
+  /* ── mutations ── */
   const markComplete = useMutation({
     mutationFn: async (lessonId: string) => {
       const { error } = await supabase.from("lesson_progress").insert({
@@ -199,6 +249,55 @@ const AlumnoCurso = () => {
       queryClient.invalidateQueries({
         queryKey: ["lesson-progress", user?.id, course?.id],
       });
+    },
+  });
+
+  const saveNote = useMutation({
+    mutationFn: async (body: string) => {
+      const { error } = await supabase
+        .from("lesson_notes")
+        .upsert(
+          { user_id: user!.id, lesson_id: activeLessonId!, body },
+          { onConflict: "user_id,lesson_id" }
+        );
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setNotesSaving(false);
+      setNotesSaved(true);
+      queryClient.invalidateQueries({ queryKey: ["lesson-note", user?.id, activeLessonId] });
+    },
+    onError: () => {
+      setNotesSaving(false);
+    },
+  });
+
+  const postQuestion = useMutation({
+    mutationFn: async (body: string) => {
+      const { error } = await supabase.from("lesson_questions").insert({
+        user_id: user!.id,
+        lesson_id: activeLessonId!,
+        course_id: course!.id,
+        body,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setNewQuestion("");
+      queryClient.invalidateQueries({ queryKey: ["lesson-qa", activeLessonId, user?.id] });
+    },
+  });
+
+  const toggleVote = useMutation({
+    mutationFn: async (questionId: string) => {
+      const { data, error } = await supabase.rpc("toggle_question_vote", {
+        p_question_id: questionId,
+      });
+      if (error) throw error;
+      return data as { voted: boolean; votes_count: number };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["lesson-qa", activeLessonId, user?.id] });
     },
   });
 
@@ -225,7 +324,6 @@ const AlumnoCurso = () => {
     }
   }, [sections, activeLessonId]);
 
-  // Open section of active lesson automatically
   useEffect(() => {
     if (!activeLesson || !sections) return;
     setOpenSections((prev) => {
@@ -234,6 +332,13 @@ const AlumnoCurso = () => {
       return next;
     });
   }, [activeLesson, sections]);
+
+  // Sync local notes state when navigating to a different lesson
+  useEffect(() => {
+    setNotes(noteData?.body ?? "");
+    setNotesSaved(false);
+    setNotesSaving(false);
+  }, [noteData]);
 
   /* ── handlers ── */
   const toggleSection = (sectionId: string) => {
@@ -247,34 +352,17 @@ const AlumnoCurso = () => {
   const handleNotesChange = (val: string) => {
     setNotes(val);
     setNotesSaved(false);
+    setNotesSaving(false);
     if (notesTimer.current) clearTimeout(notesTimer.current);
-    notesTimer.current = setTimeout(() => setNotesSaved(true), 1200);
-  };
-
-  const handleLike = (id: number) => {
-    setQaList((prev) =>
-      prev.map((q) =>
-        q.id === id ? { ...q, liked: !q.liked, likes: q.liked ? q.likes - 1 : q.likes + 1 } : q
-      )
-    );
+    notesTimer.current = setTimeout(() => {
+      setNotesSaving(true);
+      saveNote.mutate(val);
+    }, 1500);
   };
 
   const handleAskQuestion = () => {
-    if (!newQuestion.trim()) return;
-    setQaList((prev) => [
-      {
-        id: Date.now(),
-        author: "Tú",
-        avatar: "https://i.pravatar.cc/40?img=5",
-        time: "ahora",
-        question: newQuestion.trim(),
-        answer: null,
-        likes: 0,
-        liked: false,
-      },
-      ...prev,
-    ]);
-    setNewQuestion("");
+    if (!newQuestion.trim() || postQuestion.isPending) return;
+    postQuestion.mutate(newQuestion.trim());
   };
 
   /* ── video renderer ── */
@@ -372,7 +460,6 @@ const AlumnoCurso = () => {
 
   if (!course) return <Navigate to="/cursos" replace />;
 
-  // Usuarios sin matrícula pueden ver lecciones marcadas como preview gratuito
   const canWatch = (lesson: Lesson | null): boolean =>
     !!enrollment || (lesson?.is_free_preview ?? false);
 
@@ -421,7 +508,6 @@ const AlumnoCurso = () => {
 
         {/* ── SIDEBAR ──────────────────────────────────────── */}
         <aside className="w-72 shrink-0 border-r border-ink-foreground/10 overflow-y-auto hidden md:flex flex-col bg-ink text-ink-foreground">
-          {/* Sidebar header */}
           <div className="p-4 border-b border-ink-foreground/10 shrink-0">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
@@ -442,7 +528,6 @@ const AlumnoCurso = () => {
             </div>
           </div>
 
-          {/* Certificate button when complete */}
           {isCourseComplete && (
             <div className="mx-4 mt-4 p-3 rounded-2xl bg-secondary/10 border border-secondary/20">
               <div className="flex items-center gap-2 mb-2">
@@ -456,7 +541,6 @@ const AlumnoCurso = () => {
             </div>
           )}
 
-          {/* Sections list */}
           <div className="p-3 space-y-1 flex-1">
             {(sections ?? []).map((section, sIdx) => {
               const isOpen = openSections.has(section.id);
@@ -534,10 +618,8 @@ const AlumnoCurso = () => {
         <main className="flex-1 overflow-y-auto bg-background">
           <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-6">
 
-            {/* VIDEO PLAYER */}
             {renderPlayer()}
 
-            {/* LESSON META + COMPLETE BUTTON */}
             {activeLesson && (
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="min-w-0">
@@ -585,7 +667,7 @@ const AlumnoCurso = () => {
               </div>
             )}
 
-            {/* PREV / NEXT NAVIGATION */}
+            {/* PREV / NEXT */}
             <div className="flex items-center justify-between gap-3 py-2 border-t border-b border-border">
               <button
                 onClick={() => prevLesson && setActiveLessonId(prevLesson.id)}
@@ -624,7 +706,7 @@ const AlumnoCurso = () => {
               </button>
             </div>
 
-            {/* CERTIFICATE BANNER — visible when course is complete */}
+            {/* CERTIFICATE BANNER */}
             {isCourseComplete && (
               <div className="rounded-[1.5rem] bg-secondary/20 border-2 border-secondary/40 p-6 flex flex-col sm:flex-row items-center gap-5">
                 <div className="w-16 h-16 rounded-2xl bg-secondary grid place-items-center shrink-0">
@@ -667,9 +749,11 @@ const AlumnoCurso = () => {
                 >
                   <MessageCircle className="w-3.5 h-3.5" />
                   Preguntas
-                  <span className="ml-1 px-1.5 py-0.5 rounded-full bg-muted-foreground/20 text-[10px] tabular-nums">
-                    {qaList.length}
-                  </span>
+                  {qaList.length > 0 && (
+                    <span className="ml-1 px-1.5 py-0.5 rounded-full bg-muted-foreground/20 text-[10px] tabular-nums">
+                      {qaList.length}
+                    </span>
+                  )}
                 </TabsTrigger>
               </TabsList>
 
@@ -695,7 +779,13 @@ const AlumnoCurso = () => {
                     <p className="text-xs text-muted-foreground">
                       Tus notas de esta lección. Solo tú las puedes ver.
                     </p>
-                    {notesSaved && notes.length > 0 && (
+                    {notesSaving && (
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-pulse inline-block" />
+                        Guardando…
+                      </span>
+                    )}
+                    {notesSaved && !notesSaving && notes.length > 0 && (
                       <span className="text-xs text-green-600 flex items-center gap-1">
                         <CheckCircle className="w-3 h-3" /> Guardado
                       </span>
@@ -708,94 +798,129 @@ const AlumnoCurso = () => {
                     className="min-h-[200px] bg-background border-border text-foreground placeholder:text-muted-foreground resize-none rounded-2xl focus-visible:ring-primary text-sm leading-relaxed"
                   />
                   <p className="text-[10px] text-muted-foreground/60">
-                    Las notas se guardan automáticamente en tu dispositivo.
+                    Las notas se guardan automáticamente en la nube.
                   </p>
                 </div>
               </TabsContent>
 
               {/* TAB: Q&A */}
               <TabsContent value="qa" className="mt-4 space-y-5">
-                {/* Ask a question */}
-                <div className="bg-muted/50 border border-border rounded-2xl p-4 space-y-3">
-                  <p className="text-xs font-black uppercase tracking-widest text-primary">
-                    Hacer una pregunta
-                  </p>
-                  <Textarea
-                    value={newQuestion}
-                    onChange={(e) => setNewQuestion(e.target.value)}
-                    placeholder="¿Tienes alguna duda sobre esta lección? La comunidad te responderá…"
-                    className="min-h-[100px] bg-background border-border text-foreground placeholder:text-muted-foreground resize-none rounded-xl focus-visible:ring-primary text-sm"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleAskQuestion();
-                    }}
-                  />
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-muted-foreground/60">Ctrl+Enter para enviar</span>
-                    <button
-                      onClick={handleAskQuestion}
-                      disabled={!newQuestion.trim()}
-                      className="flex items-center gap-2 px-5 py-2 rounded-full bg-primary text-primary-foreground text-xs font-bold hover:bg-primary-glow transition disabled:opacity-40"
-                    >
-                      <Send className="w-3.5 h-3.5" />
-                      Publicar pregunta
-                    </button>
+                {!enrollment ? (
+                  <div className="text-center py-10 bg-muted/50 rounded-2xl border border-border">
+                    <MessageCircle className="w-10 h-10 mx-auto mb-3 opacity-30 text-foreground" />
+                    <p className="text-sm text-muted-foreground">Inscríbete al curso para acceder al foro de preguntas.</p>
                   </div>
-                </div>
-
-                {/* Q&A list */}
-                <div className="space-y-4">
-                  {qaList.length === 0 && (
-                    <div className="text-center py-10 text-muted-foreground">
-                      <MessageCircle className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                      <p className="text-sm">Todavía no hay preguntas. ¡Sé el primero!</p>
-                    </div>
-                  )}
-
-                  {qaList.map((qa) => (
-                    <div key={qa.id} className="space-y-3">
-                      {/* Question */}
-                      <div className="flex gap-3">
-                        <img
-                          src={qa.avatar}
-                          alt={qa.author}
-                          className="w-9 h-9 rounded-full object-cover shrink-0 ring-2 ring-border"
-                        />
-                        <div className="flex-1 bg-muted/60 border border-border rounded-2xl rounded-tl-none p-4">
-                          <div className="flex items-center justify-between gap-2 mb-2">
-                            <span className="text-sm font-bold text-foreground">{qa.author}</span>
-                            <span className="text-[10px] text-muted-foreground">{qa.time}</span>
-                          </div>
-                          <p className="text-sm text-foreground/80 leading-relaxed">{qa.question}</p>
-                          <button
-                            onClick={() => handleLike(qa.id)}
-                            className={`mt-3 flex items-center gap-1.5 text-xs transition ${
-                              qa.liked ? "text-primary font-bold" : "text-muted-foreground hover:text-foreground"
-                            }`}
-                          >
-                            <ThumbsUp className="w-3.5 h-3.5" />
-                            {qa.likes} útil{qa.likes !== 1 ? "es" : ""}
-                          </button>
-                        </div>
+                ) : (
+                  <>
+                    {/* Ask a question */}
+                    <div className="bg-muted/50 border border-border rounded-2xl p-4 space-y-3">
+                      <p className="text-xs font-black uppercase tracking-widest text-primary">
+                        Hacer una pregunta
+                      </p>
+                      <Textarea
+                        value={newQuestion}
+                        onChange={(e) => setNewQuestion(e.target.value)}
+                        placeholder="¿Tienes alguna duda sobre esta lección? La comunidad te responderá…"
+                        className="min-h-[100px] bg-background border-border text-foreground placeholder:text-muted-foreground resize-none rounded-xl focus-visible:ring-primary text-sm"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleAskQuestion();
+                        }}
+                      />
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-muted-foreground/60">Ctrl+Enter para enviar</span>
+                        <button
+                          onClick={handleAskQuestion}
+                          disabled={!newQuestion.trim() || postQuestion.isPending}
+                          className="flex items-center gap-2 px-5 py-2 rounded-full bg-primary text-primary-foreground text-xs font-bold hover:bg-primary-glow transition disabled:opacity-40"
+                        >
+                          <Send className="w-3.5 h-3.5" />
+                          {postQuestion.isPending ? "Publicando…" : "Publicar pregunta"}
+                        </button>
                       </div>
+                    </div>
 
-                      {/* Answer */}
-                      {qa.answer && (
-                        <div className="flex gap-3 ml-6">
-                          <div className="w-9 h-9 rounded-full bg-primary/20 grid place-items-center shrink-0">
-                            <span className="text-primary text-[10px] font-black">PRO</span>
-                          </div>
-                          <div className="flex-1 bg-primary/5 border border-primary/20 rounded-2xl rounded-tl-none p-4">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-sm font-bold text-primary">Instructor</span>
-                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/20 text-primary font-bold">Verificado</span>
-                            </div>
-                            <p className="text-sm text-foreground/80 leading-relaxed">{qa.answer}</p>
-                          </div>
+                    {/* Q&A list */}
+                    <div className="space-y-4">
+                      {qaList.length === 0 && (
+                        <div className="text-center py-10 text-muted-foreground">
+                          <MessageCircle className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                          <p className="text-sm">Todavía no hay preguntas. ¡Sé el primero!</p>
                         </div>
                       )}
+
+                      {qaList.map((qa) => (
+                        <div key={qa.id} className="space-y-3">
+                          {/* Question */}
+                          <div className="flex gap-3">
+                            {qa.profiles?.avatar_url ? (
+                              <img
+                                src={qa.profiles.avatar_url}
+                                alt={qa.profiles.full_name ?? "Usuario"}
+                                className="w-9 h-9 rounded-full object-cover shrink-0 ring-2 ring-border"
+                              />
+                            ) : (
+                              <div className="w-9 h-9 rounded-full bg-primary/20 grid place-items-center shrink-0 ring-2 ring-border">
+                                <span className="text-primary text-xs font-black">
+                                  {(qa.profiles?.full_name ?? "U")[0].toUpperCase()}
+                                </span>
+                              </div>
+                            )}
+                            <div className="flex-1 bg-muted/60 border border-border rounded-2xl rounded-tl-none p-4">
+                              <div className="flex items-center justify-between gap-2 mb-2">
+                                <span className="text-sm font-bold text-foreground">
+                                  {qa.profiles?.full_name ?? "Alumno"}
+                                </span>
+                                <span className="text-[10px] text-muted-foreground">
+                                  {relativeTime(qa.created_at)}
+                                </span>
+                              </div>
+                              <p className="text-sm text-foreground/80 leading-relaxed">{qa.body}</p>
+                              <button
+                                onClick={() => toggleVote.mutate(qa.id)}
+                                disabled={toggleVote.isPending}
+                                className={`mt-3 flex items-center gap-1.5 text-xs transition disabled:opacity-50 ${
+                                  qa.my_voted ? "text-primary font-bold" : "text-muted-foreground hover:text-foreground"
+                                }`}
+                              >
+                                <ThumbsUp className="w-3.5 h-3.5" />
+                                {qa.votes_count} útil{qa.votes_count !== 1 ? "es" : ""}
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Answers */}
+                          {qa.lesson_answers.map((ans) => (
+                            <div key={ans.id} className="flex gap-3 ml-6">
+                              <div className="w-9 h-9 rounded-full bg-primary/20 grid place-items-center shrink-0">
+                                <span className="text-primary text-[10px] font-black">
+                                  {ans.is_instructor_answer ? "PRO" : (ans.profiles?.full_name ?? "A")[0].toUpperCase()}
+                                </span>
+                              </div>
+                              <div className={`flex-1 rounded-2xl rounded-tl-none p-4 ${
+                                ans.is_instructor_answer
+                                  ? "bg-primary/5 border border-primary/20"
+                                  : "bg-muted/60 border border-border"
+                              }`}>
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className={`text-sm font-bold ${ans.is_instructor_answer ? "text-primary" : "text-foreground"}`}>
+                                    {ans.is_instructor_answer ? "Instructor" : (ans.profiles?.full_name ?? "Alumno")}
+                                  </span>
+                                  {ans.is_instructor_answer && (
+                                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/20 text-primary font-bold">Verificado</span>
+                                  )}
+                                  <span className="text-[10px] text-muted-foreground ml-auto">
+                                    {relativeTime(ans.created_at)}
+                                  </span>
+                                </div>
+                                <p className="text-sm text-foreground/80 leading-relaxed">{ans.body}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </>
+                )}
               </TabsContent>
             </Tabs>
 

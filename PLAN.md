@@ -18,6 +18,7 @@
 | Datos reales en landing | ████████████ 100 % |
 | Datos reales en reproductor | ████████████ 100 % |
 | Datos reales en dashboard alumno | ████████████ 100 % |
+| Q&A y Notas en reproductor | ████████████ 100 % |
 | Datos reales en panel admin | ░░░░░░░░░░░░ 0 % |
 | Sistema de pagos | ░░░░░░░░░░░░ 0 % |
 | Certificados | ░░░░░░░░░░░░ 0 % |
@@ -76,7 +77,7 @@
 | `Admin.tsx` | Todas las métricas y tabla de ventas | Pendiente conectar a BD |
 | `Curso.tsx` | Metadatos visuales (imagen, bio, "aprenderás") | `courses.ts` como fuente; parcialmente enriquecido con Supabase |
 | `Profesores.tsx` | Todo | Derivado de `courses.ts`; Supabase no tiene tabla de instructores |
-| `AlumnoCurso.tsx` | Q&A y Notas | UI presente, sin persistencia en BD |
+| `AlumnoCurso.tsx` | Q&A y Notas | **Completado** — persistentes en Supabase |
 
 ---
 
@@ -103,20 +104,8 @@ Query `student-activity` en `Alumno.tsx`: lee `lesson_progress` + `lessons` (dur
 
 ---
 
-### 1.4 Q&A y Notas persistentes en el reproductor
-**Archivos:** `src/pages/AlumnoCurso.tsx`  
-**Qué hacer (Q&A):**
-- Crear tabla `lesson_questions` (`id`, `user_id`, `lesson_id`, `body`, `created_at`)
-- Crear tabla `lesson_answers` (`id`, `question_id`, `user_id`, `body`, `created_at`)
-- Migración SQL + RLS (alumno ve preguntas del curso en el que está matriculado; admin ve todo)
-- Sustituir `INITIAL_QA` mock por query real
-
-**Qué hacer (Notas):**
-- Crear tabla `lesson_notes` (`id`, `user_id`, `lesson_id`, `body`, `updated_at`)
-- Migración + RLS (usuario solo ve sus propias notas)
-- Sustituir estado local por mutación Supabase
-
-**Complejidad:** Media (3–5 horas)
+### ~~1.4 Q&A y Notas persistentes en el reproductor~~ ✅ COMPLETADO
+Migración `20260530120000_qa-and-notes.sql`: tablas `lesson_notes`, `lesson_questions`, `lesson_answers`, `lesson_question_votes` + RPC `toggle_question_vote`. RLS en todas: notas privadas por usuario; Q&A restringido a alumnos matriculados vía `has_course_access`; admins gestionan todo. `AlumnoCurso.tsx` sustituye el mock `INITIAL_QA` y el estado local de notas por queries y mutations reales con React Query. Notas con debounce upsert + feedback "Guardando…" / "Guardado". Votos con toggle atómico en servidor. Answers soportan flag `is_instructor_answer` con badge "Verificado".
 
 ---
 

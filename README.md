@@ -111,7 +111,7 @@ Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se control
 | Detalle curso (`/curso/:id`) | Híbrido | Metadatos de `courses.ts`; matrículas y previews desde Supabase; skeleton en CTAs |
 | Profesores (`/profesores`) | Estático | Derivado de `courses.ts`; avatares con pravatar |
 | Dashboard alumno (`/alumno`) | **Supabase** | Todos los datos reales: progreso, racha diaria, tiempo semanal/mensual, grid de actividad; empty + error state implementados |
-| Reproductor (`/alumno/curso/:slug`) | Supabase | Acceso controlado por matrícula; Q&A y notas sin persistencia |
+| Reproductor (`/alumno/curso/:slug`) | Supabase | Acceso controlado por matrícula; Q&A y notas persistidos en BD |
 | Admin (`/admin`) | Mock | UI completa + menú hamburguesa móvil; pendiente conectar a BD |
 | 404 | — | Diseño split con ilustración 3D |
 
@@ -124,7 +124,7 @@ Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se control
 | ~~1.1~~ | ~~Racha y actividad reciente del alumno~~ | ✅ Completado |
 | ~~1.2~~ | ~~Landing conectada a Supabase~~ | ✅ Completado |
 | 1.3 | Panel admin con datos reales | Media (4–6 h) |
-| 1.4 | Q&A y Notas persistentes en el reproductor | Media (3–5 h) |
+| ~~1.4~~ | ~~Q&A y Notas persistentes en el reproductor~~ | ✅ Completado |
 | 1.5 | Integración de pagos con Stripe | Alta (1–2 días) |
 | 1.6 | Certificados de finalización | Alta (2–3 días) |
 | 1.7 | Migración de ~2.400 alumnos existentes | Alta (1–2 días) |
