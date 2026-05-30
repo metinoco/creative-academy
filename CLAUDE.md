@@ -72,7 +72,7 @@ public/
 └── favicon.svg              # Favicon SVG derivado del logo de marca
 
 supabase/
-└── migrations/              # 4 archivos SQL (schema completo + seed de secciones/lecciones)
+└── migrations/              # 5 archivos SQL (schema completo + seed de 16 cursos con secciones/lecciones)
 
 vercel.json                  # Rewrite catch-all → /index.html (necesario para React Router en Vercel)
 ```

@@ -57,8 +57,8 @@
 - [x] Funciones: `has_role()`, `has_course_access()`, `get_lesson_content()`
 - [x] Triggers: `handle_new_user()`, `touch_updated_at()`
 - [x] RLS en todas las tablas (anon, student, admin)
-- [x] Seed con 16 cursos, secciones y lecciones
-- [x] 4 migraciones en `supabase/migrations/`
+- [x] Seed con 16 cursos, secciones y lecciones — todos los cursos tienen conteos sincronizados con `courses.ts` (22–58 lecciones por curso)
+- [x] 5 migraciones en `supabase/migrations/`
 
 ### Datos reales conectados
 - [x] `Cursos.tsx` — lee de tabla `courses` (status=published)
@@ -231,7 +231,7 @@
 | Dashboard alumno | `src/pages/Alumno.tsx` |
 | Reproductor | `src/pages/AlumnoCurso.tsx` |
 | Panel admin | `src/pages/Admin.tsx` |
-| Schema BD | `supabase/migrations/` (4 archivos) |
+| Schema BD | `supabase/migrations/` (5 archivos) |
 | Edge Functions | `supabase/functions/` (aún no creadas) |
 | Tipos Supabase | `src/integrations/supabase/types.ts` |
 | Datos estáticos | `src/data/courses.ts` |
