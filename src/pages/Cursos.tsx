@@ -113,7 +113,7 @@ const Cursos = () => {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar curso o profesor..."
-              className="w-full bg-ink-foreground/10 placeholder:text-ink-foreground/50 text-ink-foreground rounded-full pl-11 pr-4 py-3 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full bg-ink-foreground/10 placeholder:text-ink-foreground/50 text-ink-foreground rounded-full pl-11 pr-4 py-3 text-sm border border-transparent transition-[border-color,box-shadow] focus:outline-none focus:border-primary focus:shadow-[0_0_0_3px_hsl(14_78%_52%/0.12)]"
             />
           </div>
 

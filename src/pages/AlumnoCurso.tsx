@@ -795,7 +795,7 @@ const AlumnoCurso = () => {
                     value={notes}
                     onChange={(e) => handleNotesChange(e.target.value)}
                     placeholder="Escribe aquí tus apuntes, ideas o lo que quieras recordar de esta lección…"
-                    className="min-h-[200px] bg-background border-border text-foreground placeholder:text-muted-foreground resize-none rounded-2xl focus-visible:ring-primary text-sm leading-relaxed"
+                    className="min-h-[200px] bg-background border-border text-foreground placeholder:text-muted-foreground resize-none rounded-2xl text-sm leading-relaxed"
                   />
                   <p className="text-[10px] text-muted-foreground/60">
                     Las notas se guardan automáticamente en la nube.
@@ -821,7 +821,7 @@ const AlumnoCurso = () => {
                         value={newQuestion}
                         onChange={(e) => setNewQuestion(e.target.value)}
                         placeholder="¿Tienes alguna duda sobre esta lección? La comunidad te responderá…"
-                        className="min-h-[100px] bg-background border-border text-foreground placeholder:text-muted-foreground resize-none rounded-xl focus-visible:ring-primary text-sm"
+                        className="min-h-[100px] bg-background border-border text-foreground placeholder:text-muted-foreground resize-none rounded-xl text-sm"
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleAskQuestion();
                         }}

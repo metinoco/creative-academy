@@ -84,7 +84,7 @@ const Registro = () => {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Carlos Ramírez"
-                className="w-full bg-surface border-2 border-border focus:border-ink rounded-2xl px-5 py-4 text-sm transition outline-none"
+                className="w-full bg-surface border-2 border-border focus:border-primary focus:shadow-[0_0_0_3px_hsl(14_78%_52%/0.12)] rounded-2xl px-5 py-4 text-sm transition outline-none"
               />
             </div>
             <div>
@@ -95,7 +95,7 @@ const Registro = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="tu@email.com"
-                className="w-full bg-surface border-2 border-border focus:border-ink rounded-2xl px-5 py-4 text-sm transition outline-none"
+                className="w-full bg-surface border-2 border-border focus:border-primary focus:shadow-[0_0_0_3px_hsl(14_78%_52%/0.12)] rounded-2xl px-5 py-4 text-sm transition outline-none"
               />
             </div>
             <div>
@@ -107,7 +107,7 @@ const Registro = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Mínimo 6 caracteres"
-                className="w-full bg-surface border-2 border-border focus:border-ink rounded-2xl px-5 py-4 text-sm transition outline-none"
+                className="w-full bg-surface border-2 border-border focus:border-primary focus:shadow-[0_0_0_3px_hsl(14_78%_52%/0.12)] rounded-2xl px-5 py-4 text-sm transition outline-none"
               />
             </div>
 
