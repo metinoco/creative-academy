@@ -1,104 +1,190 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { LayoutDashboard, BookOpen, Users, CreditCard, Settings, BarChart3, Search, Bell, Plus, MoreHorizontal, ArrowUp, ArrowDown, Eye, Pencil, TrendingUp, LogOut, Menu } from "lucide-react";
-import { courses } from "@/data/courses";
+import { useNavigate } from "react-router-dom";
+import {
+  LayoutDashboard, BookOpen, Users, CreditCard, BarChart3,
+  Settings, Bell, Plus, LogOut, Menu, Lock,
+} from "lucide-react";
 import lauraImg from "@/assets/avatar-laura.jpg";
 import Logo from "@/components/Logo";
 import { useAuth } from "@/context/AuthContext";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import AdminDashboard from "@/components/admin/AdminDashboard";
+import AdminCursos from "@/components/admin/AdminCursos";
+import AdminAlumnos from "@/components/admin/AdminAlumnos";
+import AdminVentas from "@/components/admin/AdminVentas";
 
-/**
- * Admin — paleta VIBRANTE alternativa al portal:
- *  - Fondo: blanco puro (panel limpio)
- *  - Sidebar: índigo profundo
- *  - Acentos: magenta eléctrico, violeta, turquesa, lima
- */
+// ── Design-system "Warm Ink" tokens ────────────────────────────────────────
+const ADMIN_BG      = "bg-white";
+const ADMIN_SURFACE = "bg-[hsl(38_40%_96%)]";
+const ADMIN_BORDER  = "border-[hsl(30_20%_84%)]";
 
-const ADMIN_BG = "bg-white";
-const ADMIN_SURFACE = "bg-[hsl(250_30%_96%)]";
-const ADMIN_CARD = "bg-white";
-const ADMIN_BORDER = "border-[hsl(250_20%_90%)]";
-const SIDEBAR_BG = "bg-[hsl(250_60%_14%)]";
-const SIDEBAR_FG = "text-[hsl(250_30%_94%)]";
-const SIDEBAR_ACCENT = "bg-[hsl(250_50%_22%)]";
-const HONEY = "bg-[hsl(326_85%_55%)]"; // magenta vibrante
-const HONEY_TXT = "text-[hsl(326_85%_50%)]";
-const CLAY = "bg-[hsl(265_82%_58%)]"; // violeta eléctrico
-const MOSS = "bg-[hsl(172_75%_42%)]"; // turquesa
+// Sidebar — uses the DS --ink palette instead of the old indigo palette
+const SIDEBAR_BG    = "bg-[hsl(24_25%_12%)]";
+const SIDEBAR_FG    = "text-[hsl(38_50%_98%)]";
 
-const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", active: true },
-  { icon: BookOpen, label: "Cursos" },
-  { icon: Users, label: "Alumnos" },
-  { icon: CreditCard, label: "Ventas" },
-  { icon: BarChart3, label: "Métricas" },
-  { icon: Settings, label: "Ajustes" },
+// Primary / CTA — terracota (DS --primary)
+const PRIMARY     = "bg-[hsl(14_78%_52%)]";
+const PRIMARY_TXT = "text-[hsl(14_78%_52%)]";
+
+type Section = "dashboard" | "cursos" | "alumnos" | "ventas" | "metricas" | "ajustes";
+
+const navItems: { icon: React.ElementType; label: string; id: Section; locked?: boolean }[] = [
+  { icon: LayoutDashboard, label: "Dashboard",  id: "dashboard" },
+  { icon: BarChart3,       label: "Métricas",   id: "metricas", locked: true },
+  { icon: BookOpen,        label: "Cursos",      id: "cursos" },
+  { icon: Users,           label: "Alumnos",     id: "alumnos" },
+  { icon: CreditCard,      label: "Ventas",      id: "ventas" },
+  { icon: Settings,        label: "Ajustes",     id: "ajustes", locked: true },
 ];
 
-const stats = [
-  { label: "Ingresos del mes", value: "18.420€", change: "+12,4%", up: true, accent: HONEY },
-  { label: "Nuevos alumnos", value: "284", change: "+8,2%", up: true, accent: CLAY },
-  { label: "Tasa de conversión", value: "4,8%", change: "-0,3%", up: false, accent: MOSS },
-  { label: "Cursos activos", value: "16", change: "+2", up: true, accent: HONEY },
+// Nav grouped like Proposal 1
+const navGroups: { label: string; ids: Section[] }[] = [
+  { label: "Visión general", ids: ["dashboard", "metricas"] },
+  { label: "Contenido",      ids: ["cursos"] },
+  { label: "Comunidad",      ids: ["alumnos", "ventas"] },
 ];
+const navBottom: Section[] = ["ajustes"];
 
-const recentSales = [
-  { name: "Marta Reyes", email: "marta@studio.es", course: "Marca magnética", amount: 197, date: "Hace 2 min" },
-  { name: "Diego Aranda", email: "diego.a@gmail.com", course: "Movimiento y color", amount: 297, date: "Hace 18 min" },
-  { name: "Lucía Bermejo", email: "lucia.b@hotmail.com", course: "Trazos en píxel", amount: 147, date: "Hace 1 h" },
-  { name: "Pablo Núñez", email: "pablo.n@me.com", course: "Letras vivas", amount: 97, date: "Hace 2 h" },
-  { name: "Inés Calvo", email: "ines.c@gmail.com", course: "Papel y rejilla", amount: 147, date: "Hace 3 h" },
-];
+const sectionTitles: Record<Section, string> = {
+  dashboard: "Dashboard",
+  cursos:    "Cursos",
+  alumnos:   "Alumnos",
+  ventas:    "Ventas",
+  metricas:  "Métricas",
+  ajustes:   "Ajustes",
+};
+
+function ComingSoonSection({ label }: { label: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-4 py-24 text-center">
+      <div className={`w-16 h-16 rounded-2xl ${ADMIN_SURFACE} flex items-center justify-center`}>
+        <Lock className="w-7 h-7 text-[hsl(24_12%_50%)]" />
+      </div>
+      <div>
+        <div className="font-display text-2xl font-black text-[hsl(24_25%_12%)]">{label}</div>
+        <div className="text-sm text-[hsl(24_12%_50%)] mt-1">Esta sección estará disponible próximamente.</div>
+      </div>
+    </div>
+  );
+}
 
 const Admin = () => {
   const navigate = useNavigate();
   const { signOut, profile } = useAuth();
+  const [activeSection, setActiveSection] = useState<Section>("dashboard");
+  const [sidebarOpen, setSidebarOpen]     = useState(false);
 
   const handleLogout = async () => {
     await signOut();
     navigate("/", { replace: true });
   };
 
-  const displayName = profile?.full_name ?? "Laura Fernández";
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const displayName = profile?.full_name ?? "Laura";
+
+  const handleNav = (id: Section, locked?: boolean, onNavigate?: () => void) => {
+    if (locked) return;
+    setActiveSection(id);
+    onNavigate?.();
+  };
+
+  const NavItem = ({
+    item,
+    onNavigate,
+  }: {
+    item: (typeof navItems)[number];
+    onNavigate?: () => void;
+  }) => {
+    const isActive = item.id === activeSection;
+    return (
+      <button
+        key={item.id}
+        onClick={() => handleNav(item.id, item.locked, onNavigate)}
+        className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-[13px] font-semibold transition border ${
+          item.locked
+            ? "text-[hsl(38_30%_88%/0.30)] cursor-not-allowed border-transparent"
+            : isActive
+              ? "bg-[hsl(14_78%_52%/0.12)] text-[hsl(14_78%_64%)] border-[hsl(14_78%_52%/0.18)]"
+              : "text-[hsl(38_30%_88%/0.6)] hover:bg-[hsl(24_20%_18%)] hover:text-[hsl(38_50%_97%)] border-transparent"
+        }`}
+      >
+        <div
+          className={`w-7 h-7 rounded-[8px] flex items-center justify-center shrink-0 transition ${
+            isActive
+              ? "bg-[hsl(14_78%_52%/0.2)]"
+              : item.locked
+                ? ""
+                : "group-hover:bg-[hsl(24_20%_22%)]"
+          }`}
+        >
+          <item.icon className="w-3.5 h-3.5" />
+        </div>
+        <span className="flex-1 text-left">{item.label}</span>
+        {item.locked && <Lock className="w-3 h-3 opacity-40 shrink-0" />}
+      </button>
+    );
+  };
 
   const SidebarNav = ({ onNavigate }: { onNavigate?: () => void }) => (
     <div className="flex flex-col flex-1 min-h-0">
-      <div className="p-6 shrink-0">
+      {/* Brand */}
+      <div className="px-5 pt-6 pb-4 border-b border-[hsl(24_18%_20%)] shrink-0">
         <Logo variant="ink" size="sm" />
-        <div className="mt-1 ml-12 text-[10px] uppercase tracking-widest text-[hsl(250_30%_94%/0.55)]">Admin</div>
-      </div>
-      <nav className="flex-1 overflow-y-auto px-3 space-y-0.5 min-h-0">
-        {navItems.map((item) => (
-          <button
-            key={item.label}
-            onClick={onNavigate}
-            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition ${
-              item.active
-                ? `${SIDEBAR_ACCENT} text-[hsl(250_30%_94%)]`
-                : `text-[hsl(250_30%_94%/0.65)] hover:${SIDEBAR_ACCENT} hover:text-[hsl(250_30%_94%)]`
-            }`}
-          >
-            <item.icon className="w-4 h-4" />
-            {item.label}
-            {item.active && <span className={`ml-auto w-1.5 h-1.5 rounded-full ${HONEY}`} />}
-          </button>
-        ))}
-      </nav>
-      <div className={`p-4 m-3 rounded-2xl shrink-0 ${SIDEBAR_ACCENT}`}>
-        <div className="flex items-center gap-3">
-          <img src={lauraImg} alt={displayName} loading="lazy" width={40} height={40} className="w-10 h-10 rounded-full object-cover ring-2 ring-[hsl(326_85%_55%)]" />
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium truncate">{displayName}</div>
-            <div className="text-[10px] text-[hsl(250_30%_94%/0.6)] truncate">Owner · admin@</div>
-          </div>
+        <div className="mt-2 inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-[.12em] px-2 py-0.5 rounded-full bg-[hsl(14_78%_52%/0.2)] text-[hsl(38_50%_98%)]">
+          ✦ Admin
         </div>
-        <button
+      </div>
+
+      {/* Grouped nav */}
+      <nav className="flex-1 overflow-y-auto px-3 pt-4 pb-2 space-y-5 min-h-0">
+        {navGroups.map((group) => (
+          <div key={group.label}>
+            <span className="block text-[9px] font-bold uppercase tracking-[.12em] text-[hsl(38_30%_88%/0.35)] px-2.5 mb-1.5">
+              {group.label}
+            </span>
+            <div className="space-y-0.5">
+              {group.ids.map((id) => {
+                const item = navItems.find((n) => n.id === id)!;
+                return <NavItem key={id} item={item} onNavigate={onNavigate} />;
+              })}
+            </div>
+          </div>
+        ))}
+
+        {/* Divider + bottom items */}
+        <div className="h-px bg-[hsl(24_18%_20%)]" />
+        <div className="space-y-0.5">
+          {navBottom.map((id) => {
+            const item = navItems.find((n) => n.id === id)!;
+            return <NavItem key={id} item={item} onNavigate={onNavigate} />;
+          })}
+        </div>
+      </nav>
+
+      {/* User footer */}
+      <div className="p-3 border-t border-[hsl(24_18%_20%)] shrink-0">
+        <div
+          className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[hsl(24_20%_16%)] hover:bg-[hsl(24_20%_20%)] transition cursor-pointer"
           onClick={handleLogout}
-          className="mt-3 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[hsl(326_85%_55%)] hover:bg-[hsl(326_85%_48%)] text-white px-3 py-2 text-xs font-bold transition"
+          title="Cerrar sesión"
         >
-          <LogOut className="w-3.5 h-3.5" /> Cerrar sesión
-        </button>
+          <img
+            src={lauraImg}
+            alt={displayName}
+            loading="lazy"
+            width={34}
+            height={34}
+            className="w-[34px] h-[34px] rounded-[10px] object-cover shrink-0"
+          />
+          <div className="flex-1 min-w-0">
+            <div className="text-[12.5px] font-bold text-[hsl(38_50%_97%)] truncate leading-tight">
+              {displayName}
+            </div>
+            <div className="text-[10px] text-[hsl(38_30%_88%/0.5)] truncate">
+              Owner · Administradora
+            </div>
+          </div>
+          <LogOut className="w-3.5 h-3.5 text-[hsl(38_30%_88%/0.4)] shrink-0 hover:text-[hsl(14_78%_52%)] transition" />
+        </div>
       </div>
     </div>
   );
@@ -112,7 +198,10 @@ const Admin = () => {
 
       {/* SIDEBAR — mobile sheet */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-        <SheetContent side="left" className={`w-72 p-0 flex flex-col overflow-hidden ${SIDEBAR_BG} ${SIDEBAR_FG} border-0`}>
+        <SheetContent
+          side="left"
+          className={`w-72 p-0 flex flex-col overflow-hidden ${SIDEBAR_BG} ${SIDEBAR_FG} border-0`}
+        >
           <SidebarNav onNavigate={() => setSidebarOpen(false)} />
         </SheetContent>
       </Sheet>
@@ -122,29 +211,29 @@ const Admin = () => {
         {/* TOPBAR */}
         <header className={`sticky top-0 z-30 bg-white/85 backdrop-blur border-b ${ADMIN_BORDER}`}>
           <div className="flex items-center gap-3 px-4 md:px-6 lg:px-10 h-16">
-            {/* Mobile hamburger */}
             <button
               aria-label="Abrir menú"
               onClick={() => setSidebarOpen(true)}
-              className={`md:hidden grid place-items-center w-10 h-10 rounded-full ${ADMIN_SURFACE} hover:bg-[hsl(250_30%_92%)] transition shrink-0`}
+              className={`md:hidden grid place-items-center w-10 h-10 rounded-full ${ADMIN_SURFACE} hover:bg-[hsl(38_35%_92%)] transition shrink-0`}
             >
               <Menu className="w-5 h-5" />
             </button>
 
-            <div className="relative flex-1 max-w-sm hidden sm:block">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(250_20%_50%)]" />
-              <input
-                placeholder="Buscar alumnos, cursos, ventas..."
-                className={`w-full ${ADMIN_SURFACE} rounded-full pl-11 pr-4 py-2 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-[hsl(326_85%_55%)]/40`}
-              />
+            <div className={`hidden sm:block text-sm font-bold text-[hsl(24_12%_50%)]`}>
+              {sectionTitles[activeSection]}
             </div>
 
             <div className="ml-auto flex items-center gap-2 md:gap-3">
-              <button className={`relative w-10 h-10 rounded-full ${ADMIN_SURFACE} hover:bg-[hsl(250_30%_92%)] grid place-items-center transition`}>
+              <button
+                className={`relative w-10 h-10 rounded-full ${ADMIN_SURFACE} hover:bg-[hsl(38_35%_92%)] grid place-items-center transition`}
+              >
                 <Bell className="w-4 h-4" />
-                <span className={`absolute top-2 right-2 w-2 h-2 rounded-full ${HONEY}`} />
+                <span className={`absolute top-2 right-2 w-2 h-2 rounded-full ${PRIMARY}`} />
               </button>
-              <button className={`inline-flex items-center gap-2 rounded-full ${HONEY} text-white px-3 py-2 md:px-4 text-sm font-bold hover:bg-[hsl(326_85%_48%)] transition`}>
+              <button
+                onClick={() => setActiveSection("cursos")}
+                className={`inline-flex items-center gap-2 rounded-full ${PRIMARY} text-white px-3 py-2 md:px-4 text-sm font-bold hover:bg-[hsl(14_78%_46%)] transition`}
+              >
                 <Plus className="w-4 h-4" />
                 <span className="hidden sm:inline">Nuevo curso</span>
               </button>
@@ -152,206 +241,29 @@ const Admin = () => {
           </div>
         </header>
 
-        <div className="p-6 lg:p-10 space-y-8 max-w-[1400px]">
-          {/* HEADER */}
-          <div className="flex items-end justify-between flex-wrap gap-4">
-            <div>
-              <span className={`text-xs font-black uppercase tracking-[0.2em] ${HONEY_TXT}`}>Panel de control</span>
-              <h1 className="mt-2 font-display text-4xl md:text-5xl leading-tight text-[hsl(250_60%_14%)]">
-                Buenos días, <span className="italic text-[hsl(265_82%_58%)]">Laura</span>
+        {/* SECTION CONTENT */}
+        <div className="p-4 sm:p-6 lg:p-10 w-full">
+          {/* Dashboard header */}
+          {activeSection === "dashboard" && (
+            <div className="mb-8">
+              <span className={`text-xs font-black uppercase tracking-[0.2em] ${PRIMARY_TXT}`}>
+                Panel de control
+              </span>
+              <h1 className="mt-2 font-display text-4xl md:text-5xl leading-tight text-[hsl(24_25%_12%)]">
+                Hola, <span className="italic text-[hsl(14_78%_52%)]">{displayName.split(" ")[0]}</span>
               </h1>
-              <p className="text-[hsl(250_20%_45%)] mt-2">Esto es lo que está pasando hoy en la academia.</p>
+              <p className="text-[hsl(24_12%_45%)] mt-2">
+                Esto es lo que está pasando en la academia.
+              </p>
             </div>
-            <div className="flex gap-2">
-              {["Hoy", "7 días", "30 días", "Año"].map((p, i) => (
-                <button
-                  key={p}
-                  className={`px-4 py-2 rounded-full text-xs font-bold transition ${
-                    i === 2
-                      ? `${SIDEBAR_BG} text-[hsl(250_30%_94%)]`
-                      : `${ADMIN_CARD} border ${ADMIN_BORDER} hover:border-[hsl(326_85%_55%)]/40`
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-          </div>
+          )}
 
-          {/* STATS */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {stats.map((s) => (
-              <div key={s.label} className={`${ADMIN_CARD} rounded-3xl border ${ADMIN_BORDER} p-6 hover:shadow-lg transition relative overflow-hidden`}>
-                <div className={`absolute top-0 left-0 w-1 h-full ${s.accent}`} />
-                <div className="text-xs uppercase tracking-widest text-[hsl(250_20%_50%)] font-bold">{s.label}</div>
-                <div className="font-display text-3xl mt-2 font-black text-[hsl(250_60%_14%)]">{s.value}</div>
-                <div className={`mt-3 inline-flex items-center gap-1 text-xs font-bold ${s.up ? HONEY_TXT : "text-[hsl(250_20%_50%)]"}`}>
-                  {s.up ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
-                  {s.change}
-                  <span className="text-[hsl(250_20%_55%)] font-medium">vs mes anterior</span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="grid lg:grid-cols-3 gap-5">
-            {/* CHART */}
-            <div className={`lg:col-span-2 ${ADMIN_CARD} rounded-3xl border ${ADMIN_BORDER} p-6`}>
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h3 className="font-display text-2xl font-black text-[hsl(250_60%_14%)]">Ingresos · últimos 30 días</h3>
-                  <p className="text-xs text-[hsl(250_20%_50%)] mt-1">Comparado con periodo anterior</p>
-                </div>
-                <div className="flex items-center gap-4 text-xs">
-                  <span className="inline-flex items-center gap-2"><span className={`w-2 h-2 rounded-full ${HONEY}`} />Este mes</span>
-                  <span className="inline-flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[hsl(250_20%_60%)]/40" />Anterior</span>
-                </div>
-              </div>
-
-              <div className="relative h-56">
-                <svg viewBox="0 0 600 200" className="w-full h-full" preserveAspectRatio="none">
-                  <defs>
-                    <linearGradient id="g1" x1="0" x2="0" y1="0" y2="1">
-                      <stop offset="0%" stopColor="hsl(326 85% 55%)" stopOpacity="0.35" />
-                      <stop offset="100%" stopColor="hsl(326 85% 55%)" stopOpacity="0" />
-                    </linearGradient>
-                  </defs>
-                  <path d="M0,160 C60,140 100,120 160,110 C220,100 260,130 320,90 C380,50 420,70 480,40 C540,20 580,30 600,25 L600,200 L0,200 Z" fill="url(#g1)" />
-                  <path d="M0,160 C60,140 100,120 160,110 C220,100 260,130 320,90 C380,50 420,70 480,40 C540,20 580,30 600,25" fill="none" stroke="hsl(326 85% 55%)" strokeWidth="2.5" />
-                  <path d="M0,170 C60,165 100,150 160,155 C220,160 260,140 320,130 C380,120 420,125 480,100 C540,90 580,85 600,80" fill="none" stroke="hsl(172 75% 42%)" strokeWidth="1.5" strokeOpacity="0.7" strokeDasharray="4 4" />
-                </svg>
-              </div>
-
-              <div className={`grid grid-cols-4 gap-4 pt-6 border-t ${ADMIN_BORDER} mt-4 text-center`}>
-                {[
-                  { l: "Ticket medio", v: "163€" },
-                  { l: "Mejor día", v: "Mar 14" },
-                  { l: "Refunds", v: "1,2%" },
-                  { l: "LTV alumno", v: "342€" },
-                ].map((k) => (
-                  <div key={k.l}>
-                    <div className="text-[10px] uppercase tracking-widest text-[hsl(250_20%_50%)] font-bold">{k.l}</div>
-                    <div className="font-display text-lg mt-1 font-black text-[hsl(250_60%_14%)]">{k.v}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* TOP COURSES */}
-            <div className={`${ADMIN_CARD} rounded-3xl border ${ADMIN_BORDER} p-6`}>
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="font-display text-xl font-black text-[hsl(250_60%_14%)]">Top cursos</h3>
-                <button className={`w-7 h-7 rounded-full hover:${ADMIN_SURFACE} grid place-items-center`}>
-                  <MoreHorizontal className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="space-y-4">
-                {courses.slice(0, 4).map((c, i) => (
-                  <div key={c.id} className="flex items-center gap-3">
-                    <span className="font-display text-2xl text-[hsl(250_20%_60%)]/60 tabular-nums w-6 font-black">0{i + 1}</span>
-                    <img src={c.image} alt={c.title} loading="lazy" className="w-12 h-12 rounded-xl object-cover" />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-bold truncate text-[hsl(250_60%_14%)]">{c.title}</div>
-                      <div className="text-xs text-[hsl(250_20%_50%)]">{c.lessons} lecciones</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-bold">{c.price * 12}€</div>
-                      <div className={`text-[10px] ${HONEY_TXT} inline-flex items-center gap-0.5 font-bold`}><TrendingUp className="w-2.5 h-2.5" />+{12 + i * 4}%</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* COURSES TABLE + RECENT SALES */}
-          <div className="grid lg:grid-cols-5 gap-5">
-            <div className={`lg:col-span-3 ${ADMIN_CARD} rounded-3xl border ${ADMIN_BORDER}`}>
-              <div className="p-6 flex items-center justify-between">
-                <div>
-                  <h3 className="font-display text-xl font-black text-[hsl(250_60%_14%)]">Cursos del catálogo</h3>
-                  <p className="text-xs text-[hsl(250_20%_50%)] mt-0.5">16 cursos · 14 publicados · 2 borradores</p>
-                </div>
-                <Link to="/cursos" className={`text-xs ${HONEY_TXT} font-bold hover:underline`}>Gestionar</Link>
-              </div>
-              <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className={`${ADMIN_SURFACE}/60 text-[10px] uppercase tracking-widest text-[hsl(250_20%_50%)]`}>
-                  <tr>
-                    <th className="text-left font-bold px-6 py-3">Curso</th>
-                    <th className="text-left font-bold px-2 py-3">Estado</th>
-                    <th className="text-right font-bold px-2 py-3">Alumnos</th>
-                    <th className="text-right font-bold px-6 py-3">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody className={`divide-y ${ADMIN_BORDER} text-sm`}>
-                  {courses.slice(0, 5).map((c, i) => (
-                    <tr key={c.id} className={`hover:${ADMIN_SURFACE}/40 transition`}>
-                      <td className="px-6 py-3">
-                        <div className="flex items-center gap-3">
-                          <img src={c.image} alt={c.title} loading="lazy" className="w-10 h-10 rounded-lg object-cover" />
-                          <div>
-                            <div className="font-bold text-[hsl(250_60%_14%)]">{c.title}</div>
-                            <div className="text-xs text-[hsl(250_20%_50%)]">{c.price}€</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-2 py-3">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black ${
-                            i === 4
-                              ? "bg-[hsl(172_75%_42%)]/15 text-[hsl(172_75%_30%)]"
-                              : "bg-[hsl(326_85%_55%)]/15 text-[hsl(326_85%_45%)]"
-                          }`}
-                        >
-                          <span className={`w-1.5 h-1.5 rounded-full ${i === 4 ? MOSS : HONEY}`} />
-                          {i === 4 ? "Borrador" : "Publicado"}
-                        </span>
-                      </td>
-                      <td className="px-2 py-3 text-right tabular-nums font-bold">{(c.reviews * 2).toLocaleString("es")}</td>
-                      <td className="px-6 py-3">
-                        <div className="flex items-center justify-end gap-1">
-                          <button className={`w-8 h-8 rounded-full hover:${ADMIN_SURFACE} grid place-items-center`}><Eye className="w-3.5 h-3.5" /></button>
-                          <button className={`w-8 h-8 rounded-full hover:${ADMIN_SURFACE} grid place-items-center`}><Pencil className="w-3.5 h-3.5" /></button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              </div>
-            </div>
-
-            {/* RECENT SALES */}
-            <div className={`lg:col-span-2 ${ADMIN_CARD} rounded-3xl border ${ADMIN_BORDER} p-6`}>
-              <div className="flex items-center justify-between mb-5">
-                <div>
-                  <h3 className="font-display text-xl font-black text-[hsl(250_60%_14%)]">Ventas recientes</h3>
-                  <p className="text-xs text-[hsl(250_20%_50%)] mt-0.5">+5 ventas hoy</p>
-                </div>
-                <button className={`text-xs ${HONEY_TXT} font-bold hover:underline`}>Ver todas</button>
-              </div>
-              <div className="space-y-4">
-                {recentSales.map((s, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <div
-                      className={`w-10 h-10 rounded-full ${i % 2 === 0 ? CLAY : HONEY} grid place-items-center text-white text-xs font-black shrink-0`}
-                    >
-                      {s.name.split(" ").map((n) => n[0]).join("")}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-bold truncate text-[hsl(250_60%_14%)]">{s.name}</div>
-                      <div className="text-xs text-[hsl(250_20%_50%)] truncate">{s.course}</div>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <div className="text-sm font-bold">+{s.amount}€</div>
-                      <div className="text-[10px] text-[hsl(250_20%_55%)]">{s.date}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          {activeSection === "dashboard" && <AdminDashboard />}
+          {activeSection === "cursos"    && <AdminCursos />}
+          {activeSection === "alumnos"   && <AdminAlumnos />}
+          {activeSection === "ventas"    && <AdminVentas />}
+          {activeSection === "metricas"  && <ComingSoonSection label="Métricas avanzadas" />}
+          {activeSection === "ajustes"   && <ComingSoonSection label="Ajustes" />}
         </div>
       </main>
     </div>

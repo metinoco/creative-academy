@@ -539,6 +539,49 @@ export type Database = {
       }
     }
     Functions: {
+      admin_get_course_stats: {
+        Args: never
+        Returns: {
+          active_enrollments: number
+          author: string
+          category: string
+          created_at: string
+          id: string
+          lessons_count: number
+          price: number
+          slug: string
+          status: string
+          title: string
+          tone: string
+        }[]
+      }
+      admin_get_student_enrollments: {
+        Args: { _user_id: string }
+        Returns: {
+          course_id: string
+          course_slug: string
+          course_title: string
+          enrollment_id: string
+          granted_at: string
+          revoked_at: string
+          source: string
+        }[]
+      }
+      admin_get_students: {
+        Args: never
+        Returns: {
+          active_enrollment_count: number
+          avatar_url: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+        }[]
+      }
+      admin_grant_course_access: {
+        Args: { _course_id: string; _user_id: string }
+        Returns: undefined
+      }
       get_lesson_content: {
         Args: { _lesson_id: string }
         Returns: {
