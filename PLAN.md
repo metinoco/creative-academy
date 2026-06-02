@@ -19,7 +19,7 @@
 | Datos reales en reproductor | ████████████ 100 % |
 | Datos reales en dashboard alumno | ████████████ 100 % |
 | Q&A y Notas en reproductor | ████████████ 100 % |
-| Datos reales en panel admin | ░░░░░░░░░░░░ 0 % |
+| Datos reales en panel admin | ████████████ 100 % |
 | Sistema de pagos | ░░░░░░░░░░░░ 0 % |
 | Certificados | ░░░░░░░░░░░░ 0 % |
 
@@ -74,10 +74,10 @@
 
 | Componente | Dato mock | Nota |
 |-----------|-----------|------|
-| `Admin.tsx` | Todas las métricas y tabla de ventas | Pendiente conectar a BD |
+| `AdminVentas.tsx` | Lista de transacciones | Placeholder Stripe; real cuando se implemente 1.5 |
+| `AdminCursos.tsx` | Paleta de colores | Aún usa tokens indigo/magenta antiguos; pendiente unificar a Warm Ink |
 | `Curso.tsx` | Metadatos visuales (imagen, bio, "aprenderás") | `courses.ts` como fuente; parcialmente enriquecido con Supabase |
 | `Profesores.tsx` | Todo | Derivado de `courses.ts`; Supabase no tiene tabla de instructores |
-| `AlumnoCurso.tsx` | Q&A y Notas | **Completado** — persistentes en Supabase |
 
 ---
 
@@ -93,14 +93,13 @@ Query `student-activity` en `Alumno.tsx`: lee `lesson_progress` + `lessons` (dur
 
 ---
 
-### 1.3 Panel admin con datos reales
-**Archivo:** `src/pages/Admin.tsx`  
-**Qué hacer:**
-- Métricas: queries a `enrollments` (total, nuevos este mes), `courses` (activos), `lesson_progress`
-- Tabla de ventas: requiere tabla `payments` (ver 1.5)
-- Gestión de alumnos: listar `profiles` + `enrollments`; permitir dar/revocar acceso manual
-
-**Complejidad:** Media (4–6 horas, depende de 1.5)
+### ~~1.3 Panel admin con datos reales~~ ✅ COMPLETADO
+Migración `20260602000000_admin-panel-functions.sql`: 4 funciones `SECURITY DEFINER` (`admin_get_students`, `admin_get_student_enrollments`, `admin_grant_course_access`, `admin_get_course_stats`). `Admin.tsx` refactorizado como shell con navegación por estado (`activeSection`). Sub-componentes en `src/components/admin/`:
+- **`AdminDashboard.tsx`**: 4 tiles reales (alumnos activos, nuevos este mes, cursos publicados, lecciones completadas); top cursos por matrículas; secciones revenue/ventas con overlay "Próximamente" (Stripe).
+- **`AdminCursos.tsx`**: tabla completa de todos los cursos desde `admin_get_course_stats`; búsqueda por título/autor/categoría; badge estado; conteo de matrículas activas; "Ver" enlaza al catálogo; "Editar" deshabilitado con tooltip.
+- **`AdminAlumnos.tsx`**: tabla de alumnos desde `admin_get_students`; modal centralizado por alumno (`Dialog`, `max-h-[90dvh]`, scroll interno, adaptado a móvil); lista de matrículas con doble confirmación inline para revocar; stub `notifyAccessRevoked` listo para conectar Resend (tarea 1.8); botón Restaurar para reactivar matrículas revocadas; `Select` de shadcn + botón "Dar acceso" para matrícula manual; paleta Warm Ink completa.
+- **`AdminVentas.tsx`**: placeholder con lista de funcionalidades pendientes de Stripe.
+Secciones "Métricas" y "Ajustes" con `ComingSoonSection` hasta Fase 2.
 
 ---
 
@@ -213,7 +212,7 @@ Migración `20260530120000_qa-and-notes.sql`: tablas `lesson_notes`, `lesson_que
 | Dashboard alumno | `src/pages/Alumno.tsx` |
 | Reproductor | `src/pages/AlumnoCurso.tsx` |
 | Panel admin | `src/pages/Admin.tsx` |
-| Schema BD | `supabase/migrations/` (5 archivos) |
+| Schema BD | `supabase/migrations/` (7 archivos) |
 | Edge Functions | `supabase/functions/` (aún no creadas) |
 | Tipos Supabase | `src/integrations/supabase/types.ts` |
 | Datos estáticos | `src/data/courses.ts` |

@@ -84,6 +84,10 @@ Las migraciones están en `supabase/migrations/`. Tablas principales:
 - `lessons` — Lecciones individuales con control de acceso
 - `enrollments` — Matrículas de alumnos a cursos
 - `lesson_progress` — Progreso de lecciones por alumno
+- `lesson_notes` — Notas privadas por alumno/lección
+- `lesson_questions` — Preguntas del Q&A por lección
+- `lesson_answers` — Respuestas a preguntas del Q&A
+- `lesson_question_votes` — Votos en preguntas (toggle atómico vía RPC)
 
 Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se controla mediante la función `has_course_access()`.
 
@@ -98,7 +102,7 @@ Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se control
 | Datos reales en landing | 100 % |
 | Datos reales en reproductor | 100 % |
 | Datos reales en dashboard alumno | 100 % |
-| Datos reales en panel admin | 0 % |
+| Datos reales en panel admin | 100 % |
 | Sistema de pagos | 0 % |
 | Certificados | 0 % |
 
@@ -112,7 +116,7 @@ Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se control
 | Profesores (`/profesores`) | Estático | Derivado de `courses.ts`; avatares con pravatar |
 | Dashboard alumno (`/alumno`) | **Supabase** | Todos los datos reales: progreso, racha diaria, tiempo semanal/mensual, grid de actividad; empty + error state implementados |
 | Reproductor (`/alumno/curso/:slug`) | Supabase | Acceso controlado por matrícula; Q&A y notas persistidos en BD |
-| Admin (`/admin`) | Mock | UI completa + menú hamburguesa móvil; pendiente conectar a BD |
+| Admin (`/admin`) | **Supabase** | Dashboard, Cursos y Alumnos con datos reales; modal centralizado de alumno con doble confirmación al revocar; stub de email listo para Resend; Ventas placeholder Stripe |
 | 404 | — | Diseño split con ilustración 3D |
 
 ## 🛣️ Roadmap
@@ -123,7 +127,7 @@ Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se control
 |---|-------|------------|
 | ~~1.1~~ | ~~Racha y actividad reciente del alumno~~ | ✅ Completado |
 | ~~1.2~~ | ~~Landing conectada a Supabase~~ | ✅ Completado |
-| 1.3 | Panel admin con datos reales | Media (4–6 h) |
+| ~~1.3~~ | ~~Panel admin con datos reales~~ | ✅ Completado |
 | ~~1.4~~ | ~~Q&A y Notas persistentes en el reproductor~~ | ✅ Completado |
 | 1.5 | Integración de pagos con Stripe | Alta (1–2 días) |
 | 1.6 | Certificados de finalización | Alta (2–3 días) |

@@ -73,7 +73,7 @@ public/
 └── apple-touch-icon.png     # Icono 180×180 para pantalla de inicio iOS
 
 supabase/
-└── migrations/              # 6 archivos SQL (schema completo + seed de 16 cursos + tablas Q&A/notas)
+└── migrations/              # 7 archivos SQL (schema completo + seed de 16 cursos + tablas Q&A/notas + funciones panel admin)
 
 vercel.json                  # Rewrite catch-all → /index.html (necesario para React Router en Vercel)
 ```
@@ -299,7 +299,7 @@ Todas las tablas tienen RLS habilitado:
 | `--muted` | Fondos sutiles, texto secundario |
 | `--border` | Bordes |
 
-El panel de administración (`Admin.tsx`) usa una paleta diferente definida inline con HSL hardcodeados (índigo profundo, magenta eléctrico, violeta, turquesa). Esto es una divergencia intencional del design system del portal.
+El panel de administración usa la paleta **Warm Ink** del design system: `hsl(24 25% 12%)` para el sidebar y header de modales, `hsl(14 78% 52%)` para el primario (terracota). `AdminCursos.tsx` aún usa tokens indigo/magenta del diseño anterior — pendiente de unificar.
 
 ### Referencia visual
 El archivo `design-system.html` en la raíz es un documento HTML estático con scroll-spy que documenta colores, tipografía, espaciado, componentes y stat cards. Ábrete directamente en el navegador; no requiere servidor.
@@ -330,7 +330,7 @@ El viewport está fijado en `bottom-right`; los toasts tienen `rounded-[14px]` y
 
 | Página | Estado UI | Datos reales | Notas |
 |--------|-----------|-------------|-------|
-| `Index` (landing) | Completa | Usa `courses.ts` (estáticos) | Pendiente conectar a Supabase |
+| `Index` (landing) | Completa | **Supabase** | Cursos destacados desde `courses` (status=published, orden por `reviews_count`); fallback a `courses.ts` para imágenes |
 | `Cursos` (catálogo) | Completa | **Supabase** (`courses` table, status=published) | Conectado; empty state (SearchX + limpiar filtros) y error state implementados |
 | `Curso` (detalle) | Completa | **Híbrido** | Temario siempre desde `courses.ts` enriquecido desde Supabase. Skeleton en CTAs mientras carga matrícula. |
 | `Profesores` (directorio) | Completa | Estático (`courses.ts`) | Deriva instructores y métricas de `courses.ts`; avatares con pravatar |
@@ -338,7 +338,7 @@ El viewport está fijado en `bottom-right`; los toasts tienen `rounded-[14px]` y
 | `Registro` | Funcional | Auth real con Supabase | Spinner Loader2 en botón durante envío |
 | `Alumno` (dashboard) | UI completa | **Supabase** | Todos los datos reales: matrículas, progreso, lecciones completadas, cursos completados, racha diaria, tiempo semanal/mensual y grid de actividad (query `student-activity`). Empty state motivacional + error state con reintentar. |
 | `AlumnoCurso` (reproductor) | UI completa | **Supabase** | Lecciones, progreso, control de acceso por matrícula; Q&A y notas persistidos en BD (`lesson_questions`, `lesson_answers`, `lesson_notes`) |
-| `Admin` (dashboard) | UI completa | Mock | Métricas y tabla hardcodeadas; pendiente conectar a BD. Menú hamburguesa en móvil. |
+| `Admin` (dashboard) | UI completa | **Supabase** | Dashboard: 4 tiles reales + top cursos real; revenue con overlay "Próximamente". Cursos: tabla real con `admin_get_course_stats`. Alumnos: modal centralizado por alumno (`Dialog`, scroll interno, adaptado a móvil); doble confirmación inline al revocar; stub `notifyAccessRevoked`; `Select` shadcn + "Dar acceso" para matrícula manual; paleta Warm Ink. Ventas: placeholder Stripe. |
 | `NotFound` (404) | Completa | — | Layout split con ilustración 3D de artista en pánico |
 
 ---
@@ -352,17 +352,17 @@ El viewport está fijado en `bottom-right`; los toasts tienen `rounded-[14px]` y
 | Proceso de compra integrado | Pendiente | Integración con Stripe (checkout, webhooks) |
 | Tabla `payments`/`orders` | Pendiente | Registrar transacciones |
 | Acceso automático al curso tras compra | Pendiente | Webhook Stripe → insertar en `enrollments` |
-| Revocación de acceso | Parcial | Columna `revoked_at` existe; falta UI admin para usarla |
+| Revocación de acceso | **Completado** | UI de revocación/restauración en sección Alumnos del panel admin |
 | Certificado de finalización | Pendiente | Tabla `certificates` + lógica de detección de curso completado + generación PDF |
 | Racha y actividad reciente del alumno | **Completado** | `Alumno.tsx` calcula racha, tiempo y grid de actividad desde `lesson_progress` |
 | Q&A en reproductor de lecciones | **Completado** | `AlumnoCurso.tsx` lee/escribe `lesson_questions` y `lesson_answers`; votos vía `toggle_question_vote()` |
 | Notas en reproductor | **Completado** | `AlumnoCurso.tsx` upserta en `lesson_notes` con índice único `(user_id, lesson_id)` |
-| Panel admin con datos reales | Pendiente | `Admin.tsx` completamente mock |
+| Panel admin con datos reales | **Completado** | Secciones Dashboard, Cursos, Alumnos con datos reales; Ventas placeholder Stripe |
 | CRUD de cursos desde admin | Pendiente | Crear/editar cursos, secciones y lecciones |
-| Gestión de alumnos desde admin | Pendiente | Buscar, ver estado, dar/revocar acceso manual |
+| Gestión de alumnos desde admin | **Completado** | Buscar, ver matrículas, dar/revocar acceso manual desde modal centralizado por alumno; doble confirmación al revocar |
 | Emails automáticos | Pendiente | Bienvenida, confirmación compra, recordatorio |
 | Migración de 2.400 alumnos existentes | Pendiente | Proceso de importación desde sistema anterior |
-| Landing page conectada a Supabase | Pendiente | `Index.tsx` usa `courses.ts` estático; debería leer de BD |
+| Landing page conectada a Supabase | **Completado** | `Index.tsx` lee cursos desde Supabase; `courses.ts` como fallback de imágenes |
 
 ### Funcionalidades pendientes (Fase 2 — deseables)
 
@@ -427,9 +427,8 @@ La aplicación se despliega en **Vercel**. El archivo `vercel.json` en la raíz 
 - Para probar el reproductor (`/alumno/curso/:slug`), el usuario debe tener una fila en `enrollments` con `revoked_at IS NULL` para el curso deseado.
 - Las lecciones con `is_free_preview = true` son accesibles sin matrícula.
 - Todos los datos de `Alumno.tsx` son reales: progreso, racha, tiempo semanal/mensual y grid de actividad se calculan desde `lesson_progress`.
-- Los datos en `Admin.tsx` son completamente mock.
+- `Admin.tsx`: Dashboard, Cursos y Alumnos usan datos reales de Supabase. Solo `AdminVentas.tsx` es placeholder (Stripe pendiente).
 - `courses.ts` actúa como fallback cuando faltan datos en Supabase; no eliminar hasta que la BD tenga todos los cursos completos.
 - Los estados vacíos y de error están implementados en `Cursos.tsx` y `Alumno.tsx`; la carga del formulario (Loader2) en `Login.tsx` y `Registro.tsx`. Las 4 queries de `Alumno.tsx` (enrollments, courses, lessons, progress) lanzan el error en lugar de ignorarlo, lo que permite que React Query active el error state correctamente.
-- `Login.tsx` y `Registro.tsx` usan las variantes de toast tipadas (`success`, `info`, `warning`, `destructive`) del sistema de notificaciones rediseñado. Las 4 queries de `Alumno.tsx` (enrollments, courses, lessons, progress) lanzan el error en lugar de ignorarlo, lo que permite que React Query active el error state correctamente.
 - `Login.tsx` y `Registro.tsx` usan las variantes de toast tipadas (`success`, `info`, `warning`, `destructive`) del sistema de notificaciones rediseñado.
 - `design-system.html` sirve como referencia de diseño; no está servido por la app React.
