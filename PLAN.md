@@ -1,6 +1,6 @@
 # Academia Creativa — Guía de avance del proyecto
 
-> **Última revisión:** 30 mayo 2026  
+> **Última revisión:** 5 junio 2026  
 > **Rama activa:** `development` → `main`  
 > **Deploy:** Vercel (SPA con `vercel.json`)  
 > **Backend:** Supabase (PostgreSQL + Auth)
@@ -20,7 +20,7 @@
 | Datos reales en dashboard alumno | ████████████ 100 % |
 | Q&A y Notas en reproductor | ████████████ 100 % |
 | Datos reales en panel admin | ████████████ 100 % |
-| Sistema de pagos | ░░░░░░░░░░░░ 0 % |
+| Sistema de pagos | ████████████ 100 % |
 | Certificados | ░░░░░░░░░░░░ 0 % |
 
 ---
@@ -36,7 +36,8 @@
 - [x] Registro (`/registro`) — trigger crea perfil + rol student automáticamente
 - [x] Dashboard alumno (`/alumno`) — cabecera, tiles de progreso, cursos en curso
 - [x] Reproductor de curso (`/alumno/curso/:slug`) — sidebar de lecciones, player, progreso
-- [x] Panel admin (`/admin`) — UI con sidebar, métricas, tabla de ventas (UI completa, datos mock)
+- [x] Panel admin (`/admin`) — Dashboard, Cursos, Alumnos y Ventas con datos reales; paleta Warm Ink
+- [x] `PagoExito.tsx` (`/pago/exito`) — confirmación visual post-Stripe con enlace al dashboard
 - [x] Rutas protegidas por rol (`ProtectedRoute`)
 - [x] Favicon SVG de marca
 - [x] `vercel.json` para SPA routing en Vercel
@@ -59,7 +60,9 @@
 - [x] Triggers: `handle_new_user()`, `touch_updated_at()`
 - [x] RLS en todas las tablas (anon, student, admin)
 - [x] Seed con 16 cursos, secciones y lecciones — todos los cursos tienen conteos sincronizados con `courses.ts` (22–58 lecciones por curso)
-- [x] 5 migraciones en `supabase/migrations/`
+- [x] 8 migraciones en `supabase/migrations/`
+- [x] Edge Functions: `create-checkout-session` (crea sesión Stripe) y `stripe-webhook` (procesa `checkout.session.completed` → inserta en `payments` + `enrollments`)
+- [x] Tabla `payments` con RLS + funciones `admin_get_payment_stats()` y `admin_get_recent_payments()`
 
 ### Datos reales conectados
 - [x] `Cursos.tsx` — lee de tabla `courses` (status=published)
@@ -67,6 +70,8 @@
 - [x] `AlumnoCurso.tsx` — lecciones, progreso, control de acceso por matrícula
 - [x] `Alumno.tsx` — matrículas, progreso, lecciones y cursos completados (tiles reales)
 - [x] `Alumno.tsx` — racha diaria, tiempo semanal/mensual y grid de actividad calculados desde `lesson_progress` (query `student-activity`)
+- [x] `AdminVentas.tsx` — métricas y lista de transacciones reales desde `admin_get_payment_stats` y `admin_get_recent_payments`
+- [x] `Curso.tsx` — botón Comprar llama a Edge Function; spinner durante redirect; flujo autoCheckout post-login
 
 ---
 
@@ -74,7 +79,6 @@
 
 | Componente | Dato mock | Nota |
 |-----------|-----------|------|
-| `AdminVentas.tsx` | Lista de transacciones | Placeholder Stripe; real cuando se implemente 1.5 |
 | `AdminCursos.tsx` | Paleta de colores | Aún usa tokens indigo/magenta antiguos; pendiente unificar a Warm Ink |
 | `Curso.tsx` | Metadatos visuales (imagen, bio, "aprenderás") | `courses.ts` como fuente; parcialmente enriquecido con Supabase |
 | `Profesores.tsx` | Todo | Derivado de `courses.ts`; Supabase no tiene tabla de instructores |
@@ -108,30 +112,8 @@ Migración `20260530120000_qa-and-notes.sql`: tablas `lesson_notes`, `lesson_que
 
 ---
 
-### 1.5 Integración de pagos con Stripe
-**Qué hacer:**
-1. Crear tabla `payments` en Supabase:
-   ```sql
-   id uuid PK, user_id uuid FK, course_id uuid FK,
-   stripe_session_id text unique, amount numeric,
-   currency text default 'eur', status text,
-   created_at timestamptz
-   ```
-2. Crear Edge Function `create-checkout-session`:
-   - Recibe `course_id` + JWT del alumno
-   - Crea Stripe Checkout Session
-   - Devuelve `session_url` para redirect
-3. Crear Edge Function `stripe-webhook`:
-   - Verifica firma (`STRIPE_WEBHOOK_SECRET`)
-   - En evento `checkout.session.completed`: inserta en `payments` y en `enrollments`
-4. Actualizar UI del botón "Comprar" en `Curso.tsx` → llama a la edge function
-5. Página de confirmación de compra (redirect de Stripe)
-
-**Variables de entorno necesarias (en Supabase Edge Functions):**
-- `STRIPE_SECRET_KEY`
-- `STRIPE_WEBHOOK_SECRET`
-
-**Complejidad:** Alta (1–2 días)
+### ~~1.5 Integración de pagos con Stripe~~ ✅ COMPLETADO
+`0b6d96d` — Edge Functions `create-checkout-session` y `stripe-webhook`; migración `20260605000000_stripe-payments.sql` con tabla `payments` + funciones admin; `Curso.tsx` con flujo de compra completo; `PagoExito.tsx` en `/pago/exito`; `AdminVentas.tsx` con datos reales.
 
 ---
 
@@ -212,8 +194,9 @@ Migración `20260530120000_qa-and-notes.sql`: tablas `lesson_notes`, `lesson_que
 | Dashboard alumno | `src/pages/Alumno.tsx` |
 | Reproductor | `src/pages/AlumnoCurso.tsx` |
 | Panel admin | `src/pages/Admin.tsx` |
-| Schema BD | `supabase/migrations/` (7 archivos) |
-| Edge Functions | `supabase/functions/` (aún no creadas) |
+| Schema BD | `supabase/migrations/` (8 archivos) |
+| Edge Functions | `supabase/functions/create-checkout-session/`, `supabase/functions/stripe-webhook/` |
+| Confirmación pago | `src/pages/PagoExito.tsx` |
 | Tipos Supabase | `src/integrations/supabase/types.ts` |
 | Datos estáticos | `src/data/courses.ts` |
 

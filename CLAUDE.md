@@ -42,6 +42,7 @@ src/
 │   ├── Alumno.tsx           # Dashboard del alumno (protegida: rol student)
 │   ├── AlumnoCurso.tsx      # Reproductor de curso para alumno (protegida: rol student)
 │   ├── Admin.tsx            # Dashboard admin (protegida: rol admin)
+│   ├── PagoExito.tsx        # Confirmación visual tras compra con Stripe (/pago/exito)
 │   ├── Login.tsx            # Autenticación
 │   ├── Registro.tsx         # Registro de nuevos usuarios
 │   └── NotFound.tsx         # 404
@@ -73,7 +74,11 @@ public/
 └── apple-touch-icon.png     # Icono 180×180 para pantalla de inicio iOS
 
 supabase/
-└── migrations/              # 7 archivos SQL (schema completo + seed de 16 cursos + tablas Q&A/notas + funciones panel admin)
+├── functions/
+│   ├── create-checkout-session/index.ts  # Edge Function: crea sesión Stripe y devuelve URL de pago
+│   ├── stripe-webhook/index.ts           # Edge Function: procesa checkout.session.completed → payments + enrollments
+│   └── _shared/cors.ts                   # Headers CORS compartidos
+└── migrations/              # 8 archivos SQL (schema completo + seed de 16 cursos + Q&A/notas + admin functions + payments)
 
 vercel.json                  # Rewrite catch-all → /index.html (necesario para React Router en Vercel)
 ```
@@ -93,6 +98,7 @@ vercel.json                  # Rewrite catch-all → /index.html (necesario para
 | `/alumno` | `Alumno` | Protegida (rol: `student`) |
 | `/alumno/curso/:slug` | `AlumnoCurso` | Protegida (rol: `student`) |
 | `/admin` | `Admin` | Protegida (rol: `admin`) |
+| `/pago/exito` | `PagoExito` | Público |
 
 ---
 
@@ -253,6 +259,8 @@ Constraint único `(question_id, user_id)` — un voto por alumno/pregunta.
 - `has_course_access(_user_id, _course_id)` — devuelve `boolean`; consulta `enrollments`
 - `get_lesson_content(_lesson_id)` — devuelve datos de la lección con control de acceso (preview gratuito, admin, o matriculado)
 - `toggle_question_vote(_question_id)` — RPC SECURITY DEFINER; alterna voto y actualiza `votes_count` atómicamente
+- `admin_get_payment_stats()` — SECURITY DEFINER; devuelve métricas de ventas para el panel admin
+- `admin_get_recent_payments()` — SECURITY DEFINER; devuelve últimas transacciones para `AdminVentas.tsx`
 
 ### Enums
 - `app_role` — `admin`, `student`
@@ -269,8 +277,19 @@ Todas las tablas tienen RLS habilitado:
 - **`profiles`:** SELECT y UPDATE restringidos al propio usuario o admin
 - **`user_roles`:** SELECT restringido al propio usuario o admin; admins gestionan todo
 
+**`payments`**
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | `uuid` (PK) | |
+| `user_id` | `uuid` | FK → `auth.users.id` |
+| `course_id` | `uuid` | FK → `courses.id` |
+| `stripe_session_id` | `text` (unique) | ID de sesión de Stripe Checkout |
+| `amount` | `numeric` | Importe cobrado |
+| `currency` | `text` | Default `'eur'` |
+| `status` | `text` | Estado del pago (`completed`, etc.) |
+| `created_at` | `timestamptz` | |
+
 ### Tablas PENDIENTES de crear
-- `payments` / `orders` — Registro de transacciones (integración con Stripe pendiente)
 - `certificates` — Certificados emitidos al completar un curso
 
 ---
@@ -332,13 +351,14 @@ El viewport está fijado en `bottom-right`; los toasts tienen `rounded-[14px]` y
 |--------|-----------|-------------|-------|
 | `Index` (landing) | Completa | **Supabase** | Cursos destacados desde `courses` (status=published, orden por `reviews_count`); fallback a `courses.ts` para imágenes |
 | `Cursos` (catálogo) | Completa | **Supabase** (`courses` table, status=published) | Conectado; empty state (SearchX + limpiar filtros) y error state implementados |
-| `Curso` (detalle) | Completa | **Híbrido** | Temario siempre desde `courses.ts` enriquecido desde Supabase. Skeleton en CTAs mientras carga matrícula. |
+| `Curso` (detalle) | Completa | **Híbrido** | Temario siempre desde `courses.ts` enriquecido desde Supabase. Skeleton en CTAs mientras carga matrícula. Botón Comprar llama a Edge Function `create-checkout-session`; spinner Loader2 durante redirect; flujo autoCheckout post-login. |
 | `Profesores` (directorio) | Completa | Estático (`courses.ts`) | Deriva instructores y métricas de `courses.ts`; avatares con pravatar |
 | `Login` | Funcional | Auth real con Supabase | Spinner Loader2 en botón durante envío |
 | `Registro` | Funcional | Auth real con Supabase | Spinner Loader2 en botón durante envío |
 | `Alumno` (dashboard) | UI completa | **Supabase** | Todos los datos reales: matrículas, progreso, lecciones completadas, cursos completados, racha diaria, tiempo semanal/mensual y grid de actividad (query `student-activity`). Empty state motivacional + error state con reintentar. |
 | `AlumnoCurso` (reproductor) | UI completa | **Supabase** | Lecciones, progreso, control de acceso por matrícula; Q&A y notas persistidos en BD (`lesson_questions`, `lesson_answers`, `lesson_notes`) |
-| `Admin` (dashboard) | UI completa | **Supabase** | Dashboard: 4 tiles reales + top cursos real; revenue con overlay "Próximamente". Cursos: tabla real con `admin_get_course_stats`. Alumnos: modal centralizado por alumno (`Dialog`, scroll interno, adaptado a móvil); doble confirmación inline al revocar; stub `notifyAccessRevoked`; `Select` shadcn + "Dar acceso" para matrícula manual; paleta Warm Ink. Ventas: placeholder Stripe. |
+| `Admin` (dashboard) | UI completa | **Supabase** | Dashboard: 4 tiles reales + top cursos real; revenue con overlay "Próximamente". Cursos: tabla real con `admin_get_course_stats`. Alumnos: modal centralizado por alumno (`Dialog`, scroll interno, adaptado a móvil); doble confirmación inline al revocar; stub `notifyAccessRevoked`; `Select` shadcn + "Dar acceso" para matrícula manual; paleta Warm Ink. Ventas: UI real con `admin_get_payment_stats` y `admin_get_recent_payments`; paleta Warm Ink. |
+| `PagoExito` (`/pago/exito`) | Completa | — | Confirmación visual post-Stripe con enlace al dashboard del alumno |
 | `NotFound` (404) | Completa | — | Layout split con ilustración 3D de artista en pánico |
 
 ---
@@ -349,9 +369,9 @@ El viewport está fijado en `bottom-right`; los toasts tienen `rounded-[14px]` y
 
 | Funcionalidad | Estado | Notas |
 |---------------|--------|-------|
-| Proceso de compra integrado | Pendiente | Integración con Stripe (checkout, webhooks) |
-| Tabla `payments`/`orders` | Pendiente | Registrar transacciones |
-| Acceso automático al curso tras compra | Pendiente | Webhook Stripe → insertar en `enrollments` |
+| Proceso de compra integrado | **Completado** | Edge Functions `create-checkout-session` + `stripe-webhook`; botón Comprar en `Curso.tsx` con flujo autoCheckout |
+| Tabla `payments` | **Completado** | Migración `20260605`; RLS con funciones admin para métricas y lista de transacciones |
+| Acceso automático al curso tras compra | **Completado** | `stripe-webhook` inserta en `payments` y `enrollments` al recibir `checkout.session.completed` |
 | Revocación de acceso | **Completado** | UI de revocación/restauración en sección Alumnos del panel admin |
 | Certificado de finalización | Pendiente | Tabla `certificates` + lógica de detección de curso completado + generación PDF |
 | Racha y actividad reciente del alumno | **Completado** | `Alumno.tsx` calcula racha, tiempo y grid de actividad desde `lesson_progress` |
@@ -398,6 +418,13 @@ El viewport está fijado en `bottom-right`; los toasts tienen `rounded-[14px]` y
 | `VITE_SUPABASE_PROJECT_ID` | ID del proyecto Supabase |
 
 Solo el `PUBLISHABLE_KEY` (anon key) está expuesto al cliente. Nunca usar la `service_role` key en el frontend.
+
+Las variables de Stripe van en los **secrets de Supabase Edge Functions** (no en `.env`):
+
+| Secret | Descripción |
+|--------|-------------|
+| `STRIPE_SECRET_KEY` | Clave secreta de Stripe (sk_live_… / sk_test_…) |
+| `STRIPE_WEBHOOK_SECRET` | Secret del endpoint webhook de Stripe (whsec_…) |
 
 ---
 

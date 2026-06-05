@@ -21,6 +21,7 @@ Plataforma LMS propia para Academia Creativa (cliente: Laura Martínez). Reempla
 | Testing | Vitest + Testing Library |
 | Package manager | npm (compatible con bun) |
 | Hosting | Vercel (SPA, `vercel.json` con rewrite catch-all) |
+| Pagos | Stripe (Edge Functions `create-checkout-session` + `stripe-webhook`) |
 
 ## ⚙️ Requisitos previos
 
@@ -64,6 +65,7 @@ npm test           # Vitest
 | `/alumno` | Rol `student` | Dashboard del alumno |
 | `/alumno/curso/:slug` | Rol `student` | Reproductor de lecciones |
 | `/admin` | Rol `admin` | Panel de administración |
+| `/pago/exito` | Público | Confirmación visual tras compra con Stripe |
 
 ## 🔐 Autenticación y roles
 
@@ -88,6 +90,7 @@ Las migraciones están en `supabase/migrations/`. Tablas principales:
 - `lesson_questions` — Preguntas del Q&A por lección
 - `lesson_answers` — Respuestas a preguntas del Q&A
 - `lesson_question_votes` — Votos en preguntas (toggle atómico vía RPC)
+- `payments` — Registro de transacciones Stripe (session_id, amount, status)
 
 Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se controla mediante la función `has_course_access()`.
 
@@ -103,7 +106,7 @@ Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se control
 | Datos reales en reproductor | 100 % |
 | Datos reales en dashboard alumno | 100 % |
 | Datos reales en panel admin | 100 % |
-| Sistema de pagos | 0 % |
+| Sistema de pagos | 100 % |
 | Certificados | 0 % |
 
 ### Detalle por página
@@ -112,11 +115,12 @@ Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se control
 |--------|-------|-------|
 | Landing (`/`) | Supabase | Cursos destacados en tiempo real; fallback a `courses.ts` para imágenes |
 | Catálogo (`/cursos`) | Supabase | Conectado; empty state + error state implementados |
-| Detalle curso (`/curso/:id`) | Híbrido | Metadatos de `courses.ts`; matrículas y previews desde Supabase; skeleton en CTAs |
+| Detalle curso (`/curso/:id`) | Híbrido | Metadatos de `courses.ts`; matrículas y previews desde Supabase; skeleton en CTAs; botón Comprar llama a Edge Function con spinner y flujo autoCheckout post-login |
 | Profesores (`/profesores`) | Estático | Derivado de `courses.ts`; avatares con pravatar |
 | Dashboard alumno (`/alumno`) | **Supabase** | Todos los datos reales: progreso, racha diaria, tiempo semanal/mensual, grid de actividad; empty + error state implementados |
 | Reproductor (`/alumno/curso/:slug`) | Supabase | Acceso controlado por matrícula; Q&A y notas persistidos en BD |
-| Admin (`/admin`) | **Supabase** | Dashboard, Cursos y Alumnos con datos reales; modal centralizado de alumno con doble confirmación al revocar; stub de email listo para Resend; Ventas placeholder Stripe |
+| Admin (`/admin`) | **Supabase** | Dashboard, Cursos, Alumnos y Ventas con datos reales; modal centralizado de alumno; paleta Warm Ink |
+| Confirmación pago (`/pago/exito`) | — | Página post-Stripe con confirmación visual y enlace al dashboard del alumno |
 | 404 | — | Diseño split con ilustración 3D |
 
 ## 🛣️ Roadmap
@@ -129,7 +133,7 @@ Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se control
 | ~~1.2~~ | ~~Landing conectada a Supabase~~ | ✅ Completado |
 | ~~1.3~~ | ~~Panel admin con datos reales~~ | ✅ Completado |
 | ~~1.4~~ | ~~Q&A y Notas persistentes en el reproductor~~ | ✅ Completado |
-| 1.5 | Integración de pagos con Stripe | Alta (1–2 días) |
+| ~~1.5~~ | ~~Integración de pagos con Stripe~~ | ✅ Completado |
 | 1.6 | Certificados de finalización | Alta (2–3 días) |
 | 1.7 | Migración de ~2.400 alumnos existentes | Alta (1–2 días) |
 | 1.8 | Emails automáticos (Resend / SendGrid) | Media (1 día) |
@@ -156,6 +160,8 @@ Dependencias clave:
 - Para probar el reproductor, insertar una fila en `enrollments` con `revoked_at = null` para el curso deseado.
 - Las lecciones con `is_free_preview = true` son accesibles sin matrícula.
 - `courses.ts` actúa como fallback para imágenes y metadatos; no eliminar hasta que la BD tenga `image_url` en todos los cursos.
+- Para probar el flujo de pago Stripe, usar tarjeta de test `4242 4242 4242 4242`. El webhook debe estar configurado en el dashboard de Stripe apuntando a la Edge Function `stripe-webhook`.
+- Las variables de Stripe (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`) van en los secrets de Supabase Edge Functions, no en `.env` del frontend.
 
 Para el detalle completo del plan de implementación, ver [PLAN.md](./PLAN.md).
 
