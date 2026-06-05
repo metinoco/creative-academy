@@ -17,6 +17,7 @@ const Admin = lazy(() => import("./pages/Admin.tsx"));
 const Login = lazy(() => import("./pages/Login.tsx"));
 const Registro = lazy(() => import("./pages/Registro.tsx"));
 const Profesores = lazy(() => import("./pages/Profesores.tsx"));
+const PagoExito = lazy(() => import("./pages/PagoExito.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
 const queryClient = new QueryClient();
@@ -41,6 +42,7 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/registro" element={<Registro />} />
               <Route path="/profesores" element={<Profesores />} />
+              <Route path="/pago/exito" element={<PagoExito />} />
               <Route
                 path="/alumno"
                 element={

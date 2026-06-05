@@ -9,7 +9,7 @@ const Login = () => {
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as { from?: string } | null)?.from;
+  const { from, autoCheckout } = (location.state as { from?: string; autoCheckout?: boolean } | null) ?? {};
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,7 +27,10 @@ const Login = () => {
     const description = role === "admin" ? "Buenas. Academia Creativa te espera." : "Continúa donde lo dejaste.";
     toast({ title: "¡Bienvenido de vuelta!", description, variant: "info" });
     // Redirect: respect requested route, else send by role (decided in /alumno fallback)
-    navigate(from && from !== "/login" ? from : "/alumno", { replace: true });
+    navigate(
+      from && from !== "/login" ? from : "/alumno",
+      { replace: true, state: autoCheckout ? { autoCheckout: true } : {} }
+    );
   };
 
   return (

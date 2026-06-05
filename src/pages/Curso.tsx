@@ -1,4 +1,4 @@
-import { Link, useParams, Navigate, useNavigate } from "react-router-dom";
+import { Link, useParams, Navigate, useNavigate, useLocation } from "react-router-dom";
 import {
   Clock,
   BookOpen,
@@ -15,11 +15,12 @@ import {
 } from "lucide-react";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { courses } from "@/data/courses";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const INSTRUCTOR_AVATARS: Record<string, string> = {
   "Andrés Mora":     "https://i.pravatar.cc/600?img=12",
@@ -27,7 +28,7 @@ const INSTRUCTOR_AVATARS: Record<string, string> = {
   "Tomás Vidal":     "https://i.pravatar.cc/600?img=14",
   "Nicolás Prado":   "https://i.pravatar.cc/600?img=15",
   "Joel Marín":      "https://i.pravatar.cc/600?img=13",
-  "Diego Aranda":    "https://i.pravatar.cc/600?img=17",
+  "Diego Aranda":    "https://i.pravatar.cc/600?img=33",
   "Rubén Lago":      "https://i.pravatar.cc/600?img=18",
   "Inés Calvo":      "https://i.pravatar.cc/600?img=47",
   "Marina Reyes":    "https://i.pravatar.cc/600?img=48",
@@ -44,9 +45,10 @@ const Curso = () => {
   const { id: slug } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-
+  const { toast } = useToast();
   const [openModule, setOpenModule] = useState(0);
+  const location = useLocation();
+  const autoCheckout = (location.state as { autoCheckout?: boolean } | null)?.autoCheckout;
 
   // Datos visuales desde courses.ts (estructura completa: módulos, learns, bio…)
   const course = courses.find((c) => c.id === slug);
@@ -81,21 +83,42 @@ const Curso = () => {
     enabled: !!user?.id && !!courseUuid,
   });
 
-  // Inscripción provisional (demo, sin Stripe)
-  const enroll = useMutation({
+  // Checkout con Stripe: llama a la Edge Function y redirige
+  const checkout = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("enrollments").insert({
-        user_id: user!.id,
-        course_id: courseUuid!,
-        source: "manual",
+      if (!courseUuid || !slug) throw new Error("Datos de curso no disponibles");
+      const { data, error } = await supabase.functions.invoke("create-checkout-session", {
+        body: { course_id: courseUuid, slug },
       });
-      if (error) throw error;
+      if (error) throw new Error(error.message);
+      if (!data?.url) throw new Error("No se recibió URL de pago");
+      return data as { url: string };
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["enrollment", user?.id, courseUuid] });
-      navigate(`/alumno/curso/${slug}`);
+    onSuccess: ({ url }) => {
+      window.location.href = url;
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error al procesar el pago",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
+
+  useEffect(() => {
+    if (!autoCheckout || !user || enrollmentLoading || !!enrollment) return;
+    navigate(location.pathname, { replace: true, state: {} });
+    checkout.mutate();
+  }, [autoCheckout, user, enrollmentLoading, enrollment, navigate, location.pathname, checkout]);
+
+  const handleBuyNow = () => {
+    if (!user) {
+      navigate("/login", { state: { from: `/curso/${slug}`, autoCheckout: true } });
+      return;
+    }
+    checkout.mutate();
+  };
 
   // Secciones y lecciones reales para el temario público
   const { data: supabaseSections } = useQuery({
@@ -182,30 +205,29 @@ const Curso = () => {
       return (
         <>
           <button
-            onClick={() => enroll.mutate()}
-            disabled={enroll.isPending}
-            className="w-full rounded-full bg-secondary text-ink py-4 text-sm font-bold hover:opacity-90 transition disabled:opacity-60"
+            onClick={handleBuyNow}
+            disabled={checkout.isPending || !courseUuid}
+            className="w-full rounded-full bg-primary text-primary-foreground py-4 text-sm font-bold hover:bg-primary-glow transition disabled:opacity-60 flex items-center justify-center gap-2"
           >
-            {enroll.isPending ? "Inscribiendo…" : "✦ Inscribir gratis (demo)"}
-          </button>
-          <button className="w-full rounded-full bg-primary text-primary-foreground py-4 text-sm font-bold hover:bg-primary-glow transition">
-            Comprar ahora
-          </button>
-          <button className="w-full rounded-full border-2 border-ink py-4 text-sm font-bold hover:bg-ink hover:text-ink-foreground transition">
-            Añadir al carrito
+            {checkout.isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Redirigiendo a pago…
+              </>
+            ) : (
+              "Comprar ahora"
+            )}
           </button>
         </>
       );
     }
     return (
-      <>
-        <button className="w-full rounded-full bg-primary text-primary-foreground py-4 text-sm font-bold hover:bg-primary-glow transition">
-          Comprar ahora
-        </button>
-        <button className="w-full rounded-full border-2 border-ink py-4 text-sm font-bold hover:bg-ink hover:text-ink-foreground transition">
-          Añadir al carrito
-        </button>
-      </>
+      <button
+        onClick={handleBuyNow}
+        className="w-full rounded-full bg-primary text-primary-foreground py-4 text-sm font-bold hover:bg-primary-glow transition flex items-center justify-center"
+      >
+        Comprar ahora
+      </button>
     );
   };
 
@@ -490,8 +512,19 @@ const Curso = () => {
                 Ir al curso →
               </Link>
             ) : (
-              <button className="px-10 py-4 rounded-full bg-primary text-primary-foreground font-bold hover:bg-primary-glow transition text-sm whitespace-nowrap">
-                Comprar ahora
+              <button
+                onClick={handleBuyNow}
+                disabled={checkout.isPending || !courseUuid}
+                className="px-10 py-4 rounded-full bg-primary text-primary-foreground font-bold hover:bg-primary-glow transition text-sm whitespace-nowrap disabled:opacity-60 flex items-center justify-center gap-2"
+              >
+                {checkout.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Redirigiendo…
+                  </>
+                ) : (
+                  "Comprar ahora"
+                )}
               </button>
             )}
             <span className="text-xs text-ink-foreground/50">30 días de garantía · Sin compromisos</span>
