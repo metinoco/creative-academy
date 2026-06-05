@@ -12,6 +12,7 @@ import AdminDashboard from "@/components/admin/AdminDashboard";
 import AdminCursos from "@/components/admin/AdminCursos";
 import AdminAlumnos from "@/components/admin/AdminAlumnos";
 import AdminVentas from "@/components/admin/AdminVentas";
+import AdminMetricas from "@/components/admin/AdminMetricas";
 
 // ── Design-system "Warm Ink" tokens ────────────────────────────────────────
 const ADMIN_BG      = "bg-white";
@@ -30,7 +31,7 @@ type Section = "dashboard" | "cursos" | "alumnos" | "ventas" | "metricas" | "aju
 
 const navItems: { icon: React.ElementType; label: string; id: Section; locked?: boolean }[] = [
   { icon: LayoutDashboard, label: "Dashboard",  id: "dashboard" },
-  { icon: BarChart3,       label: "Métricas",   id: "metricas", locked: true },
+  { icon: BarChart3,       label: "Métricas",   id: "metricas" },
   { icon: BookOpen,        label: "Cursos",      id: "cursos" },
   { icon: Users,           label: "Alumnos",     id: "alumnos" },
   { icon: CreditCard,      label: "Ventas",      id: "ventas" },
@@ -258,11 +259,11 @@ const Admin = () => {
             </div>
           )}
 
-          {activeSection === "dashboard" && <AdminDashboard />}
+          {activeSection === "dashboard" && <AdminDashboard onNavigate={(s) => setActiveSection(s)} />}
           {activeSection === "cursos"    && <AdminCursos />}
           {activeSection === "alumnos"   && <AdminAlumnos />}
           {activeSection === "ventas"    && <AdminVentas />}
-          {activeSection === "metricas"  && <ComingSoonSection label="Métricas avanzadas" />}
+          {activeSection === "metricas"  && <AdminMetricas />}
           {activeSection === "ajustes"   && <ComingSoonSection label="Ajustes" />}
         </div>
       </main>
