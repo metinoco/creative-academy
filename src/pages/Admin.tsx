@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, Users, CreditCard, BarChart3,
-  Settings, Bell, Plus, LogOut, Menu, Lock,
+  Settings, LogOut, Menu, Lock,
 } from "lucide-react";
 import lauraImg from "@/assets/avatar-laura.jpg";
 import Logo from "@/components/Logo";
@@ -13,6 +13,7 @@ import AdminCursos from "@/components/admin/AdminCursos";
 import AdminAlumnos from "@/components/admin/AdminAlumnos";
 import AdminVentas from "@/components/admin/AdminVentas";
 import AdminMetricas from "@/components/admin/AdminMetricas";
+import AdminNotificationPanel from "@/components/admin/AdminNotificationPanel";
 
 // ── Design-system "Warm Ink" tokens ────────────────────────────────────────
 const ADMIN_BG      = "bg-white";
@@ -225,19 +226,9 @@ const Admin = () => {
             </div>
 
             <div className="ml-auto flex items-center gap-2 md:gap-3">
-              <button
-                className={`relative w-10 h-10 rounded-full ${ADMIN_SURFACE} hover:bg-[hsl(38_35%_92%)] grid place-items-center transition`}
-              >
-                <Bell className="w-4 h-4" />
-                <span className={`absolute top-2 right-2 w-2 h-2 rounded-full ${PRIMARY}`} />
-              </button>
-              <button
-                onClick={() => setActiveSection("cursos")}
-                className={`inline-flex items-center gap-2 rounded-full ${PRIMARY} text-white px-3 py-2 md:px-4 text-sm font-bold hover:bg-[hsl(14_78%_46%)] transition`}
-              >
-                <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Nuevo curso</span>
-              </button>
+              <AdminNotificationPanel
+                onNavigate={(s) => setActiveSection(s)}
+              />
             </div>
           </div>
         </header>

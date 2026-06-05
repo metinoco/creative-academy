@@ -1,16 +1,18 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Eye, Search, ExternalLink } from "lucide-react";
+import { Eye, Search, ExternalLink, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { courses as staticCourses } from "@/data/courses";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useToast } from "@/hooks/use-toast";
 
 const ADMIN_CARD    = "bg-white";
 const ADMIN_BORDER  = "border-[hsl(250_20%_90%)]";
 const ADMIN_SURFACE = "bg-[hsl(250_30%_96%)]";
 const HONEY         = "bg-[hsl(326_85%_55%)]";
 const MOSS          = "bg-[hsl(172_75%_42%)]";
+const PRIMARY       = "bg-[hsl(14_78%_52%)]";
 
 interface CourseRow {
   id: string;
@@ -26,6 +28,7 @@ interface CourseRow {
 
 export default function AdminCursos() {
   const [search, setSearch] = useState("");
+  const { toast } = useToast();
 
   const { data: courses, isLoading, error, refetch } = useQuery({
     queryKey: ["admin", "course-stats"],
@@ -61,14 +64,29 @@ export default function AdminCursos() {
           )}
         </div>
 
-        <div className="relative max-w-xs w-full">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(250_20%_50%)]" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar curso, instructor…"
-            className={`w-full ${ADMIN_SURFACE} rounded-full pl-11 pr-4 py-2 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-[hsl(326_85%_55%)]/40`}
-          />
+        <div className="flex items-center gap-3">
+          <div className="relative max-w-xs w-full">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(250_20%_50%)]" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar curso, instructor…"
+              className={`w-full ${ADMIN_SURFACE} rounded-full pl-11 pr-4 py-2 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-[hsl(326_85%_55%)]/40`}
+            />
+          </div>
+          <button
+            onClick={() =>
+              toast({
+                title: "Próximamente",
+                description: "La creación de cursos desde el panel estará disponible pronto.",
+                variant: "info",
+              })
+            }
+            className={`inline-flex items-center gap-2 rounded-full ${PRIMARY} text-white px-4 py-2 text-sm font-bold hover:bg-[hsl(14_78%_46%)] transition shrink-0`}
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">Nuevo curso</span>
+          </button>
         </div>
       </div>
 

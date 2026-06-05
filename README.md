@@ -165,6 +165,13 @@ Dependencias clave:
 
 Para el detalle completo del plan de implementación, ver [PLAN.md](./PLAN.md).
 
+## 📋 Documentación adicional
+
+| Documento | Descripción |
+|-----------|-------------|
+| [Panel de Administración — Manual](./docs/admin-manual.md) | Guía completa de todas las secciones del panel admin: Dashboard, Métricas, Cursos, Alumnos, Ventas y sistema de notificaciones |
+| [PLAN.md](./PLAN.md) | Plan de implementación detallado con tareas y dependencias |
+
 ## 🎨 Design system
 
 El archivo [design-system.html](./design-system.html) en la raíz documenta de forma interactiva los colores, tipografía, componentes, espaciado y patrones de la plataforma. Ábrete directamente en el navegador; no requiere servidor.
