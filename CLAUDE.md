@@ -348,7 +348,7 @@ Función SECURITY DEFINER `get_certificate_by_code(_code)` — verificación pú
 | `--muted` | Fondos sutiles, texto secundario |
 | `--border` | Bordes |
 
-El panel de administración usa la paleta **Warm Ink** del design system: `hsl(24 25% 12%)` para el sidebar y header de modales, `hsl(14 78% 52%)` para el primario (terracota). `AdminDashboard`, `AdminMetricas`, `AdminVentas`, `AdminNotificationPanel` y `AdminAlumnos` usan esta paleta completa. Solo `AdminCursos.tsx` mantiene tokens indigo/magenta del diseño anterior — pendiente de unificar.
+El panel de administración usa la paleta **Warm Ink** del design system: `hsl(24 25% 12%)` para el sidebar y header de modales, `hsl(14 78% 52%)` para el primario (terracota). Todos los sub-componentes admin (`AdminDashboard`, `AdminMetricas`, `AdminVentas`, `AdminNotificationPanel`, `AdminAlumnos` y `AdminCursos`) usan esta paleta de forma consistente.
 
 ### Referencia visual
 El archivo `design-system.html` en la raíz es un documento HTML estático con scroll-spy que documenta colores, tipografía, espaciado, componentes y stat cards. Ábrete directamente en el navegador; no requiere servidor.
