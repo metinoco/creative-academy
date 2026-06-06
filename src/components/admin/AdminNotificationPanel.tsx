@@ -27,12 +27,12 @@ interface RecentPayment {
 
 interface QaStats {
   unanswered_count: number;
-  total_count: number;
+  total_questions: number;
 }
 
 interface AtRiskStudent {
-  student_name: string | null;
-  student_email: string | null;
+  full_name: string | null;
+  email: string | null;
   course_title: string;
   days_inactive: number;
 }
@@ -83,7 +83,7 @@ export default function AdminNotificationPanel({ onNavigate }: Props) {
         queryFn: async () => {
           const { data, error } = await supabase.rpc("admin_get_qa_stats");
           if (error) throw error;
-          return (data as QaStats[])[0] ?? { unanswered_count: 0, total_count: 0 };
+          return (data as QaStats[])[0] ?? { unanswered_count: 0, total_questions: 0 };
         },
         staleTime: 5 * 60_000,
       },
@@ -100,7 +100,7 @@ export default function AdminNotificationPanel({ onNavigate }: Props) {
   });
 
   const recentPayments = paymentsQ.data ?? [];
-  const qa             = qaQ.data ?? { unanswered_count: 0, total_count: 0 };
+  const qa             = qaQ.data ?? { unanswered_count: 0, total_questions: 0 };
   const atRisk         = riskQ.data ?? [];
 
   const isLoading = paymentsQ.isLoading || qaQ.isLoading || riskQ.isLoading;
@@ -124,16 +124,13 @@ export default function AdminNotificationPanel({ onNavigate }: Props) {
               {badgeCount > 99 ? "99+" : badgeCount}
             </span>
           )}
-          {badgeCount === 0 && !isLoading && (
-            <span className={`absolute top-2 right-2 w-2 h-2 rounded-full ${PRIMARY_BG}`} />
-          )}
         </button>
       </PopoverTrigger>
 
       <PopoverContent
         align="end"
         sideOffset={8}
-        className={`w-80 p-0 rounded-2xl shadow-2xl border ${INK_BORDER} ${INK_BG} ${INK_FG} overflow-hidden`}
+        className={`w-80 max-w-[calc(100vw-1.5rem)] p-0 rounded-2xl shadow-2xl border ${INK_BORDER} ${INK_BG} ${INK_FG} overflow-hidden`}
       >
         {/* Header */}
         <div className={`px-5 py-4 border-b ${INK_BORDER} flex items-center justify-between`}>
@@ -262,11 +259,11 @@ export default function AdminNotificationPanel({ onNavigate }: Props) {
                   className="flex items-center gap-3 px-5 py-3 hover:bg-[hsl(24_20%_16%)] transition"
                 >
                   <div className="w-8 h-8 rounded-full bg-[hsl(0_70%_50%/0.15)] text-[hsl(0_70%_60%)] text-[10px] font-black flex items-center justify-center shrink-0">
-                    {initials(s.student_name, s.student_email)}
+                    {initials(s.full_name, s.email)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-bold truncate">
-                      {s.student_name ?? s.student_email ?? "Alumno"}
+                      {s.full_name ?? s.email ?? "Alumno"}
                     </p>
                     <p className={`text-[11px] ${INK_MUTED} truncate`}>{s.course_title}</p>
                   </div>

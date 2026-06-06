@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Search, UserCheck, UserX, Plus, BookOpen, ChevronRight, RotateCcw } from "lucide-react";
+import { Search, UserCheck, UserX, Plus, BookOpen, ChevronRight, RotateCcw, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -456,8 +456,9 @@ export default function AdminAlumnos() {
                           onClick={() => handleOpen(s)}
                           className="inline-flex items-center gap-1 text-xs font-bold text-[hsl(24_25%_12%)] hover:text-[hsl(14_78%_52%)] transition"
                         >
-                          Gestionar
-                          <ChevronRight className="w-3.5 h-3.5" />
+                          <Pencil className="w-3.5 h-3.5 sm:hidden" />
+                          <span className="hidden sm:inline">Gestionar</span>
+                          <ChevronRight className="w-3.5 h-3.5 hidden sm:inline" />
                         </button>
                       </td>
                     </tr>

@@ -209,9 +209,9 @@ const Admin = () => {
       </Sheet>
 
       {/* MAIN */}
-      <main className="flex-1 md:ml-64">
+      <main className="flex-1 md:ml-64 overflow-x-hidden">
         {/* TOPBAR */}
-        <header className={`sticky top-0 z-30 bg-white/85 backdrop-blur border-b ${ADMIN_BORDER}`}>
+        <header className={`fixed left-0 right-0 top-0 md:sticky md:left-auto md:right-auto z-30 bg-white/85 backdrop-blur border-b ${ADMIN_BORDER}`}>
           <div className="flex items-center gap-3 px-4 md:px-6 lg:px-10 h-16">
             <button
               aria-label="Abrir menú"
@@ -232,6 +232,9 @@ const Admin = () => {
             </div>
           </div>
         </header>
+
+        {/* Spacer: only on mobile to push content below the fixed header */}
+        <div className="h-16 md:hidden" aria-hidden="true" />
 
         {/* SECTION CONTENT */}
         <div className="p-4 sm:p-6 lg:p-10 w-full">

@@ -14,8 +14,8 @@ const TEAL       = "bg-[hsl(195_80%_46%)]";
 const AMBER      = "bg-[hsl(38_90%_50%)]";
 const AMBER_TXT  = "text-[hsl(38_90%_42%)]";
 const ADMIN_CARD    = "bg-white";
-const ADMIN_BORDER  = "border-[hsl(250_20%_90%)]";
-const ADMIN_SURFACE = "bg-[hsl(250_30%_96%)]";
+const ADMIN_BORDER  = "border-[hsl(30_20%_84%)]";
+const ADMIN_SURFACE = "bg-[hsl(38_40%_96%)]";
 
 interface CourseStatRow {
   id: string;
@@ -88,10 +88,10 @@ function initials(name: string | null, email: string) {
 
 function StatSkeleton() {
   return (
-    <div className={`${ADMIN_CARD} rounded-3xl border ${ADMIN_BORDER} p-6 animate-pulse`}>
-      <div className="h-3 w-24 bg-[hsl(250_20%_90%)] rounded mb-4" />
-      <div className="h-8 w-16 bg-[hsl(250_20%_90%)] rounded mb-3" />
-      <div className="h-3 w-20 bg-[hsl(250_20%_90%)] rounded" />
+    <div className={`${ADMIN_CARD} rounded-3xl border ${ADMIN_BORDER} p-4 sm:p-6 animate-pulse`}>
+      <div className="h-3 w-24 bg-[hsl(30_20%_88%)] rounded mb-4" />
+      <div className="h-8 w-16 bg-[hsl(30_20%_88%)] rounded mb-3" />
+      <div className="h-3 w-20 bg-[hsl(30_20%_88%)] rounded" />
     </div>
   );
 }
@@ -307,61 +307,61 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
           ) : (
             <div
               key={s.label}
-              className={`${ADMIN_CARD} rounded-3xl border ${ADMIN_BORDER} p-6 hover:shadow-lg transition relative overflow-hidden`}
+              className={`${ADMIN_CARD} rounded-3xl border ${ADMIN_BORDER} p-4 sm:p-6 hover:shadow-lg transition relative overflow-hidden`}
             >
               <div className={`absolute top-0 left-0 w-1 h-full ${s.accent}`} />
-              <div className="flex items-start justify-between">
-                <div className="text-xs uppercase tracking-widest text-[hsl(250_20%_50%)] font-bold">
+              <div className="flex items-start">
+                <div className="flex-1 min-w-0 text-xs uppercase tracking-widest text-[hsl(24_12%_50%)] font-bold leading-tight">
                   {s.label}
                 </div>
-                <s.icon className={`w-4 h-4 ${s.accentTxt} opacity-60`} />
+                <s.icon className={`w-4 h-4 ${s.accentTxt} opacity-60 shrink-0 ml-2`} />
               </div>
-              <div className="font-display text-3xl mt-2 font-black text-[hsl(250_60%_14%)]">
+              <div className="font-display text-3xl mt-2 font-black text-[hsl(24_25%_12%)]">
                 {s.value}
               </div>
               {s.subLabel && (
-                <div className="text-[11px] text-[hsl(250_20%_50%)] mt-1">{s.subLabel}</div>
+                <div className="text-[11px] text-[hsl(24_12%_50%)] mt-1">{s.subLabel}</div>
               )}
             </div>
           )
         )}
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* REVENUE SECTION */}
-        <div className={`lg:col-span-2 ${ADMIN_CARD} rounded-3xl border ${ADMIN_BORDER} p-6`}>
-          <div className="flex items-center justify-between mb-5">
-            <h3 className="font-display text-xl font-black text-[hsl(250_60%_14%)]">Ingresos</h3>
-            <span className="text-[10px] text-[hsl(250_20%_55%)] uppercase tracking-widest font-bold">
+        <div className={`lg:col-span-2 min-w-0 ${ADMIN_CARD} rounded-3xl border ${ADMIN_BORDER} p-6`}>
+          <div className="mb-5">
+            <h3 className="font-display text-xl font-black text-[hsl(24_25%_12%)]">Ingresos</h3>
+            <span className="text-[10px] text-[hsl(24_12%_50%)] uppercase tracking-widest font-bold">
               histórico y mensual
             </span>
           </div>
 
           {paymentStats.isLoading ? (
-            <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-3">
               {[...Array(3)].map((_, i) => <StatSkeleton key={i} />)}
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-3">
               {/* Total histórico */}
               <div className={`${ADMIN_SURFACE} rounded-2xl p-4`}>
-                <div className="text-[10px] uppercase tracking-widest text-[hsl(250_20%_50%)] font-bold mb-2">
+                <div className="text-[10px] uppercase tracking-widest text-[hsl(24_12%_50%)] font-bold mb-2">
                   Total histórico
                 </div>
-                <div className="font-display text-xl font-black text-[hsl(250_60%_14%)]">
+                <div className="font-display text-xl font-black text-[hsl(24_25%_12%)]">
                   {stats ? eur(stats.total_revenue_cents) : "€0,00"}
                 </div>
-                <div className="text-xs text-[hsl(250_20%_50%)] mt-1">
+                <div className="text-xs text-[hsl(24_12%_50%)] mt-1">
                   {stats?.total_payment_count ?? 0} ventas
                 </div>
               </div>
 
               {/* Este mes */}
               <div className={`${ADMIN_SURFACE} rounded-2xl p-4`}>
-                <div className="text-[10px] uppercase tracking-widest text-[hsl(250_20%_50%)] font-bold mb-2">
+                <div className="text-[10px] uppercase tracking-widest text-[hsl(24_12%_50%)] font-bold mb-2">
                   Este mes
                 </div>
-                <div className="font-display text-xl font-black text-[hsl(250_60%_14%)]">
+                <div className="font-display text-xl font-black text-[hsl(24_25%_12%)]">
                   {stats ? eur(stats.month_revenue_cents) : "€0,00"}
                 </div>
                 <div className="flex items-center gap-1 mt-1">
@@ -376,7 +376,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                       </span>
                     </>
                   ) : (
-                    <span className="text-xs text-[hsl(250_20%_50%)]">
+                    <span className="text-xs text-[hsl(24_12%_50%)]">
                       {stats?.month_payment_count ?? 0} ventas
                     </span>
                   )}
@@ -385,14 +385,14 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
 
               {/* Mes anterior */}
               <div className={`${ADMIN_SURFACE} rounded-2xl p-4`}>
-                <div className="text-[10px] uppercase tracking-widest text-[hsl(250_20%_50%)] font-bold mb-2">
+                <div className="text-[10px] uppercase tracking-widest text-[hsl(24_12%_50%)] font-bold mb-2">
                   Mes anterior
                 </div>
-                <div className="font-display text-xl font-black text-[hsl(250_60%_14%)]">
+                <div className="font-display text-xl font-black text-[hsl(24_25%_12%)]">
                   {stats ? eur(stats.prev_month_revenue_cents) : "€0,00"}
                 </div>
                 <div className="mt-1">
-                  <span className="text-[10px] text-[hsl(250_20%_50%)] bg-[hsl(250_20%_88%)] rounded-full px-2 py-0.5 font-bold">
+                  <span className="text-[10px] text-[hsl(24_12%_50%)] bg-[hsl(30_20%_88%)] rounded-full px-2 py-0.5 font-bold">
                     período cerrado
                   </span>
                 </div>
@@ -403,9 +403,9 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
 
         {/* TOP COURSES */}
         <div className={`${ADMIN_CARD} rounded-3xl border ${ADMIN_BORDER} p-6`}>
-          <div className="flex items-center justify-between mb-5">
-            <h3 className="font-display text-xl font-black text-[hsl(250_60%_14%)]">Top cursos</h3>
-            <span className="text-[10px] text-[hsl(250_20%_55%)] uppercase tracking-widest font-bold">
+          <div className="mb-5">
+            <h3 className="font-display text-xl font-black text-[hsl(24_25%_12%)]">Top cursos</h3>
+            <span className="text-[10px] text-[hsl(24_12%_50%)] uppercase tracking-widest font-bold">
               por matrículas
             </span>
           </div>
@@ -414,11 +414,11 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
             <div className="space-y-4">
               {[...Array(4)].map((_, i) => (
                 <div key={i} className="flex items-center gap-3 animate-pulse">
-                  <div className="w-6 h-6 bg-[hsl(250_20%_90%)] rounded" />
-                  <div className="w-12 h-12 bg-[hsl(250_20%_90%)] rounded-xl" />
+                  <div className="w-6 h-6 bg-[hsl(30_20%_88%)] rounded" />
+                  <div className="w-12 h-12 bg-[hsl(30_20%_88%)] rounded-xl" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-3 bg-[hsl(250_20%_90%)] rounded w-3/4" />
-                    <div className="h-2 bg-[hsl(250_20%_90%)] rounded w-1/2" />
+                    <div className="h-3 bg-[hsl(30_20%_88%)] rounded w-3/4" />
+                    <div className="h-2 bg-[hsl(30_20%_88%)] rounded w-1/2" />
                   </div>
                 </div>
               ))}
@@ -429,7 +429,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                 const staticCourse = staticCourses.find((s) => s.id === c.slug);
                 return (
                   <div key={c.id} className="flex items-center gap-3">
-                    <span className="font-display text-2xl text-[hsl(250_20%_60%)]/60 tabular-nums w-6 font-black">
+                    <span className="font-display text-2xl text-[hsl(24_12%_55%)]/60 tabular-nums w-6 font-black">
                       0{i + 1}
                     </span>
                     {staticCourse?.image ? (
@@ -440,11 +440,11 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                         className="w-12 h-12 rounded-xl object-cover"
                       />
                     ) : (
-                      <div className="w-12 h-12 rounded-xl bg-[hsl(250_20%_90%)]" />
+                      <div className="w-12 h-12 rounded-xl bg-[hsl(30_20%_88%)]" />
                     )}
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-bold truncate text-[hsl(250_60%_14%)]">{c.title}</div>
-                      <div className="text-xs text-[hsl(250_20%_50%)]">
+                      <div className="text-sm font-bold truncate text-[hsl(24_25%_12%)]">{c.title}</div>
+                      <div className="text-xs text-[hsl(24_12%_50%)]">
                         {c.active_enrollments} alumnos
                       </div>
                     </div>
@@ -465,7 +465,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
       {/* RECENT SALES */}
       <div className={`${ADMIN_CARD} rounded-3xl border ${ADMIN_BORDER} p-6`}>
         <div className="flex items-center justify-between mb-5">
-          <h3 className="font-display text-xl font-black text-[hsl(250_60%_14%)]">Ventas recientes</h3>
+          <h3 className="font-display text-xl font-black text-[hsl(24_25%_12%)]">Ventas recientes</h3>
           {onNavigate && (
             <button
               onClick={() => onNavigate("ventas")}
@@ -480,18 +480,18 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
               <div key={i} className="flex items-center gap-3 animate-pulse">
-                <div className="w-9 h-9 rounded-full bg-[hsl(250_20%_90%)]" />
+                <div className="w-9 h-9 rounded-full bg-[hsl(30_20%_88%)]" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-3 bg-[hsl(250_20%_90%)] rounded w-1/3" />
-                  <div className="h-2 bg-[hsl(250_20%_90%)] rounded w-1/4" />
+                  <div className="h-3 bg-[hsl(30_20%_88%)] rounded w-1/3" />
+                  <div className="h-2 bg-[hsl(30_20%_88%)] rounded w-1/4" />
                 </div>
-                <div className="h-4 w-14 bg-[hsl(250_20%_90%)] rounded" />
-                <div className="h-3 w-16 bg-[hsl(250_20%_90%)] rounded hidden sm:block" />
+                <div className="h-4 w-14 bg-[hsl(30_20%_88%)] rounded" />
+                <div className="h-3 w-16 bg-[hsl(30_20%_88%)] rounded hidden sm:block" />
               </div>
             ))}
           </div>
         ) : (recentPayments.data?.length ?? 0) === 0 ? (
-          <div className="py-8 text-center text-sm text-[hsl(250_20%_50%)]">
+          <div className="py-8 text-center text-sm text-[hsl(24_12%_50%)]">
             Sin ventas aún · aparecerán aquí en cuanto se complete el primer pago.
           </div>
         ) : (
@@ -499,20 +499,20 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
             {(recentPayments.data ?? []).slice(0, 5).map((p) => (
               <div key={p.id} className="flex items-center gap-3">
                 <div
-                  className={`w-9 h-9 rounded-full ${ADMIN_SURFACE} flex items-center justify-center text-xs font-black text-[hsl(250_60%_14%)] shrink-0`}
+                  className={`w-9 h-9 rounded-full ${ADMIN_SURFACE} flex items-center justify-center text-xs font-black text-[hsl(24_25%_12%)] shrink-0`}
                 >
                   {initials(p.student_name, p.student_email)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-bold truncate text-[hsl(250_60%_14%)]">
+                  <div className="text-sm font-bold truncate text-[hsl(24_25%_12%)]">
                     {p.student_name ?? p.student_email}
                   </div>
-                  <div className="text-xs text-[hsl(250_20%_50%)] truncate">{p.course_title}</div>
+                  <div className="text-xs text-[hsl(24_12%_50%)] truncate">{p.course_title}</div>
                 </div>
-                <div className="text-sm font-bold text-[hsl(250_60%_14%)] shrink-0">
+                <div className="text-sm font-bold text-[hsl(24_25%_12%)] shrink-0">
                   {eur(p.amount_cents)}
                 </div>
-                <div className="text-xs text-[hsl(250_20%_50%)] shrink-0 hidden sm:block">
+                <div className="text-xs text-[hsl(24_12%_50%)] shrink-0 hidden sm:block">
                   {fmtDate(p.created_at)}
                 </div>
               </div>
@@ -522,14 +522,14 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
       </div>
 
       {/* SECTION A: Finalización por curso + Q&A */}
-      <div className="grid lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Finalización por curso (2/3) */}
-        <div className={`lg:col-span-2 ${ADMIN_CARD} rounded-3xl border ${ADMIN_BORDER} p-6`}>
+        <div className={`lg:col-span-2 min-w-0 ${ADMIN_CARD} rounded-3xl border ${ADMIN_BORDER} p-6`}>
           <div className="flex items-center justify-between mb-5">
-            <h3 className="font-display text-xl font-black text-[hsl(250_60%_14%)]">
+            <h3 className="font-display text-xl font-black text-[hsl(24_25%_12%)]">
               Finalización por curso
             </h3>
-            <span className="text-[10px] text-[hsl(250_20%_55%)] uppercase tracking-widest font-bold">
+            <span className="text-[10px] text-[hsl(24_12%_50%)] uppercase tracking-widest font-bold">
               cursos publicados
             </span>
           </div>
@@ -539,15 +539,15 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
               {[...Array(4)].map((_, i) => (
                 <div key={i} className="animate-pulse space-y-2">
                   <div className="flex justify-between">
-                    <div className="h-3 bg-[hsl(250_20%_90%)] rounded w-1/3" />
-                    <div className="h-3 bg-[hsl(250_20%_90%)] rounded w-16" />
+                    <div className="h-3 bg-[hsl(30_20%_88%)] rounded w-1/3" />
+                    <div className="h-3 bg-[hsl(30_20%_88%)] rounded w-16" />
                   </div>
-                  <div className="h-2 bg-[hsl(250_20%_90%)] rounded-full w-full" />
+                  <div className="h-2 bg-[hsl(30_20%_88%)] rounded-full w-full" />
                 </div>
               ))}
             </div>
           ) : (courseCompletion.data?.length ?? 0) === 0 ? (
-            <div className="py-8 text-center text-sm text-[hsl(250_20%_50%)]">
+            <div className="py-8 text-center text-sm text-[hsl(24_12%_50%)]">
               Sin matrículas activas en cursos publicados.
             </div>
           ) : (
@@ -555,22 +555,22 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
               {(courseCompletion.data ?? []).map((c) => (
                 <div key={c.course_id}>
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-sm font-bold truncate text-[hsl(250_60%_14%)] max-w-[60%]">
+                    <span className="flex-1 min-w-0 text-sm font-bold truncate text-[hsl(24_25%_12%)] mr-2">
                       {c.course_title}
                     </span>
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-xs text-[hsl(250_20%_50%)]">
+                      <span className="hidden sm:inline text-xs text-[hsl(24_12%_50%)]">
                         {c.completed_all} de {c.total_enrolled} alumnos
                       </span>
-                      <span className="text-sm font-black text-[hsl(250_60%_14%)] tabular-nums w-12 text-right">
+                      <span className="text-sm font-black text-[hsl(24_25%_12%)] tabular-nums w-12 text-right">
                         {c.total_lessons === 0 ? "—" : `${c.completion_rate}%`}
                       </span>
                     </div>
                   </div>
                   {c.total_lessons === 0 ? (
-                    <div className="text-[11px] text-[hsl(250_20%_55%)] italic">Sin lecciones</div>
+                    <div className="text-[11px] text-[hsl(24_12%_50%)] italic">Sin lecciones</div>
                   ) : (
-                    <div className="h-2 rounded-full bg-[hsl(250_20%_92%)] overflow-hidden">
+                    <div className="h-2 rounded-full bg-[hsl(30_20%_90%)] overflow-hidden">
                       <div
                         className="h-full rounded-full bg-gradient-warm transition-all duration-500"
                         style={{ width: `${c.completion_rate}%` }}
@@ -595,7 +595,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
             >
               <div className={`absolute top-0 left-0 w-1 h-full ${accentBar}`} />
               <div className="flex items-start justify-between mb-4">
-                <div className="text-xs uppercase tracking-widest text-[hsl(250_20%_50%)] font-bold">
+                <div className="text-xs uppercase tracking-widest text-[hsl(24_12%_50%)] font-bold">
                   Q&A · Pendientes
                 </div>
                 <MessageSquare
@@ -605,15 +605,15 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
 
               {qaStats.isLoading ? (
                 <div className="animate-pulse space-y-3">
-                  <div className="h-12 w-16 bg-[hsl(250_20%_90%)] rounded" />
-                  <div className="h-3 w-28 bg-[hsl(250_20%_90%)] rounded" />
+                  <div className="h-12 w-16 bg-[hsl(30_20%_88%)] rounded" />
+                  <div className="h-3 w-28 bg-[hsl(30_20%_88%)] rounded" />
                 </div>
               ) : (
                 <>
-                  <div className={`font-display text-5xl font-black mb-1 ${hasAlert ? "text-red-500" : "text-[hsl(250_60%_14%)]"}`}>
+                  <div className={`font-display text-5xl font-black mb-1 ${hasAlert ? "text-red-500" : "text-[hsl(24_25%_12%)]"}`}>
                     {unanswered}
                   </div>
-                  <div className="text-xs text-[hsl(250_20%_50%)]">
+                  <div className="text-xs text-[hsl(24_12%_50%)]">
                     de {qa?.total_questions ?? 0} preguntas totales
                   </div>
                   <div className="mt-4">
@@ -641,10 +641,10 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
         return (
           <div className={`${ADMIN_CARD} rounded-3xl border ${ADMIN_BORDER} p-6`}>
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-display text-xl font-black text-[hsl(250_60%_14%)]">
+              <h3 className="font-display text-xl font-black text-[hsl(24_25%_12%)]">
                 Ingresos por curso
               </h3>
-              <span className="text-[10px] text-[hsl(250_20%_55%)] uppercase tracking-widest font-bold">
+              <span className="text-[10px] text-[hsl(24_12%_50%)] uppercase tracking-widest font-bold">
                 cursos con ventas
               </span>
             </div>
@@ -653,18 +653,18 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
               <div className="space-y-4">
                 {[...Array(4)].map((_, i) => (
                   <div key={i} className="flex items-center gap-3 animate-pulse">
-                    <div className="w-6 h-6 bg-[hsl(250_20%_90%)] rounded" />
-                    <div className="w-12 h-12 bg-[hsl(250_20%_90%)] rounded-xl" />
+                    <div className="w-6 h-6 bg-[hsl(30_20%_88%)] rounded" />
+                    <div className="w-12 h-12 bg-[hsl(30_20%_88%)] rounded-xl" />
                     <div className="flex-1 space-y-2">
-                      <div className="h-3 bg-[hsl(250_20%_90%)] rounded w-1/2" />
-                      <div className="h-2 bg-[hsl(250_20%_90%)] rounded-full w-3/4" />
+                      <div className="h-3 bg-[hsl(30_20%_88%)] rounded w-1/2" />
+                      <div className="h-2 bg-[hsl(30_20%_88%)] rounded-full w-3/4" />
                     </div>
-                    <div className="h-4 w-16 bg-[hsl(250_20%_90%)] rounded" />
+                    <div className="h-4 w-16 bg-[hsl(30_20%_88%)] rounded" />
                   </div>
                 ))}
               </div>
             ) : withRevenue.length === 0 ? (
-              <div className="py-8 text-center text-sm text-[hsl(250_20%_50%)]">
+              <div className="py-8 text-center text-sm text-[hsl(24_12%_50%)]">
                 Sin ventas por curso todavía.
               </div>
             ) : (
@@ -674,7 +674,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                   const barWidth = maxRevenue > 0 ? (r.total_revenue_cents / maxRevenue) * 100 : 0;
                   return (
                     <div key={r.course_id} className="flex items-center gap-3">
-                      <span className="font-display text-2xl text-[hsl(250_20%_60%)]/60 tabular-nums w-6 font-black shrink-0">
+                      <span className="font-display text-2xl text-[hsl(24_12%_55%)]/60 tabular-nums w-6 font-black shrink-0">
                         0{i + 1}
                       </span>
                       {staticCourse?.image ? (
@@ -685,25 +685,25 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                           className="w-12 h-12 rounded-xl object-cover shrink-0"
                         />
                       ) : (
-                        <div className="w-12 h-12 rounded-xl bg-[hsl(250_20%_90%)] shrink-0" />
+                        <div className="w-12 h-12 rounded-xl bg-[hsl(30_20%_88%)] shrink-0" />
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-bold truncate text-[hsl(250_60%_14%)]">
+                          <span className="text-sm font-bold truncate text-[hsl(24_25%_12%)]">
                             {r.course_title}
                           </span>
-                          <span className="text-sm font-black text-[hsl(250_60%_14%)] shrink-0 ml-3">
+                          <span className="text-sm font-black text-[hsl(24_25%_12%)] shrink-0 ml-3">
                             {eur(r.total_revenue_cents)}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <div className="flex-1 h-1.5 rounded-full bg-[hsl(250_20%_92%)] overflow-hidden">
+                          <div className="flex-1 h-1.5 rounded-full bg-[hsl(30_20%_90%)] overflow-hidden">
                             <div
                               className="h-full rounded-full bg-gradient-warm transition-all duration-500"
                               style={{ width: `${barWidth}%` }}
                             />
                           </div>
-                          <span className="text-[11px] text-[hsl(250_20%_50%)] shrink-0">
+                          <span className="text-[11px] text-[hsl(24_12%_50%)] shrink-0">
                             {r.payment_count} {r.payment_count === 1 ? "venta" : "ventas"}
                           </span>
                         </div>

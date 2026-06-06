@@ -6,11 +6,12 @@ import {
 } from "recharts";
 import { AlertTriangle, Users, Activity } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // ── Design tokens (consistent with AdminDashboard light palette) ──
 const CARD    = "bg-white";
-const BORDER  = "border-[hsl(250_20%_90%)]";
-const SURFACE = "bg-[hsl(250_30%_96%)]";
+const BORDER  = "border-[hsl(30_20%_84%)]";
+const SURFACE = "bg-[hsl(38_40%_96%)]";
 
 // ── Types ─────────────────────────────────────────────────────────
 type MonthlyRevenue    = { month: string; total_cents: number; payment_count: number };
@@ -48,11 +49,11 @@ function RevenueTooltip({ active, payload }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null;
   const d = payload[0].payload as RevenuePoint;
   return (
-    <div className="bg-white border border-[hsl(250_20%_88%)] rounded-xl px-3 py-2 text-xs shadow-sm">
-      <div className="font-bold text-[hsl(250_60%_14%)]">
+    <div className="bg-white border border-[hsl(30_20%_86%)] rounded-xl px-3 py-2 text-xs shadow-sm">
+      <div className="font-bold text-[hsl(24_25%_12%)]">
         {new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(d.euros)}
       </div>
-      <div className="text-[hsl(250_20%_50%)]">{d.payment_count} ventas</div>
+      <div className="text-[hsl(24_12%_50%)]">{d.payment_count} ventas</div>
     </div>
   );
 }
@@ -61,9 +62,9 @@ function EnrollmentTooltip({ active, payload }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null;
   const d = payload[0].payload as EnrollmentPoint;
   return (
-    <div className="bg-white border border-[hsl(250_20%_88%)] rounded-xl px-3 py-2 text-xs shadow-sm">
-      <div className="font-bold text-[hsl(250_60%_14%)]">{d.value} alumnos</div>
-      <div className="text-[hsl(250_20%_50%)]">matrículas nuevas</div>
+    <div className="bg-white border border-[hsl(30_20%_86%)] rounded-xl px-3 py-2 text-xs shadow-sm">
+      <div className="font-bold text-[hsl(24_25%_12%)]">{d.value} alumnos</div>
+      <div className="text-[hsl(24_12%_50%)]">matrículas nuevas</div>
     </div>
   );
 }
@@ -73,7 +74,7 @@ function RowSkeleton({ rows = 4 }: { rows?: number }) {
   return (
     <div className="space-y-4">
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="h-8 bg-[hsl(250_20%_90%)] rounded animate-pulse" />
+        <div key={i} className="h-8 bg-[hsl(30_20%_88%)] rounded animate-pulse" />
       ))}
     </div>
   );
@@ -148,34 +149,34 @@ export default function AdminMetricas() {
       <div className="grid lg:grid-cols-2 gap-5">
 
         {/* Ingresos por mes */}
-        <div className={`${CARD} rounded-3xl border ${BORDER} p-6`}>
+        <div className={`${CARD} rounded-3xl border ${BORDER} p-6 overflow-hidden`}>
           <div className="flex items-center justify-between mb-5">
-            <h3 className="font-display text-xl font-black text-[hsl(250_60%_14%)]">
+            <h3 className="font-display text-xl font-black text-[hsl(24_25%_12%)]">
               Ingresos por mes
             </h3>
-            <span className="text-[10px] text-[hsl(250_20%_55%)] uppercase tracking-widest font-bold">
+            <span className="text-[10px] text-[hsl(24_12%_50%)] uppercase tracking-widest font-bold">
               últimos 12 meses
             </span>
           </div>
           {monthlyRevenue.isLoading ? (
-            <div className="h-52 bg-[hsl(250_20%_90%)] rounded-2xl animate-pulse" />
+            <div className="h-52 bg-[hsl(30_20%_88%)] rounded-2xl animate-pulse" />
           ) : (
             <ResponsiveContainer width="100%" height={210}>
               <BarChart data={revenueChart} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(250 20% 93%)" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(30 20% 88%)" vertical={false} />
                 <XAxis
                   dataKey="month"
-                  tick={{ fontSize: 10, fill: "hsl(250 20% 55%)" }}
+                  tick={{ fontSize: 10, fill: "hsl(24 12% 50%)" }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fontSize: 10, fill: "hsl(250 20% 55%)" }}
+                  tick={{ fontSize: 10, fill: "hsl(24 12% 50%)" }}
                   tickFormatter={(v: number) => `€${v}`}
                   axisLine={false}
                   tickLine={false}
                 />
-                <Tooltip content={<RevenueTooltip />} cursor={{ fill: "hsl(250 20% 96%)" }} />
+                <Tooltip content={<RevenueTooltip />} cursor={{ fill: "hsl(38 40% 96%)" }} />
                 <Bar dataKey="euros" fill="hsl(14 78% 52%)" radius={[4, 4, 0, 0]} maxBarSize={32} />
               </BarChart>
             </ResponsiveContainer>
@@ -185,32 +186,32 @@ export default function AdminMetricas() {
         {/* Alumnos nuevos por mes */}
         <div className={`${CARD} rounded-3xl border ${BORDER} p-6`}>
           <div className="flex items-center justify-between mb-5">
-            <h3 className="font-display text-xl font-black text-[hsl(250_60%_14%)]">
+            <h3 className="font-display text-xl font-black text-[hsl(24_25%_12%)]">
               Alumnos nuevos por mes
             </h3>
-            <span className="text-[10px] text-[hsl(250_20%_55%)] uppercase tracking-widest font-bold">
+            <span className="text-[10px] text-[hsl(24_12%_50%)] uppercase tracking-widest font-bold">
               últimos 12 meses
             </span>
           </div>
           {monthlyEnrollments.isLoading ? (
-            <div className="h-52 bg-[hsl(250_20%_90%)] rounded-2xl animate-pulse" />
+            <div className="h-52 bg-[hsl(30_20%_88%)] rounded-2xl animate-pulse" />
           ) : (
             <ResponsiveContainer width="100%" height={210}>
               <BarChart data={enrollmentChart} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(250 20% 93%)" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(30 20% 88%)" vertical={false} />
                 <XAxis
                   dataKey="month"
-                  tick={{ fontSize: 10, fill: "hsl(250 20% 55%)" }}
+                  tick={{ fontSize: 10, fill: "hsl(24 12% 50%)" }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fontSize: 10, fill: "hsl(250 20% 55%)" }}
+                  tick={{ fontSize: 10, fill: "hsl(24 12% 50%)" }}
                   axisLine={false}
                   tickLine={false}
                   allowDecimals={false}
                 />
-                <Tooltip content={<EnrollmentTooltip />} cursor={{ fill: "hsl(250 20% 96%)" }} />
+                <Tooltip content={<EnrollmentTooltip />} cursor={{ fill: "hsl(38 40% 96%)" }} />
                 <Bar dataKey="value" fill="hsl(265 82% 58%)" radius={[4, 4, 0, 0]} maxBarSize={32} />
               </BarChart>
             </ResponsiveContainer>
@@ -221,18 +222,18 @@ export default function AdminMetricas() {
       {/* ── BLOQUE 2: Distribución de progreso por curso ─────────── */}
       <div className={`${CARD} rounded-3xl border ${BORDER} p-6`}>
         <div className="flex items-center justify-between mb-5">
-          <h3 className="font-display text-xl font-black text-[hsl(250_60%_14%)]">
+          <h3 className="font-display text-xl font-black text-[hsl(24_25%_12%)]">
             Distribución de progreso por curso
           </h3>
-          <span className="text-[10px] text-[hsl(250_20%_55%)] uppercase tracking-widest font-bold">
+          <span className="text-[10px] text-[hsl(24_12%_50%)] uppercase tracking-widest font-bold">
             dónde abandonan los alumnos
           </span>
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-5 flex-wrap mb-6 text-[11px] text-[hsl(250_20%_50%)]">
+        <div className="flex items-center gap-5 flex-wrap mb-6 text-[11px] text-[hsl(24_12%_50%)]">
           {[
-            { label: "Sin empezar (0%)",  color: "bg-[hsl(250_15%_82%)]" },
+            { label: "Sin empezar (0%)",  color: "bg-[hsl(30_20%_82%)]" },
             { label: "1–25%",             color: "bg-[hsl(38_90%_68%)]" },
             { label: "26–50%",            color: "bg-[hsl(38_90%_54%)]" },
             { label: "51–75%",            color: "bg-[hsl(14_78%_60%)]" },
@@ -249,7 +250,7 @@ export default function AdminMetricas() {
         {progressDist.isLoading ? (
           <RowSkeleton rows={5} />
         ) : (progressDist.data?.length ?? 0) === 0 ? (
-          <div className="py-10 text-center text-sm text-[hsl(250_20%_50%)]">
+          <div className="py-10 text-center text-sm text-[hsl(24_12%_50%)]">
             Sin matrículas activas en cursos publicados.
           </div>
         ) : (
@@ -257,7 +258,7 @@ export default function AdminMetricas() {
             {(progressDist.data ?? []).map((c) => {
               const total = c.total_enrolled || 1;
               const segments = [
-                { key: "b0",     value: Number(c.b0),     color: "bg-[hsl(250_15%_82%)]" },
+                { key: "b0",     value: Number(c.b0),     color: "bg-[hsl(30_20%_82%)]" },
                 { key: "b1_25",  value: Number(c.b1_25),  color: "bg-[hsl(38_90%_68%)]" },
                 { key: "b26_50", value: Number(c.b26_50), color: "bg-[hsl(38_90%_54%)]" },
                 { key: "b51_75", value: Number(c.b51_75), color: "bg-[hsl(14_78%_60%)]" },
@@ -267,13 +268,13 @@ export default function AdminMetricas() {
               return (
                 <div key={c.course_id}>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-bold text-[hsl(250_60%_14%)] truncate max-w-[55%]">
+                    <span className="text-sm font-bold text-[hsl(24_25%_12%)] truncate max-w-[55%]">
                       {c.course_title}
                     </span>
-                    <span className="text-xs text-[hsl(250_20%_50%)] shrink-0">
+                    <span className="text-xs text-[hsl(24_12%_50%)] shrink-0">
                       {c.total_enrolled} alumnos
                       {c.total_lessons === 0 && (
-                        <span className="ml-2 italic text-[hsl(250_15%_62%)]">· sin lecciones</span>
+                        <span className="ml-2 italic text-[hsl(24_12%_55%)]">· sin lecciones</span>
                       )}
                     </span>
                   </div>
@@ -300,9 +301,9 @@ export default function AdminMetricas() {
 
       {/* ── BLOQUE 3: Alumnos en riesgo ──────────────────────────── */}
       <div className={`${CARD} rounded-3xl border ${BORDER} p-6`}>
-        <div className="flex items-center justify-between mb-5">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
           <div className="flex items-center gap-3">
-            <h3 className="font-display text-xl font-black text-[hsl(250_60%_14%)]">
+            <h3 className="font-display text-xl font-black text-[hsl(24_25%_12%)]">
               Alumnos en riesgo
             </h3>
             {(atRisk.data?.length ?? 0) > 0 && (
@@ -312,18 +313,19 @@ export default function AdminMetricas() {
               </span>
             )}
           </div>
-          <select
-            value={riskDays}
-            onChange={(e) => setRiskDays(Number(e.target.value))}
-            className={`text-xs font-bold border ${BORDER} ${SURFACE} rounded-xl px-3 py-1.5 text-[hsl(250_60%_14%)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[hsl(14_78%_52%/0.3)]`}
-          >
-            <option value={30}>Inactivos &gt; 30 días</option>
-            <option value={60}>Inactivos &gt; 60 días</option>
-            <option value={90}>Inactivos &gt; 90 días</option>
-          </select>
+          <Select value={String(riskDays)} onValueChange={(v) => setRiskDays(Number(v))}>
+            <SelectTrigger className={`h-8 w-auto rounded-xl text-xs font-bold ${SURFACE} border ${BORDER} text-[hsl(24_25%_12%)] hover:bg-[hsl(38_40%_92%)] focus:ring-[hsl(14_78%_52%)]/30 focus:ring-2 focus:ring-offset-0`}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="30">Inactivos &gt; 30 días</SelectItem>
+              <SelectItem value="60">Inactivos &gt; 60 días</SelectItem>
+              <SelectItem value="90">Inactivos &gt; 90 días</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
-        <p className="text-xs text-[hsl(250_20%_55%)] mb-5">
+        <p className="text-xs text-[hsl(24_12%_50%)] mb-5">
           Alumnos con matrícula activa que no han completado ninguna lección en los últimos {riskDays} días desde su matriculación.
         </p>
 
@@ -332,11 +334,11 @@ export default function AdminMetricas() {
         ) : (atRisk.data?.length ?? 0) === 0 ? (
           <div className="py-10 flex flex-col items-center gap-3 text-center">
             <div className={`w-14 h-14 rounded-2xl ${SURFACE} flex items-center justify-center`}>
-              <Users className="w-6 h-6 text-[hsl(250_20%_55%)]" />
+              <Users className="w-6 h-6 text-[hsl(24_12%_50%)]" />
             </div>
             <div>
-              <p className="font-bold text-[hsl(250_60%_14%)]">Sin alumnos en riesgo</p>
-              <p className="text-sm text-[hsl(250_20%_50%)] mt-1">
+              <p className="font-bold text-[hsl(24_25%_12%)]">Sin alumnos en riesgo</p>
+              <p className="text-sm text-[hsl(24_12%_50%)] mt-1">
                 Todos los alumnos matriculados han completado al menos una lección.
               </p>
             </div>
@@ -346,36 +348,35 @@ export default function AdminMetricas() {
             <table className="w-full text-sm">
               <thead>
                 <tr className={`border-b ${BORDER}`}>
-                  {["Alumno", "Curso", "Matriculado", "Inactividad"].map((h) => (
-                    <th
-                      key={h}
-                      className="px-4 py-2.5 text-left text-[10px] font-black uppercase tracking-widest text-[hsl(250_20%_50%)]"
-                    >
-                      {h}
-                    </th>
-                  ))}
+                  <th className="px-4 py-2.5 text-left text-[10px] font-black uppercase tracking-widest text-[hsl(24_12%_50%)]">Alumno</th>
+                  <th className="px-4 py-2.5 text-left text-[10px] font-black uppercase tracking-widest text-[hsl(24_12%_50%)] hidden sm:table-cell">Curso</th>
+                  <th className="px-4 py-2.5 text-left text-[10px] font-black uppercase tracking-widest text-[hsl(24_12%_50%)] hidden sm:table-cell">Matriculado</th>
+                  <th className="px-4 py-2.5 text-left text-[10px] font-black uppercase tracking-widest text-[hsl(24_12%_50%)]">Inactividad</th>
                 </tr>
               </thead>
               <tbody className={`divide-y ${BORDER}`}>
                 {(atRisk.data ?? []).map((s) => (
                   <tr
                     key={`${s.user_id}-${s.course_id}`}
-                    className="hover:bg-[hsl(250_30%_98%)] transition"
+                    className="hover:bg-[hsl(38_40%_98%)] transition"
                   >
                     <td className="px-4 py-3">
-                      <div className="font-medium text-[hsl(250_60%_14%)]">
+                      <div className="font-medium text-[hsl(24_25%_12%)]">
                         {s.full_name ?? "—"}
                       </div>
-                      <div className="text-xs text-[hsl(250_20%_50%)] truncate max-w-[180px]">
+                      <div className="text-xs text-[hsl(24_12%_50%)] truncate sm:hidden">
+                        {s.course_title}
+                      </div>
+                      <div className="text-xs text-[hsl(24_12%_50%)] truncate max-w-[180px]">
                         {s.email}
                       </div>
                     </td>
-                    <td className="px-4 py-3 max-w-[220px]">
-                      <span className="truncate block text-[hsl(250_60%_14%)]">
+                    <td className="px-4 py-3 max-w-[220px] hidden sm:table-cell">
+                      <span className="truncate block text-[hsl(24_25%_12%)]">
                         {s.course_title}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-[hsl(250_20%_50%)] whitespace-nowrap">
+                    <td className="px-4 py-3 text-[hsl(24_12%_50%)] whitespace-nowrap hidden sm:table-cell">
                       {fmtDate(s.granted_at)}
                     </td>
                     <td className="px-4 py-3">

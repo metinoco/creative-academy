@@ -121,7 +121,7 @@ Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se control
 | Profesores (`/profesores`) | Estático | Derivado de `courses.ts`; avatares con pravatar |
 | Dashboard alumno (`/alumno`) | **Supabase** | Todos los datos reales: progreso, racha diaria, tiempo semanal/mensual, grid de actividad; empty + error state implementados |
 | Reproductor (`/alumno/curso/:slug`) | Supabase | Acceso controlado por matrícula; Q&A y notas en BD; modal para obtener certificado al completar curso |
-| Admin (`/admin`) | **Supabase** | Dashboard, Cursos, Alumnos, Ventas y Métricas con datos reales; NotificationPanel con badge y drawer; paleta Warm Ink |
+| Admin (`/admin`) | **Supabase** | Dashboard, Cursos, Alumnos, Ventas y Métricas con datos reales; NotificationPanel con badge y drawer; paleta Warm Ink unificada (pendiente solo AdminCursos) |
 | Confirmación pago (`/pago/exito`) | — | Página post-Stripe con confirmación visual y enlace al dashboard del alumno |
 | Verificación cert. (`/certificado/:codigo`) | **Supabase** | Página pública; muestra datos del certificado verificados via RPC; descarga PDF |
 | 404 | — | Diseño split con ilustración 3D |

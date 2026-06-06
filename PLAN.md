@@ -66,6 +66,7 @@
 - [x] Tabla `certificates` con RLS + función pública `get_certificate_by_code(_code)`
 - [x] 4 funciones de métricas admin: `admin_get_course_completion`, `admin_get_revenue_by_course`, `admin_get_qa_stats`, `admin_get_monthly_trends`
 - [x] 11 migraciones en `supabase/migrations/`
+- [x] `types.ts` extendido manualmente con tipos para todas las RPCs admin y `get_certificate_by_code` (no auto-generados por CLI)
 
 ### Datos reales conectados
 - [x] `Cursos.tsx` — lee de tabla `courses` (status=published)
@@ -85,7 +86,7 @@
 
 | Componente | Dato mock | Nota |
 |-----------|-----------|------|
-| `AdminCursos.tsx` | Paleta de colores | Aún usa tokens indigo/magenta antiguos; pendiente unificar a Warm Ink |
+| `AdminCursos.tsx` | Paleta de colores | Único sub-componente admin pendiente de migrar a Warm Ink; resto (Dashboard, Métricas, Ventas, NotificationPanel, Alumnos) ya unificados |
 | `Curso.tsx` | Metadatos visuales (imagen, bio, "aprenderás") | `courses.ts` como fuente; parcialmente enriquecido con Supabase |
 | `Profesores.tsx` | Todo | Derivado de `courses.ts`; Supabase no tiene tabla de instructores |
 
@@ -112,6 +113,8 @@ Migración `20260602000000_admin-panel-functions.sql`: 4 funciones `SECURITY DEF
 - **`AdminMetricas.tsx`**: tasas de completitud por curso, revenue desglosado, actividad Q&A y tendencias mensuales desde 4 RPCs (`admin_get_course_completion`, `admin_get_revenue_by_course`, `admin_get_qa_stats`, `admin_get_monthly_trends`). Migraciones `20260606` y `20260607`.
 - **`AdminNotificationPanel.tsx`**: campana con badge de notificaciones nuevas, drawer lateral con atajos directos a secciones admin (Alumnos nuevos, Ventas recientes, Q&A sin respuesta).
 Sección "Ajustes" con `ComingSoonSection` hasta Fase 2.
+
+**Mejoras de polish posteriores:** paleta Warm Ink unificada en Dashboard/Métricas/Ventas/NotificationPanel/Alumnos (tokens `hsl(24,...)` / `hsl(30,...)`; solo AdminCursos pendiente); topbar de `Admin.tsx` cambiado a `position: fixed` en móvil con spacer div; botón "Gestionar" en `AdminAlumnos` adaptado a móvil (Pencil icon en pantallas pequeñas).
 
 ---
 

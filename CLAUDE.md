@@ -69,7 +69,7 @@ src/
 │   └── courses.ts           # 16 cursos estáticos (usado como fallback en Curso.tsx y Alumno.tsx)
 ├── integrations/supabase/
 │   ├── client.ts            # Singleton del cliente Supabase
-│   └── types.ts             # Tipos autogenerados por Supabase CLI
+│   └── types.ts             # Tipos autogenerados por Supabase CLI + tipos manuales de RPCs admin y certificados
 ├── hooks/
 │   ├── use-mobile.tsx       # Detección de viewport móvil
 │   └── use-toast.ts         # Hook de notificaciones
@@ -348,7 +348,7 @@ Función SECURITY DEFINER `get_certificate_by_code(_code)` — verificación pú
 | `--muted` | Fondos sutiles, texto secundario |
 | `--border` | Bordes |
 
-El panel de administración usa la paleta **Warm Ink** del design system: `hsl(24 25% 12%)` para el sidebar y header de modales, `hsl(14 78% 52%)` para el primario (terracota). `AdminCursos.tsx` aún usa tokens indigo/magenta del diseño anterior — pendiente de unificar.
+El panel de administración usa la paleta **Warm Ink** del design system: `hsl(24 25% 12%)` para el sidebar y header de modales, `hsl(14 78% 52%)` para el primario (terracota). `AdminDashboard`, `AdminMetricas`, `AdminVentas`, `AdminNotificationPanel` y `AdminAlumnos` usan esta paleta completa. Solo `AdminCursos.tsx` mantiene tokens indigo/magenta del diseño anterior — pendiente de unificar.
 
 ### Referencia visual
 El archivo `design-system.html` en la raíz es un documento HTML estático con scroll-spy que documenta colores, tipografía, espaciado, componentes y stat cards. Ábrete directamente en el navegador; no requiere servidor.
@@ -387,7 +387,7 @@ El viewport está fijado en `bottom-right`; los toasts tienen `rounded-[14px]` y
 | `Registro` | Funcional | Auth real con Supabase | Spinner Loader2 en botón durante envío |
 | `Alumno` (dashboard) | UI completa | **Supabase** | Todos los datos reales: matrículas, progreso, lecciones completadas, cursos completados, racha diaria, tiempo semanal/mensual y grid de actividad (query `student-activity`). Empty state motivacional + error state con reintentar. |
 | `AlumnoCurso` (reproductor) | UI completa | **Supabase** | Lecciones, progreso, control de acceso por matrícula; Q&A y notas persistidos en BD; modal para generar certificado al completar curso (llama a Edge Function `generate-certificate`) |
-| `Admin` (dashboard) | UI completa | **Supabase** | Dashboard: 4 tiles reales + top cursos real; revenue con overlay "Próximamente". Cursos: tabla real con `admin_get_course_stats`. Alumnos: modal centralizado por alumno. Ventas: UI real. Métricas: tasas de completitud, revenue por curso, Q&A stats, tendencias mensuales (4 RPCs). NotificationPanel: campana con badge + drawer de atajos. Paleta Warm Ink completa. |
+| `Admin` (dashboard) | UI completa | **Supabase** | Dashboard: 4 tiles reales + top cursos real; revenue con overlay "Próximamente". Cursos: tabla real con `admin_get_course_stats`. Alumnos: modal centralizado por alumno con botón móvil adaptado. Ventas: UI real. Métricas: tasas de completitud, revenue por curso, Q&A stats, tendencias mensuales (4 RPCs). NotificationPanel: campana con badge + drawer de atajos. Topbar fijo en móvil (`position: fixed` + spacer). Paleta Warm Ink en todos los sub-componentes excepto `AdminCursos`. |
 | `PagoExito` (`/pago/exito`) | Completa | — | Confirmación visual post-Stripe con enlace al dashboard del alumno |
 | `Certificado` (`/certificado/:codigo`) | Completa | **Supabase** | Verificación pública via `get_certificate_by_code`; muestra datos del cert + botón descarga PDF |
 | `NotFound` (404) | Completa | — | Layout split con ilustración 3D de artista en pánico |

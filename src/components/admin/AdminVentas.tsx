@@ -173,14 +173,12 @@ export default function AdminVentas() {
             <table className="w-full text-sm">
               <thead className={`${SURFACE} text-[10px] uppercase tracking-widest ${MUTED}`}>
                 <tr className={`border-b ${BORDER}`}>
-                  {["Alumno", "Curso", "Importe", "Fecha", "Estado", ""].map((h) => (
-                    <th
-                      key={h}
-                      className="px-5 py-3 text-left font-black"
-                    >
-                      {h}
-                    </th>
-                  ))}
+                  <th className="px-5 py-3 text-left font-black">Alumno</th>
+                  <th className="px-5 py-3 text-left font-black hidden sm:table-cell">Curso</th>
+                  <th className="px-5 py-3 text-left font-black">Importe</th>
+                  <th className="px-5 py-3 text-left font-black hidden sm:table-cell">Fecha</th>
+                  <th className="px-5 py-3 text-left font-black hidden sm:table-cell">Estado</th>
+                  <th className="px-5 py-3 text-left font-black"></th>
                 </tr>
               </thead>
               <tbody className={`divide-y ${BORDER}`}>
@@ -190,20 +188,23 @@ export default function AdminVentas() {
                       <div className={`font-medium ${FG} truncate max-w-[160px]`}>
                         {p.student_name ?? "—"}
                       </div>
+                      <div className={`text-xs ${MUTED} truncate max-w-[160px] sm:hidden`}>
+                        {p.course_title}
+                      </div>
                       <div className={`text-xs ${MUTED} truncate max-w-[160px]`}>
                         {p.student_email}
                       </div>
                     </td>
-                    <td className={`px-5 py-3.5 ${FG} max-w-[200px]`}>
+                    <td className={`px-5 py-3.5 ${FG} max-w-[200px] hidden sm:table-cell`}>
                       <span className="truncate block">{p.course_title}</span>
                     </td>
                     <td className={`px-5 py-3.5 font-bold ${FG} tabular-nums whitespace-nowrap`}>
                       {eur(p.amount_cents)}
                     </td>
-                    <td className={`px-5 py-3.5 ${MUTED} whitespace-nowrap`}>
+                    <td className={`px-5 py-3.5 ${MUTED} whitespace-nowrap hidden sm:table-cell`}>
                       {fmtDate(p.created_at)}
                     </td>
-                    <td className="px-5 py-3.5">
+                    <td className="px-5 py-3.5 hidden sm:table-cell">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
                         p.status === "succeeded"
                           ? "bg-emerald-50 text-emerald-700"

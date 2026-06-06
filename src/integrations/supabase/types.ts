@@ -609,6 +609,117 @@ export type Database = {
         Returns: boolean
       }
       toggle_question_vote: { Args: { p_question_id: string }; Returns: Json }
+      admin_get_payment_stats: {
+        Args: never
+        Returns: {
+          total_revenue_cents: number
+          month_revenue_cents: number
+          prev_month_revenue_cents: number
+          total_payment_count: number
+          month_payment_count: number
+        }[]
+      }
+      admin_get_recent_payments: {
+        Args: { _limit?: number }
+        Returns: {
+          id: string
+          user_id: string
+          course_id: string
+          student_name: string | null
+          student_email: string | null
+          course_title: string
+          course_slug: string
+          amount_cents: number
+          currency: string
+          status: string
+          stripe_session_id: string
+          created_at: string
+        }[]
+      }
+      admin_get_course_completion_stats: {
+        Args: never
+        Returns: {
+          course_id: string
+          course_title: string
+          course_slug: string
+          total_enrolled: number
+          total_lessons: number
+          completed_all: number
+          completion_rate: number
+        }[]
+      }
+      admin_get_revenue_by_course: {
+        Args: never
+        Returns: {
+          course_id: string
+          course_title: string
+          course_slug: string
+          total_revenue_cents: number
+          payment_count: number
+        }[]
+      }
+      admin_get_qa_stats: {
+        Args: never
+        Returns: {
+          total_questions: number
+          answered_count: number
+          unanswered_count: number
+        }[]
+      }
+      admin_get_monthly_revenue: {
+        Args: never
+        Returns: {
+          month: string
+          total_cents: number
+          payment_count: number
+        }[]
+      }
+      admin_get_monthly_enrollments: {
+        Args: never
+        Returns: {
+          month: string
+          enrollment_count: number
+        }[]
+      }
+      admin_get_progress_distribution: {
+        Args: never
+        Returns: {
+          course_id: string
+          course_title: string
+          total_enrolled: number
+          total_lessons: number
+          b0: number
+          b1_25: number
+          b26_50: number
+          b51_75: number
+          b76_99: number
+          b100: number
+        }[]
+      }
+      admin_get_at_risk_students: {
+        Args: { _days?: number }
+        Returns: {
+          user_id: string
+          full_name: string | null
+          email: string | null
+          course_id: string
+          course_title: string
+          course_slug: string
+          granted_at: string
+          days_inactive: number
+        }[]
+      }
+      get_certificate_by_code: {
+        Args: { _code: string }
+        Returns: {
+          recipient_name: string
+          course_title: string
+          instructor_name: string
+          issued_at: string
+          verification_code: string
+          pdf_url: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "student"
