@@ -1,6 +1,6 @@
 # Academia Creativa — Guía de avance del proyecto
 
-> **Última revisión:** 5 junio 2026  
+> **Última revisión:** 8 junio 2026  
 > **Rama activa:** `development` → `main`  
 > **Deploy:** Vercel (SPA con `vercel.json`)  
 > **Backend:** Supabase (PostgreSQL + Auth)
@@ -21,7 +21,7 @@
 | Q&A y Notas en reproductor | ████████████ 100 % |
 | Datos reales en panel admin | ████████████ 100 % |
 | Sistema de pagos | ████████████ 100 % |
-| Certificados | ░░░░░░░░░░░░ 0 % |
+| Certificados | ████████████ 100 % |
 
 ---
 
@@ -36,7 +36,8 @@
 - [x] Registro (`/registro`) — trigger crea perfil + rol student automáticamente
 - [x] Dashboard alumno (`/alumno`) — cabecera, tiles de progreso, cursos en curso
 - [x] Reproductor de curso (`/alumno/curso/:slug`) — sidebar de lecciones, player, progreso
-- [x] Panel admin (`/admin`) — Dashboard, Cursos, Alumnos y Ventas con datos reales; paleta Warm Ink
+- [x] Panel admin (`/admin`) — Dashboard, Cursos, Alumnos, Ventas y Métricas con datos reales; NotificationPanel con badge y drawer; paleta Warm Ink
+- [x] `Certificado.tsx` (`/certificado/:codigo`) — verificación pública de certificados via RPC; descarga PDF
 - [x] `PagoExito.tsx` (`/pago/exito`) — confirmación visual post-Stripe con enlace al dashboard
 - [x] Rutas protegidas por rol (`ProtectedRoute`)
 - [x] Favicon SVG de marca
@@ -60,9 +61,11 @@
 - [x] Triggers: `handle_new_user()`, `touch_updated_at()`
 - [x] RLS en todas las tablas (anon, student, admin)
 - [x] Seed con 16 cursos, secciones y lecciones — todos los cursos tienen conteos sincronizados con `courses.ts` (22–58 lecciones por curso)
-- [x] 8 migraciones en `supabase/migrations/`
-- [x] Edge Functions: `create-checkout-session` (crea sesión Stripe) y `stripe-webhook` (procesa `checkout.session.completed` → inserta en `payments` + `enrollments`)
+- [x] Edge Functions: `create-checkout-session`, `stripe-webhook` y `generate-certificate` (genera PDF con pdf-lib, A4 landscape, sube a bucket Storage `certificates`)
 - [x] Tabla `payments` con RLS + funciones `admin_get_payment_stats()` y `admin_get_recent_payments()`
+- [x] Tabla `certificates` con RLS + función pública `get_certificate_by_code(_code)`
+- [x] 4 funciones de métricas admin: `admin_get_course_completion`, `admin_get_revenue_by_course`, `admin_get_qa_stats`, `admin_get_monthly_trends`
+- [x] 11 migraciones en `supabase/migrations/`
 
 ### Datos reales conectados
 - [x] `Cursos.tsx` — lee de tabla `courses` (status=published)
@@ -72,6 +75,9 @@
 - [x] `Alumno.tsx` — racha diaria, tiempo semanal/mensual y grid de actividad calculados desde `lesson_progress` (query `student-activity`)
 - [x] `AdminVentas.tsx` — métricas y lista de transacciones reales desde `admin_get_payment_stats` y `admin_get_recent_payments`
 - [x] `Curso.tsx` — botón Comprar llama a Edge Function; spinner durante redirect; flujo autoCheckout post-login
+- [x] `AdminMetricas.tsx` — tasas de completitud, revenue por curso, Q&A stats, tendencias mensuales (4 RPCs)
+- [x] `AlumnoCurso.tsx` — modal para obtener certificado al completar curso; query de cert existente; mutation a Edge Function
+- [x] `Alumno.tsx` — query `["student-certificates"]`; botón "Descargar" / "Obtener cert." en cursos completados
 
 ---
 
@@ -102,8 +108,10 @@ Migración `20260602000000_admin-panel-functions.sql`: 4 funciones `SECURITY DEF
 - **`AdminDashboard.tsx`**: 4 tiles reales (alumnos activos, nuevos este mes, cursos publicados, lecciones completadas); top cursos por matrículas; secciones revenue/ventas con overlay "Próximamente" (Stripe).
 - **`AdminCursos.tsx`**: tabla completa de todos los cursos desde `admin_get_course_stats`; búsqueda por título/autor/categoría; badge estado; conteo de matrículas activas; "Ver" enlaza al catálogo; "Editar" deshabilitado con tooltip.
 - **`AdminAlumnos.tsx`**: tabla de alumnos desde `admin_get_students`; modal centralizado por alumno (`Dialog`, `max-h-[90dvh]`, scroll interno, adaptado a móvil); lista de matrículas con doble confirmación inline para revocar; stub `notifyAccessRevoked` listo para conectar Resend (tarea 1.8); botón Restaurar para reactivar matrículas revocadas; `Select` de shadcn + botón "Dar acceso" para matrícula manual; paleta Warm Ink completa.
-- **`AdminVentas.tsx`**: placeholder con lista de funcionalidades pendientes de Stripe.
-Secciones "Métricas" y "Ajustes" con `ComingSoonSection` hasta Fase 2.
+- **`AdminVentas.tsx`**: métricas y lista de transacciones reales desde `admin_get_payment_stats` y `admin_get_recent_payments`; paleta Warm Ink.
+- **`AdminMetricas.tsx`**: tasas de completitud por curso, revenue desglosado, actividad Q&A y tendencias mensuales desde 4 RPCs (`admin_get_course_completion`, `admin_get_revenue_by_course`, `admin_get_qa_stats`, `admin_get_monthly_trends`). Migraciones `20260606` y `20260607`.
+- **`AdminNotificationPanel.tsx`**: campana con badge de notificaciones nuevas, drawer lateral con atajos directos a secciones admin (Alumnos nuevos, Ventas recientes, Q&A sin respuesta).
+Sección "Ajustes" con `ComingSoonSection` hasta Fase 2.
 
 ---
 
@@ -117,21 +125,14 @@ Migración `20260530120000_qa-and-notes.sql`: tablas `lesson_notes`, `lesson_que
 
 ---
 
-### 1.6 Certificados de finalización
-**Qué hacer:**
-1. Crear tabla `certificates`:
-   ```sql
-   id uuid PK, user_id uuid FK, course_id uuid FK,
-   issued_at timestamptz, certificate_number text unique
-   ```
-2. Lógica de detección: cuando `lesson_progress` de un curso == 100% → insertar en `certificates`
-   - Opción A: trigger en `lesson_progress` (compara total con completadas)
-   - Opción B: Edge Function llamada desde el cliente al marcar última lección
-3. Generación de PDF: Edge Function con una librería como `jsPDF` o plantilla HTML→PNG→PDF
-4. UI en `Alumno.tsx`: mostrar certificado descargable en cursos completados
-5. UI en `AlumnoCurso.tsx`: mostrar banner de felicitación + botón descargar al completar
+### ~~1.6 Certificados de finalización~~ ✅ COMPLETADO
+Migración `20260608000000_certificates.sql`: tabla `certificates` (`id`, `user_id`, `course_id`, `recipient_name`, `verification_code` único 8-char hex, `issued_at`, `pdf_url`). Constraint único `(user_id, course_id)`. RLS: cada alumno ve los suyos; admins ven todos. Función pública `get_certificate_by_code(_code)` SECURITY DEFINER para verificación sin auth.
 
-**Complejidad:** Alta (2–3 días)
+Edge Function `generate-certificate`: recibe `lesson_id` (última lección marcada), verifica que el curso esté al 100%, genera PDF A4 landscape con `pdf-lib`, sube al bucket Storage `certificates` (público), inserta en tabla `certificates` y devuelve el registro.
+
+UI en `AlumnoCurso.tsx`: modal al completar curso — confirma nombre del recipient, llama a Edge Function, invalida queries y abre PDF. UI en `Alumno.tsx`: query `["student-certificates"]`; cursos completados muestran botón "Descargar" si ya tiene cert o "Obtener cert." si no.
+
+Página pública `Certificado.tsx` en `/certificado/:codigo`: verificación via `get_certificate_by_code`; muestra card con nombre, curso, instructor, fecha y código; descarga PDF.
 
 ---
 
@@ -194,8 +195,9 @@ Migración `20260530120000_qa-and-notes.sql`: tablas `lesson_notes`, `lesson_que
 | Dashboard alumno | `src/pages/Alumno.tsx` |
 | Reproductor | `src/pages/AlumnoCurso.tsx` |
 | Panel admin | `src/pages/Admin.tsx` |
-| Schema BD | `supabase/migrations/` (8 archivos) |
-| Edge Functions | `supabase/functions/create-checkout-session/`, `supabase/functions/stripe-webhook/` |
+| Schema BD | `supabase/migrations/` (11 archivos) |
+| Edge Functions | `supabase/functions/create-checkout-session/`, `supabase/functions/stripe-webhook/`, `supabase/functions/generate-certificate/` |
+| Certificados | `src/pages/Certificado.tsx`, `supabase/migrations/20260608000000_certificates.sql` |
 | Confirmación pago | `src/pages/PagoExito.tsx` |
 | Tipos Supabase | `src/integrations/supabase/types.ts` |
 | Datos estáticos | `src/data/courses.ts` |

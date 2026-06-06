@@ -66,6 +66,7 @@ npm test           # Vitest
 | `/alumno/curso/:slug` | Rol `student` | Reproductor de lecciones |
 | `/admin` | Rol `admin` | Panel de administración |
 | `/pago/exito` | Público | Confirmación visual tras compra con Stripe |
+| `/certificado/:codigo` | Público | Verificación pública de certificado de finalización |
 
 ## 🔐 Autenticación y roles
 
@@ -91,6 +92,7 @@ Las migraciones están en `supabase/migrations/`. Tablas principales:
 - `lesson_answers` — Respuestas a preguntas del Q&A
 - `lesson_question_votes` — Votos en preguntas (toggle atómico vía RPC)
 - `payments` — Registro de transacciones Stripe (session_id, amount, status)
+- `certificates` — Certificados emitidos al completar un curso (verification_code único, pdf_url en Storage)
 
 Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se controla mediante la función `has_course_access()`.
 
@@ -107,7 +109,7 @@ Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se control
 | Datos reales en dashboard alumno | 100 % |
 | Datos reales en panel admin | 100 % |
 | Sistema de pagos | 100 % |
-| Certificados | 0 % |
+| Certificados | 100 % |
 
 ### Detalle por página
 
@@ -118,9 +120,10 @@ Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se control
 | Detalle curso (`/curso/:id`) | Híbrido | Metadatos de `courses.ts`; matrículas y previews desde Supabase; skeleton en CTAs; botón Comprar llama a Edge Function con spinner y flujo autoCheckout post-login |
 | Profesores (`/profesores`) | Estático | Derivado de `courses.ts`; avatares con pravatar |
 | Dashboard alumno (`/alumno`) | **Supabase** | Todos los datos reales: progreso, racha diaria, tiempo semanal/mensual, grid de actividad; empty + error state implementados |
-| Reproductor (`/alumno/curso/:slug`) | Supabase | Acceso controlado por matrícula; Q&A y notas persistidos en BD |
-| Admin (`/admin`) | **Supabase** | Dashboard, Cursos, Alumnos y Ventas con datos reales; modal centralizado de alumno; paleta Warm Ink |
+| Reproductor (`/alumno/curso/:slug`) | Supabase | Acceso controlado por matrícula; Q&A y notas en BD; modal para obtener certificado al completar curso |
+| Admin (`/admin`) | **Supabase** | Dashboard, Cursos, Alumnos, Ventas y Métricas con datos reales; NotificationPanel con badge y drawer; paleta Warm Ink |
 | Confirmación pago (`/pago/exito`) | — | Página post-Stripe con confirmación visual y enlace al dashboard del alumno |
+| Verificación cert. (`/certificado/:codigo`) | **Supabase** | Página pública; muestra datos del certificado verificados via RPC; descarga PDF |
 | 404 | — | Diseño split con ilustración 3D |
 
 ## 🛣️ Roadmap
@@ -134,7 +137,7 @@ Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se control
 | ~~1.3~~ | ~~Panel admin con datos reales~~ | ✅ Completado |
 | ~~1.4~~ | ~~Q&A y Notas persistentes en el reproductor~~ | ✅ Completado |
 | ~~1.5~~ | ~~Integración de pagos con Stripe~~ | ✅ Completado |
-| 1.6 | Certificados de finalización | Alta (2–3 días) |
+| ~~1.6~~ | ~~Certificados de finalización~~ | ✅ Completado |
 | 1.7 | Migración de ~2.400 alumnos existentes | Alta (1–2 días) |
 | 1.8 | Emails automáticos (Resend / SendGrid) | Media (1 día) |
 
@@ -162,6 +165,8 @@ Dependencias clave:
 - `courses.ts` actúa como fallback para imágenes y metadatos; no eliminar hasta que la BD tenga `image_url` en todos los cursos.
 - Para probar el flujo de pago Stripe, usar tarjeta de test `4242 4242 4242 4242`. El webhook debe estar configurado en el dashboard de Stripe apuntando a la Edge Function `stripe-webhook`.
 - Las variables de Stripe (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`) van en los secrets de Supabase Edge Functions, no en `.env` del frontend.
+- Para generar un certificado: completar el 100% de las lecciones de un curso y usar el botón "Obtener certificado" en el reproductor. El certificado queda accesible en el dashboard del alumno.
+- La URL de verificación de certificados tiene el formato `/certificado/XXXXXXXX` (código de 8 caracteres en mayúsculas). No requiere autenticación.
 
 Para el detalle completo del plan de implementación, ver [PLAN.md](./PLAN.md).
 

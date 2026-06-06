@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Flame, Clock, Play, Calendar, Target, ArrowUpRight, Trophy, MessageCircle, Bookmark, BookOpen, AlertCircle } from "lucide-react";
+import { Flame, Clock, Play, Calendar, Target, ArrowUpRight, Trophy, MessageCircle, Bookmark, BookOpen, AlertCircle, Award, Download } from "lucide-react";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { courses } from "@/data/courses";
@@ -149,6 +149,18 @@ const Alumno = () => {
     enabled: !!user?.id,
   });
 
+  const { data: certificates = [] } = useQuery({
+    queryKey: ["student-certificates", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("certificates")
+        .select("course_id, verification_code, pdf_url")
+        .eq("user_id", user!.id);
+      return (data ?? []) as { course_id: string; verification_code: string; pdf_url: string | null }[];
+    },
+    enabled: !!user?.id,
+  });
+
   const totalLessons = enrolledProgress.reduce((s, c) => s + c.total, 0);
   const completedLessons = enrolledProgress.reduce((s, c) => s + c.completed, 0);
   const globalProgress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
@@ -291,7 +303,10 @@ const Alumno = () => {
           </div>
         ) : (
           <div className="space-y-3">
-            {enrolledProgress.map((c, i) => (
+            {enrolledProgress.map((c, i) => {
+              const cert = certificates.find((x) => x.course_id === c.courseId);
+              const isComplete = c.total > 0 && c.completed === c.total;
+              return (
               <article key={c.courseId} className="group bg-card border-2 border-border rounded-3xl overflow-hidden hover:border-primary transition">
                 <div className="grid grid-cols-12 items-stretch">
                   {/* Big number */}
@@ -314,7 +329,7 @@ const Alumno = () => {
                       <Calendar className="w-3 h-3" />
                       {c.completed === 0
                         ? "Sin empezar"
-                        : c.completed === c.total
+                        : isComplete
                         ? "Completado ✓"
                         : `${c.completed} lección${c.completed !== 1 ? "es" : ""} completada${c.completed !== 1 ? "s" : ""}`}
                     </p>
@@ -331,16 +346,48 @@ const Alumno = () => {
                     <div className="h-2 rounded-full bg-muted overflow-hidden">
                       <div className="h-full bg-gradient-warm rounded-full transition-all duration-500" style={{ width: `${c.progress}%` }} />
                     </div>
-                    <Link
-                      to={`/alumno/curso/${c.slug}`}
-                      className="mt-1 inline-flex items-center justify-center gap-2 rounded-full bg-ink text-ink-foreground px-4 py-2.5 text-xs font-bold hover:bg-primary transition"
-                    >
-                      Continuar <Play className="w-3 h-3 fill-current" />
-                    </Link>
+
+                    {isComplete ? (
+                      /* Course complete → always access player + optional cert download */
+                      <>
+                        <Link
+                          to={`/alumno/curso/${c.slug}`}
+                          className="mt-1 inline-flex items-center justify-center gap-2 rounded-full bg-ink text-ink-foreground px-4 py-2.5 text-xs font-bold hover:bg-primary transition"
+                        >
+                          Repasar <Play className="w-3 h-3 fill-current" />
+                        </Link>
+                        {cert?.pdf_url ? (
+                          <a
+                            href={cert.pdf_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center gap-2 rounded-full bg-secondary text-ink px-4 py-2.5 text-xs font-bold hover:bg-secondary/80 transition"
+                          >
+                            <Download className="w-3 h-3" /> Certificado
+                          </a>
+                        ) : (
+                          <Link
+                            to={`/alumno/curso/${c.slug}`}
+                            className="inline-flex items-center justify-center gap-2 rounded-full bg-secondary/80 text-ink px-4 py-2.5 text-xs font-bold hover:bg-secondary transition"
+                          >
+                            <Award className="w-3 h-3" /> Obtener cert.
+                          </Link>
+                        )}
+                      </>
+                    ) : (
+                      /* In progress → continue */
+                      <Link
+                        to={`/alumno/curso/${c.slug}`}
+                        className="mt-1 inline-flex items-center justify-center gap-2 rounded-full bg-ink text-ink-foreground px-4 py-2.5 text-xs font-bold hover:bg-primary transition"
+                      >
+                        Continuar <Play className="w-3 h-3 fill-current" />
+                      </Link>
+                    )}
                   </div>
                 </div>
               </article>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>

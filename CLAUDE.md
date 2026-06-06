@@ -43,11 +43,19 @@ src/
 │   ├── AlumnoCurso.tsx      # Reproductor de curso para alumno (protegida: rol student)
 │   ├── Admin.tsx            # Dashboard admin (protegida: rol admin)
 │   ├── PagoExito.tsx        # Confirmación visual tras compra con Stripe (/pago/exito)
+│   ├── Certificado.tsx      # Verificación pública de certificado (/certificado/:codigo)
 │   ├── Login.tsx            # Autenticación
 │   ├── Registro.tsx         # Registro de nuevos usuarios
 │   └── NotFound.tsx         # 404
 ├── components/
 │   ├── ui/                  # ~60 componentes shadcn/ui
+│   ├── admin/               # Sub-componentes del panel de administración
+│   │   ├── AdminDashboard.tsx       # Tiles reales + top cursos
+│   │   ├── AdminCursos.tsx          # Tabla de cursos con stats
+│   │   ├── AdminAlumnos.tsx         # Modal centralizado por alumno
+│   │   ├── AdminVentas.tsx          # Transacciones Stripe reales
+│   │   ├── AdminMetricas.tsx        # Métricas de contenido: completitud, revenue por curso, Q&A
+│   │   └── AdminNotificationPanel.tsx  # Panel de notificaciones con badge y drawer
 │   ├── SiteHeader.tsx       # Cabecera (variant: "public" | "student")
 │   ├── SiteFooter.tsx       # Pie de página
 │   ├── CourseCard.tsx       # Tarjeta de curso para el catálogo
@@ -73,12 +81,16 @@ public/
 ├── favicon.svg              # Favicon SVG derivado del logo de marca
 └── apple-touch-icon.png     # Icono 180×180 para pantalla de inicio iOS
 
+docs/
+└── admin-manual.md          # Guía completa del panel de administración (todas las secciones)
+
 supabase/
 ├── functions/
 │   ├── create-checkout-session/index.ts  # Edge Function: crea sesión Stripe y devuelve URL de pago
 │   ├── stripe-webhook/index.ts           # Edge Function: procesa checkout.session.completed → payments + enrollments
+│   ├── generate-certificate/index.ts     # Edge Function: genera PDF con pdf-lib (A4 landscape) y sube a Storage
 │   └── _shared/cors.ts                   # Headers CORS compartidos
-└── migrations/              # 8 archivos SQL (schema completo + seed de 16 cursos + Q&A/notas + admin functions + payments)
+└── migrations/              # 11 archivos SQL (schema completo + seed + Q&A/notas + admin functions + payments + métricas + certificados)
 
 vercel.json                  # Rewrite catch-all → /index.html (necesario para React Router en Vercel)
 ```
@@ -99,6 +111,7 @@ vercel.json                  # Rewrite catch-all → /index.html (necesario para
 | `/alumno/curso/:slug` | `AlumnoCurso` | Protegida (rol: `student`) |
 | `/admin` | `Admin` | Protegida (rol: `admin`) |
 | `/pago/exito` | `PagoExito` | Público |
+| `/certificado/:codigo` | `Certificado` | Público (verificación de certificado emitido) |
 
 ---
 
@@ -261,6 +274,11 @@ Constraint único `(question_id, user_id)` — un voto por alumno/pregunta.
 - `toggle_question_vote(_question_id)` — RPC SECURITY DEFINER; alterna voto y actualiza `votes_count` atómicamente
 - `admin_get_payment_stats()` — SECURITY DEFINER; devuelve métricas de ventas para el panel admin
 - `admin_get_recent_payments()` — SECURITY DEFINER; devuelve últimas transacciones para `AdminVentas.tsx`
+- `admin_get_course_completion()` — SECURITY DEFINER; tasa de completitud por curso para `AdminMetricas.tsx`
+- `admin_get_revenue_by_course()` — SECURITY DEFINER; ingresos desglosados por curso para `AdminMetricas.tsx`
+- `admin_get_qa_stats()` — SECURITY DEFINER; actividad Q&A (preguntas/respuestas por curso) para `AdminMetricas.tsx`
+- `admin_get_monthly_trends()` — SECURITY DEFINER; tendencia mensual de alumnos e ingresos para `AdminMetricas.tsx`
+- `get_certificate_by_code(_code)` — SECURITY DEFINER; verificación pública de certificado sin auth (usada en `Certificado.tsx`)
 
 ### Enums
 - `app_role` — `admin`, `student`
@@ -289,8 +307,20 @@ Todas las tablas tienen RLS habilitado:
 | `status` | `text` | Estado del pago (`completed`, etc.) |
 | `created_at` | `timestamptz` | |
 
-### Tablas PENDIENTES de crear
-- `certificates` — Certificados emitidos al completar un curso
+**`certificates`**
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | `uuid` (PK) | |
+| `user_id` | `uuid` | FK → `auth.users.id` |
+| `course_id` | `uuid` | FK → `courses.id` |
+| `recipient_name` | `text` | Nombre confirmado por el alumno al generar |
+| `verification_code` | `text` (unique) | 8 chars hex en mayúsculas, auto-generado |
+| `issued_at` | `timestamptz` | |
+| `pdf_url` | `text` | URL pública en Storage bucket `certificates` |
+
+Constraint único `(user_id, course_id)` — un certificado por alumno/curso.
+
+Función SECURITY DEFINER `get_certificate_by_code(_code)` — verificación pública sin auth.
 
 ---
 
@@ -356,9 +386,10 @@ El viewport está fijado en `bottom-right`; los toasts tienen `rounded-[14px]` y
 | `Login` | Funcional | Auth real con Supabase | Spinner Loader2 en botón durante envío |
 | `Registro` | Funcional | Auth real con Supabase | Spinner Loader2 en botón durante envío |
 | `Alumno` (dashboard) | UI completa | **Supabase** | Todos los datos reales: matrículas, progreso, lecciones completadas, cursos completados, racha diaria, tiempo semanal/mensual y grid de actividad (query `student-activity`). Empty state motivacional + error state con reintentar. |
-| `AlumnoCurso` (reproductor) | UI completa | **Supabase** | Lecciones, progreso, control de acceso por matrícula; Q&A y notas persistidos en BD (`lesson_questions`, `lesson_answers`, `lesson_notes`) |
-| `Admin` (dashboard) | UI completa | **Supabase** | Dashboard: 4 tiles reales + top cursos real; revenue con overlay "Próximamente". Cursos: tabla real con `admin_get_course_stats`. Alumnos: modal centralizado por alumno (`Dialog`, scroll interno, adaptado a móvil); doble confirmación inline al revocar; stub `notifyAccessRevoked`; `Select` shadcn + "Dar acceso" para matrícula manual; paleta Warm Ink. Ventas: UI real con `admin_get_payment_stats` y `admin_get_recent_payments`; paleta Warm Ink. |
+| `AlumnoCurso` (reproductor) | UI completa | **Supabase** | Lecciones, progreso, control de acceso por matrícula; Q&A y notas persistidos en BD; modal para generar certificado al completar curso (llama a Edge Function `generate-certificate`) |
+| `Admin` (dashboard) | UI completa | **Supabase** | Dashboard: 4 tiles reales + top cursos real; revenue con overlay "Próximamente". Cursos: tabla real con `admin_get_course_stats`. Alumnos: modal centralizado por alumno. Ventas: UI real. Métricas: tasas de completitud, revenue por curso, Q&A stats, tendencias mensuales (4 RPCs). NotificationPanel: campana con badge + drawer de atajos. Paleta Warm Ink completa. |
 | `PagoExito` (`/pago/exito`) | Completa | — | Confirmación visual post-Stripe con enlace al dashboard del alumno |
+| `Certificado` (`/certificado/:codigo`) | Completa | **Supabase** | Verificación pública via `get_certificate_by_code`; muestra datos del cert + botón descarga PDF |
 | `NotFound` (404) | Completa | — | Layout split con ilustración 3D de artista en pánico |
 
 ---
@@ -373,11 +404,11 @@ El viewport está fijado en `bottom-right`; los toasts tienen `rounded-[14px]` y
 | Tabla `payments` | **Completado** | Migración `20260605`; RLS con funciones admin para métricas y lista de transacciones |
 | Acceso automático al curso tras compra | **Completado** | `stripe-webhook` inserta en `payments` y `enrollments` al recibir `checkout.session.completed` |
 | Revocación de acceso | **Completado** | UI de revocación/restauración en sección Alumnos del panel admin |
-| Certificado de finalización | Pendiente | Tabla `certificates` + lógica de detección de curso completado + generación PDF |
+| Certificado de finalización | **Completado** | Tabla `certificates` + Edge Function `generate-certificate` (pdf-lib, A4 landscape) + bucket Storage `certificates` + modal de nombre en `AlumnoCurso.tsx` + página pública `/certificado/:codigo` |
 | Racha y actividad reciente del alumno | **Completado** | `Alumno.tsx` calcula racha, tiempo y grid de actividad desde `lesson_progress` |
 | Q&A en reproductor de lecciones | **Completado** | `AlumnoCurso.tsx` lee/escribe `lesson_questions` y `lesson_answers`; votos vía `toggle_question_vote()` |
 | Notas en reproductor | **Completado** | `AlumnoCurso.tsx` upserta en `lesson_notes` con índice único `(user_id, lesson_id)` |
-| Panel admin con datos reales | **Completado** | Secciones Dashboard, Cursos, Alumnos con datos reales; Ventas placeholder Stripe |
+| Panel admin con datos reales | **Completado** | Dashboard, Cursos, Alumnos, Ventas y Métricas con datos reales; NotificationPanel activo; paleta Warm Ink |
 | CRUD de cursos desde admin | Pendiente | Crear/editar cursos, secciones y lecciones |
 | Gestión de alumnos desde admin | **Completado** | Buscar, ver matrículas, dar/revocar acceso manual desde modal centralizado por alumno; doble confirmación al revocar |
 | Emails automáticos | Pendiente | Bienvenida, confirmación compra, recordatorio |

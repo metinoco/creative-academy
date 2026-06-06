@@ -18,14 +18,26 @@ import {
   Download,
   BookOpen,
   Clock,
+  Loader2,
+  ExternalLink,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 import Logo from "@/components/Logo";
 
 /* ─── types ─────────────────────────────────────────────── */
+interface Certificate {
+  id: string;
+  verification_code: string;
+  pdf_url: string | null;
+  issued_at: string;
+  recipient_name: string;
+}
+
 interface Lesson {
   id: string;
   title: string;
@@ -92,8 +104,10 @@ function relativeTime(iso: string): string {
 /* ─── component ─────────────────────────────────────────── */
 const AlumnoCurso = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const queryClient = useQueryClient();
+
+  const { toast } = useToast();
 
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [openSections, setOpenSections] = useState<Set<string>>(new Set());
@@ -102,6 +116,11 @@ const AlumnoCurso = () => {
   const [notesSaving, setNotesSaving] = useState(false);
   const [newQuestion, setNewQuestion] = useState("");
   const notesTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Certificate modal state
+  const [showCertModal, setShowCertModal] = useState(false);
+  const [certName, setCertName] = useState("");
+  const [justCompleted, setJustCompleted] = useState(false);
 
   /* ── queries ── */
   const { data: course, isLoading: loadingCourse } = useQuery({
@@ -235,6 +254,21 @@ const AlumnoCurso = () => {
     enabled: !!activeLessonId && !!enrollment && !!user?.id,
   });
 
+  /* ── certificate query ── */
+  const { data: certificate, isSuccess: certLoaded } = useQuery({
+    queryKey: ["certificate", user?.id, course?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("certificates")
+        .select("id, verification_code, pdf_url, issued_at, recipient_name")
+        .eq("user_id", user!.id)
+        .eq("course_id", course!.id)
+        .maybeSingle();
+      return data as Certificate | null;
+    },
+    enabled: !!user?.id && !!course?.id,
+  });
+
   /* ── mutations ── */
   const markComplete = useMutation({
     mutationFn: async (lessonId: string) => {
@@ -244,11 +278,38 @@ const AlumnoCurso = () => {
         course_id: course!.id,
       });
       if (error && error.code !== "23505") throw error;
+      return lessonId;
     },
-    onSuccess: () => {
+    onSuccess: (lessonId) => {
+      // Detect if this was the last lesson before query invalidation
+      const currentProgress = progress ?? new Set<string>();
+      const wasAlreadyDone = currentProgress.has(lessonId);
+      const newCount = currentProgress.size + (wasAlreadyDone ? 0 : 1);
+      if (newCount >= totalLessons && totalLessons > 0 && !isCourseComplete) {
+        setJustCompleted(true);
+      }
       queryClient.invalidateQueries({
         queryKey: ["lesson-progress", user?.id, course?.id],
       });
+    },
+  });
+
+  const generateCertificate = useMutation({
+    mutationFn: async (recipientName: string) => {
+      const { data, error } = await supabase.functions.invoke("generate-certificate", {
+        body: { course_id: course!.id, recipient_name: recipientName },
+      });
+      if (error) throw error;
+      return data as Certificate;
+    },
+    onSuccess: (cert) => {
+      queryClient.invalidateQueries({ queryKey: ["certificate", user?.id, course?.id] });
+      queryClient.invalidateQueries({ queryKey: ["student-certificates", user?.id] });
+      setShowCertModal(false);
+      if (cert.pdf_url) window.open(cert.pdf_url, "_blank");
+    },
+    onError: () => {
+      toast({ title: "Error al generar el certificado", variant: "destructive" });
     },
   });
 
@@ -339,6 +400,15 @@ const AlumnoCurso = () => {
     setNotesSaved(false);
     setNotesSaving(false);
   }, [noteData]);
+
+  // Show certificate modal when course just became 100% complete for the first time
+  useEffect(() => {
+    if (justCompleted && isCourseComplete && certLoaded && certificate === null) {
+      setJustCompleted(false);
+      setCertName(profile?.full_name ?? "");
+      setShowCertModal(true);
+    }
+  }, [justCompleted, isCourseComplete, certLoaded, certificate, profile?.full_name]);
 
   /* ── handlers ── */
   const toggleSection = (sectionId: string) => {
@@ -534,10 +604,25 @@ const AlumnoCurso = () => {
                 <Award className="w-4 h-4 text-secondary" />
                 <span className="text-xs font-black text-secondary uppercase tracking-widest">¡Completado!</span>
               </div>
-              <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-secondary text-ink text-xs font-bold hover:bg-secondary/80 transition">
-                <Download className="w-3.5 h-3.5" />
-                Descargar certificado
-              </button>
+              {certificate?.pdf_url ? (
+                <a
+                  href={certificate.pdf_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-secondary text-ink text-xs font-bold hover:bg-secondary/80 transition"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Descargar certificado
+                </a>
+              ) : (
+                <button
+                  onClick={() => { setCertName(profile?.full_name ?? ""); setShowCertModal(true); }}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-secondary text-ink text-xs font-bold hover:bg-secondary/80 transition"
+                >
+                  <Award className="w-3.5 h-3.5" />
+                  Obtener certificado
+                </button>
+              )}
             </div>
           )}
 
@@ -716,13 +801,39 @@ const AlumnoCurso = () => {
                   <div className="text-xs font-black uppercase tracking-widest text-ink/70 mb-1">¡Enhorabuena!</div>
                   <h3 className="font-display text-xl font-black text-foreground">Has completado el curso</h3>
                   <p className="text-muted-foreground text-sm mt-1">
-                    Tu certificado ya está listo para descargarlo y compartirlo.
+                    {certificate?.pdf_url
+                      ? "Tu certificado está listo. Descárgalo y compártelo."
+                      : "Genera tu certificado oficial de finalización."}
                   </p>
                 </div>
-                <button className="shrink-0 flex items-center gap-2 px-6 py-3 rounded-full bg-secondary text-ink text-sm font-bold hover:bg-secondary/80 transition">
-                  <Download className="w-4 h-4" />
-                  Descargar certificado
-                </button>
+                {certificate?.pdf_url ? (
+                  <div className="shrink-0 flex flex-col sm:flex-row gap-2">
+                    <a
+                      href={certificate.pdf_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-6 py-3 rounded-full bg-secondary text-ink text-sm font-bold hover:bg-secondary/80 transition"
+                    >
+                      <Download className="w-4 h-4" />
+                      Descargar PDF
+                    </a>
+                    <Link
+                      to={`/certificado/${certificate.verification_code}`}
+                      className="flex items-center gap-2 px-5 py-3 rounded-full border-2 border-secondary/40 text-sm font-bold hover:bg-secondary/10 transition"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      Verificar
+                    </Link>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => { setCertName(profile?.full_name ?? ""); setShowCertModal(true); }}
+                    className="shrink-0 flex items-center gap-2 px-6 py-3 rounded-full bg-secondary text-ink text-sm font-bold hover:bg-secondary/80 transition"
+                  >
+                    <Award className="w-4 h-4" />
+                    Obtener certificado
+                  </button>
+                )}
               </div>
             )}
 
@@ -983,6 +1094,68 @@ const AlumnoCurso = () => {
           </div>
         </main>
       </div>
+
+      {/* ── CERTIFICATE MODAL ──────────────────────────────── */}
+      <Dialog open={showCertModal} onOpenChange={setShowCertModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-display text-2xl flex items-center gap-2">
+              <Award className="w-6 h-6 text-secondary" />
+              ¡Felicitaciones!
+            </DialogTitle>
+            <DialogDescription>
+              Has completado{" "}
+              <span className="font-bold text-foreground">"{course?.title}"</span>.
+              Confirma el nombre que aparecerá en tu certificado oficial.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-1">
+            <div>
+              <label className="text-sm font-bold block mb-1.5">
+                Nombre en el certificado
+              </label>
+              <input
+                type="text"
+                value={certName}
+                onChange={(e) => setCertName(e.target.value)}
+                placeholder="Tu nombre completo"
+                disabled={generateCertificate.isPending}
+                className="w-full rounded-xl border-2 border-border bg-background px-4 py-2.5 text-sm focus:outline-none focus:border-primary transition disabled:opacity-50"
+              />
+              <p className="text-xs text-muted-foreground mt-1.5">
+                Este nombre no podrá modificarse una vez generado el certificado.
+              </p>
+            </div>
+
+            <button
+              onClick={() => { if (certName.trim()) generateCertificate.mutate(certName.trim()); }}
+              disabled={!certName.trim() || generateCertificate.isPending}
+              className="w-full flex items-center justify-center gap-2 rounded-full bg-primary text-primary-foreground px-6 py-3 text-sm font-bold hover:bg-primary-glow transition disabled:opacity-50"
+            >
+              {generateCertificate.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Generando certificado…
+                </>
+              ) : (
+                <>
+                  <Award className="w-4 h-4" />
+                  Generar mi certificado
+                </>
+              )}
+            </button>
+
+            <button
+              onClick={() => setShowCertModal(false)}
+              disabled={generateCertificate.isPending}
+              className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition py-1"
+            >
+              Más tarde
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
