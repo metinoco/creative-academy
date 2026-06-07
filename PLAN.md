@@ -1,6 +1,6 @@
 # Academia Creativa — Guía de avance del proyecto
 
-> **Última revisión:** 8 junio 2026  
+> **Última revisión:** 7 junio 2026  
 > **Rama activa:** `development` → `main`  
 > **Deploy:** Vercel (SPA con `vercel.json`)  
 > **Backend:** Supabase (PostgreSQL + Auth)
@@ -49,6 +49,7 @@
 - [x] Spinner `Loader2` en botones de `Login.tsx` y `Registro.tsx` durante envío
 - [x] Tipografía dual: DM Serif Display (titulares) + Nunito Sans (body)
 - [x] Responsividad móvil: menú hamburguesa (`Sheet`) en `SiteHeader` y `Admin`
+- [x] `SiteHeader.tsx` — dropdown de usuario en desktop (hover + click, cierre al hacer clic fuera); header del Sheet móvil con avatar e iniciales cuando hay sesión; "Mis cursos" movido al dropdown (desktop) y al Sheet (móvil) en vez de en la barra principal
 - [x] Code splitting: `lazy()` + `Suspense` en `App.tsx`; `manualChunks` en `vite.config.ts`
 - [x] `NotFound.tsx` rediseñada: layout split con ilustración 3D
 - [x] `design-system.html`: referencia visual interactiva con scroll-spy
@@ -86,7 +87,6 @@
 
 | Componente | Dato mock | Nota |
 |-----------|-----------|------|
-| `AdminCursos.tsx` | Paleta de colores | Único sub-componente admin pendiente de migrar a Warm Ink; resto (Dashboard, Métricas, Ventas, NotificationPanel, Alumnos) ya unificados |
 | `Curso.tsx` | Metadatos visuales (imagen, bio, "aprenderás") | `courses.ts` como fuente; parcialmente enriquecido con Supabase |
 | `Profesores.tsx` | Todo | Derivado de `courses.ts`; Supabase no tiene tabla de instructores |
 
@@ -114,7 +114,7 @@ Migración `20260602000000_admin-panel-functions.sql`: 4 funciones `SECURITY DEF
 - **`AdminNotificationPanel.tsx`**: campana con badge de notificaciones nuevas, drawer lateral con atajos directos a secciones admin (Alumnos nuevos, Ventas recientes, Q&A sin respuesta).
 Sección "Ajustes" con `ComingSoonSection` hasta Fase 2.
 
-**Mejoras de polish posteriores:** paleta Warm Ink unificada en Dashboard/Métricas/Ventas/NotificationPanel/Alumnos (tokens `hsl(24,...)` / `hsl(30,...)`; solo AdminCursos pendiente); topbar de `Admin.tsx` cambiado a `position: fixed` en móvil con spacer div; botón "Gestionar" en `AdminAlumnos` adaptado a móvil (Pencil icon en pantallas pequeñas).
+**Mejoras de polish posteriores:** paleta Warm Ink unificada en todos los sub-componentes admin (Dashboard, Métricas, Ventas, NotificationPanel, Alumnos y AdminCursos — tokens `hsl(24,...)` / `hsl(30,...)`); topbar de `Admin.tsx` cambiado a `position: fixed` en móvil con spacer div; botón "Gestionar" en `AdminAlumnos` adaptado a móvil (Pencil icon en pantallas pequeñas).
 
 ---
 

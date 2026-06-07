@@ -56,7 +56,7 @@ src/
 │   │   ├── AdminVentas.tsx          # Transacciones Stripe reales
 │   │   ├── AdminMetricas.tsx        # Métricas de contenido: completitud, revenue por curso, Q&A
 │   │   └── AdminNotificationPanel.tsx  # Panel de notificaciones con badge y drawer
-│   ├── SiteHeader.tsx       # Cabecera (variant: "public" | "student")
+│   ├── SiteHeader.tsx       # Cabecera unificada: dropdown de usuario en desktop (hover+click, cierre al hacer clic fuera), avatar/nombre en header del Sheet móvil
 │   ├── SiteFooter.tsx       # Pie de página
 │   ├── CourseCard.tsx       # Tarjeta de curso para el catálogo
 │   ├── Logo.tsx             # Logo (variant: "default" | "ink")
@@ -387,7 +387,7 @@ El viewport está fijado en `bottom-right`; los toasts tienen `rounded-[14px]` y
 | `Registro` | Funcional | Auth real con Supabase | Spinner Loader2 en botón durante envío |
 | `Alumno` (dashboard) | UI completa | **Supabase** | Todos los datos reales: matrículas, progreso, lecciones completadas, cursos completados, racha diaria, tiempo semanal/mensual y grid de actividad (query `student-activity`). Empty state motivacional + error state con reintentar. |
 | `AlumnoCurso` (reproductor) | UI completa | **Supabase** | Lecciones, progreso, control de acceso por matrícula; Q&A y notas persistidos en BD; modal para generar certificado al completar curso (llama a Edge Function `generate-certificate`) |
-| `Admin` (dashboard) | UI completa | **Supabase** | Dashboard: 4 tiles reales + top cursos real; revenue con overlay "Próximamente". Cursos: tabla real con `admin_get_course_stats`. Alumnos: modal centralizado por alumno con botón móvil adaptado. Ventas: UI real. Métricas: tasas de completitud, revenue por curso, Q&A stats, tendencias mensuales (4 RPCs). NotificationPanel: campana con badge + drawer de atajos. Topbar fijo en móvil (`position: fixed` + spacer). Paleta Warm Ink en todos los sub-componentes excepto `AdminCursos`. |
+| `Admin` (dashboard) | UI completa | **Supabase** | Dashboard: 4 tiles reales + top cursos real; revenue con overlay "Próximamente". Cursos: tabla real con `admin_get_course_stats`. Alumnos: modal centralizado por alumno con botón móvil adaptado. Ventas: UI real. Métricas: tasas de completitud, revenue por curso, Q&A stats, tendencias mensuales (4 RPCs). NotificationPanel: campana con badge + drawer de atajos. Topbar fijo en móvil (`position: fixed` + spacer). Paleta Warm Ink unificada en todos los sub-componentes (Dashboard, Métricas, Ventas, NotificationPanel, Alumnos y AdminCursos). |
 | `PagoExito` (`/pago/exito`) | Completa | — | Confirmación visual post-Stripe con enlace al dashboard del alumno |
 | `Certificado` (`/certificado/:codigo`) | Completa | **Supabase** | Verificación pública via `get_certificate_by_code`; muestra datos del cert + botón descarga PDF |
 | `NotFound` (404) | Completa | — | Layout split con ilustración 3D de artista en pánico |
