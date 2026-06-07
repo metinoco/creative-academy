@@ -233,7 +233,7 @@ const Curso = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <SiteHeader variant="public" />
+      <SiteHeader />
 
       {/* SPLIT HERO */}
       <section className="relative bg-ink text-ink-foreground overflow-hidden">

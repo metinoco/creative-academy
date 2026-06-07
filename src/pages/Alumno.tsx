@@ -196,7 +196,7 @@ const Alumno = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <SiteHeader variant="student" />
+      <SiteHeader />
 
       {/* HEADER + STATS BENTO */}
       <section className="container pt-10 pb-12">

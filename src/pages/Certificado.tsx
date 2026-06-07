@@ -39,7 +39,7 @@ const Certificado = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <SiteHeader variant="public" />
+      <SiteHeader />
 
       <main className="flex-1 container py-14 max-w-2xl">
 

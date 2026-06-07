@@ -52,7 +52,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
-      <SiteHeader variant="public" />
+      <SiteHeader />
 
       {/* HERO ASIMÉTRICO */}
       <section className="container min-h-[calc(100vh-5rem)] flex flex-col justify-center py-10">

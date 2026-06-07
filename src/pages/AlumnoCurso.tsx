@@ -817,13 +817,15 @@ const AlumnoCurso = () => {
                       <Download className="w-4 h-4" />
                       Descargar PDF
                     </a>
-                    <Link
-                      to={`/certificado/${certificate.verification_code}`}
+                    <a
+                      href={`/certificado/${certificate.verification_code}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="flex items-center gap-2 px-5 py-3 rounded-full border-2 border-secondary/40 text-sm font-bold hover:bg-secondary/10 transition"
                     >
                       <ExternalLink className="w-4 h-4" />
                       Verificar
-                    </Link>
+                    </a>
                   </div>
                 ) : (
                   <button

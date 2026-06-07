@@ -64,7 +64,7 @@ const Profesores = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
-      <SiteHeader variant="public" />
+      <SiteHeader />
 
       {/* HERO — fills the viewport so the filter is below the fold */}
       <section className="container flex flex-col justify-center" style={{ minHeight: "calc(100dvh - 5rem)" }}>

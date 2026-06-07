@@ -67,7 +67,7 @@ const Cursos = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <SiteHeader variant="public" />
+      <SiteHeader />
 
       {/* HEADER */}
       <section className="container pt-12 pb-8">

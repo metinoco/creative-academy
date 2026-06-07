@@ -61,7 +61,7 @@ export default function PagoExito() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <SiteHeader variant="public" />
+      <SiteHeader />
 
       <main className="flex-1 flex items-center justify-center px-4 py-20">
         <div className="max-w-lg w-full text-center space-y-8">
