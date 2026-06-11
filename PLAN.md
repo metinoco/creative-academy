@@ -152,14 +152,23 @@ Página pública `Certificado.tsx` en `/certificado/:codigo`: verificación via 
 
 ---
 
-### 1.8 Emails automáticos
-**Qué hacer (via Supabase Edge Functions + Resend o SendGrid):**
-- Bienvenida tras registro (se puede hacer en `handle_new_user` trigger o en el registro de la app)
-- Confirmación de compra (trigger en `payments`)
-- Acceso al curso (trigger en `enrollments`)
-- Certificado emitido (trigger en `certificates`)
+### ~~1.8 Emails automáticos~~ ✅ COMPLETADO
+Proveedor: **Resend**. Shared helper `_shared/resend.ts`: wrapper de API + 5 plantillas HTML responsivas con paleta Warm Ink.
 
-**Complejidad:** Media (1 día)
+Nueva Edge Function `send-email/index.ts`: llamada desde el frontend (JWT requerido); tipos `welcome` sin restricción de rol, `course_access` y `access_revoked` requieren rol `admin`.
+
+| Email | Disparador | Implementación |
+|-------|-----------|----------------|
+| Bienvenida | Registro exitoso | `Registro.tsx` → `supabase.functions.invoke("send-email", { type: "welcome" })` |
+| Confirmación de compra | Pago Stripe completado | `stripe-webhook` → `sendEmail(templatePurchaseConfirmation(...))` |
+| Acceso concedido | Admin da acceso manual | `AdminAlumnos.tsx` → `notifyAccessGranted()` en `grantMutation.onSuccess` |
+| Acceso revocado | Admin revoca acceso | `AdminAlumnos.tsx` → `notifyAccessRevoked()` en `revokeMutation.onSuccess` |
+| Certificado emitido | PDF generado | `generate-certificate` → `sendEmail(templateCertificateIssued(...))` |
+
+**Secrets a configurar en Supabase Dashboard → Edge Functions:**
+- `RESEND_API_KEY` — clave API de Resend (obligatorio para enviar)
+- `RESEND_FROM_EMAIL` — dirección de envío (por defecto `onboarding@resend.dev` para tests; cambiar a `hola@tu-dominio.com` en producción)
+- `SITE_URL` — URL base de la plataforma (p. ej. `https://academia-creativa.vercel.app`)
 
 ---
 

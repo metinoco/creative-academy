@@ -2,6 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { PDFDocument, rgb } from "npm:pdf-lib@1.17.1";
 import fontkit from "npm:@pdf-lib/fontkit";
 import { corsHeaders } from "../_shared/cors.ts";
+import { sendEmail, templateCertificateIssued } from "../_shared/resend.ts";
 
 interface CertData {
   recipientName: string;
@@ -118,6 +119,24 @@ Deno.serve(async (req) => {
       .single();
 
     if (updateError) throw updateError;
+
+    // Enviar email de certificado emitido (fire-and-forget)
+    try {
+      if (user.email && finalCert) {
+        const name = (user.user_metadata?.full_name as string | undefined)?.split(" ")[0] ??
+          user.email.split("@")[0];
+        const { subject, html } = templateCertificateIssued(
+          name,
+          course.title,
+          finalCert.pdf_url,
+          finalCert.verification_code,
+          origin,
+        );
+        await sendEmail({ to: user.email, subject, html });
+      }
+    } catch (emailErr) {
+      console.error("Error sending certificate email:", emailErr);
+    }
 
     return json(finalCert);
   } catch (err) {

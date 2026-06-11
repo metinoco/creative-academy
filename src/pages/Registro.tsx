@@ -4,6 +4,7 @@ import { ArrowUpRight, Sparkles, Loader2 } from "lucide-react";
 import Logo from "@/components/Logo";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Registro = () => {
   const { signUp, signIn } = useAuth();
@@ -35,6 +36,8 @@ const Registro = () => {
       return;
     }
     toast({ title: `¡Bienvenido, ${fullName.split(" ")[0] || "creador"}!`, description: "Tu cuenta está lista. ¡A aprender!", variant: "success" });
+    // Fire-and-forget: el usuario ya está autenticado en el cliente Supabase
+    supabase.functions.invoke("send-email", { body: { type: "welcome" } }).catch(console.error);
     navigate("/alumno", { replace: true });
   };
 

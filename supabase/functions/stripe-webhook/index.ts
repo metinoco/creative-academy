@@ -1,5 +1,6 @@
 import Stripe from "npm:stripe@14.21.0";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { sendEmail, templatePurchaseConfirmation } from "../_shared/resend.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") ?? "", {
   apiVersion: "2024-06-20",
@@ -99,6 +100,25 @@ Deno.serve(async (req) => {
   if (paymentError) {
     // El pago ya existe o hubo otro error — loguear pero devolver 200
     console.error("Error recording payment:", paymentError);
+  }
+
+  // Enviar email de confirmación de compra (fire-and-forget)
+  try {
+    const userEmail = session.customer_details?.email ?? session.customer_email;
+    if (userEmail) {
+      const [{ data: profile }, { data: course }] = await Promise.all([
+        supabase.from("profiles").select("full_name").eq("id", userId).maybeSingle(),
+        supabase.from("courses").select("title, slug").eq("id", courseId).maybeSingle(),
+      ]);
+      if (course) {
+        const name = (profile?.full_name as string | null)?.split(" ")[0] ?? "";
+        const siteUrl = Deno.env.get("SITE_URL") ?? "https://academia-creativa.vercel.app";
+        const { subject, html } = templatePurchaseConfirmation(name, course.title, course.slug, siteUrl);
+        await sendEmail({ to: userEmail, subject, html });
+      }
+    }
+  } catch (emailErr) {
+    console.error("Error sending purchase email:", emailErr);
   }
 
   console.log(`Payment succeeded: user=${userId} course=${courseId} session=${session.id}`);
