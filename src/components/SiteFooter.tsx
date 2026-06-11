@@ -12,20 +12,35 @@ const SiteFooter = () => (
       </div>
 
       {[
-        { title: "Cursos", items: ["Diseño gráfico", "Branding", "Ilustración", "Motion", "Ver todos"] },
-        { title: "Academia", items: ["Sobre nosotros", "Profesores", "Blog"] },
-        { title: "Soporte", items: ["Centro de ayuda", "Contacto", "Términos", "Privacidad"] },
+        { title: "Cursos", items: [
+          { label: "Fotografía",        to: "/cursos?categoria=Fotografía" },
+          { label: "Branding",        to: "/cursos?categoria=Identidad+de+marca" },
+          { label: "Ilustración",     to: "/cursos?categoria=Ilustración" },
+          { label: "Motion",          to: "/cursos?categoria=Animación" },
+          { label: "Ver todos",       to: "/cursos" },
+        ]},
+        { title: "Academia", items: [
+          { label: "Sobre nosotros",  to: "/" },
+          { label: "Profesores",      to: "/profesores" },
+          { label: "Blog",            to: "/" },
+        ]},
+        { title: "Soporte", items: [
+          { label: "Centro de ayuda", to: "/" },
+          { label: "Contacto",        to: "/" },
+          { label: "Términos",        to: "/" },
+          { label: "Privacidad",      to: "/" },
+        ]},
       ].map((col) => (
         <div key={col.title} className="space-y-3">
           <h4 className="font-display text-base">{col.title}</h4>
           <ul className="space-y-2">
-            {col.items.map((i) => (
-              <li key={i}>
+            {col.items.map((item) => (
+              <li key={item.label}>
                 <Link
-                  to={i === "Ver todos" ? "/cursos" : "/"}
+                  to={item.to}
                   className="text-sm text-muted-foreground hover:text-primary transition"
                 >
-                  {i}
+                  {item.label}
                 </Link>
               </li>
             ))}

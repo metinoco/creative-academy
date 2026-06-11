@@ -16,7 +16,7 @@ interface AuthContextValue {
   profile: Profile | null;
   role: AppRole | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  signIn: (email: string, password: string) => Promise<{ error: string | null; role: AppRole | null }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
@@ -31,13 +31,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   const fetchUserData = async (uid: string) => {
-    const [{ data: prof }, { data: roleRows }] = await Promise.all([
-      supabase.from("profiles").select("id, full_name, avatar_url").eq("id", uid).maybeSingle(),
-      supabase.from("user_roles").select("role").eq("user_id", uid),
-    ]);
-    setProfile(prof ?? null);
-    const roles = (roleRows ?? []).map((r) => r.role as AppRole);
-    setRole(roles.includes("admin") ? "admin" : roles.includes("student") ? "student" : null);
+    try {
+      const [{ data: prof }, { data: roleRows }] = await Promise.all([
+        supabase.from("profiles").select("id, full_name, avatar_url").eq("id", uid).maybeSingle(),
+        supabase.from("user_roles").select("role").eq("user_id", uid),
+      ]);
+      setProfile(prof ?? null);
+      const roles = (roleRows ?? []).map((r) => r.role as AppRole);
+      setRole(roles.includes("admin") ? "admin" : roles.includes("student") ? "student" : null);
+    } catch {
+      setProfile(null);
+      setRole(null);
+    }
   };
 
   useEffect(() => {
@@ -63,8 +68,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error?.message ?? null };
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error || !data.user) return { error: error?.message ?? null, role: null };
+    const { data: roleRows } = await supabase.from("user_roles").select("role").eq("user_id", data.user.id);
+    const roles = (roleRows ?? []).map((r) => r.role as AppRole);
+    const resolvedRole = roles.includes("admin") ? "admin" : roles.includes("student") ? "student" : null;
+    return { error: null, role: resolvedRole };
   };
 
   const signUp = async (email: string, password: string, fullName: string) => {

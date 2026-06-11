@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowUpRight, Sparkles } from "lucide-react";
+import { ArrowUpRight, Sparkles, Loader2 } from "lucide-react";
 import Logo from "@/components/Logo";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Registro = () => {
   const { signUp, signIn } = useAuth();
@@ -30,16 +31,22 @@ const Registro = () => {
     const res = await signIn(email.trim(), password);
     setSubmitting(false);
     if (res.error) {
-      toast({ title: "Cuenta creada. Inicia sesión.", description: res.error });
+      toast({ title: "Cuenta creada. Inicia sesión.", description: res.error, variant: "warning" });
       navigate("/login", { replace: true });
       return;
     }
-    toast({ title: `¡Bienvenido, ${fullName.split(" ")[0] || "creador"}!` });
+    toast({ title: `¡Bienvenido, ${fullName.split(" ")[0] || "creador"}!`, description: "Tu cuenta está lista. ¡A aprender!", variant: "success" });
+    // Fire-and-forget: el usuario ya está autenticado en el cliente Supabase
+    supabase.functions.invoke("send-email", { body: { type: "welcome" } }).catch(console.error);
     navigate("/alumno", { replace: true });
   };
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-background">
+    <div className="relative min-h-screen grid lg:grid-cols-2 bg-[hsl(38_62%_93%)] lg:bg-background overflow-hidden">
+      {/* Mobile decorative blobs */}
+      <div aria-hidden className="lg:hidden absolute -top-24 -right-16 w-96 h-96 rounded-full bg-secondary/25 blur-3xl pointer-events-none" />
+      <div aria-hidden className="lg:hidden absolute -bottom-24 -left-16 w-80 h-80 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
+
       <aside className="hidden lg:flex relative bg-secondary text-ink p-12 flex-col justify-between overflow-hidden">
         <div className="absolute -top-32 -right-20 w-96 h-96 rounded-full bg-primary/30 blur-3xl" />
         <div className="absolute -bottom-32 -left-20 w-96 h-96 rounded-full bg-ink/10 blur-3xl" />
@@ -80,7 +87,7 @@ const Registro = () => {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Carlos Ramírez"
-                className="w-full bg-surface border-2 border-border focus:border-ink rounded-2xl px-5 py-4 text-sm transition outline-none"
+                className="w-full bg-surface border-2 border-border focus:border-primary focus:shadow-[0_0_0_3px_hsl(14_78%_52%/0.12)] rounded-2xl px-5 py-4 text-sm transition outline-none"
               />
             </div>
             <div>
@@ -91,7 +98,7 @@ const Registro = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="tu@email.com"
-                className="w-full bg-surface border-2 border-border focus:border-ink rounded-2xl px-5 py-4 text-sm transition outline-none"
+                className="w-full bg-surface border-2 border-border focus:border-primary focus:shadow-[0_0_0_3px_hsl(14_78%_52%/0.12)] rounded-2xl px-5 py-4 text-sm transition outline-none"
               />
             </div>
             <div>
@@ -103,7 +110,7 @@ const Registro = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Mínimo 6 caracteres"
-                className="w-full bg-surface border-2 border-border focus:border-ink rounded-2xl px-5 py-4 text-sm transition outline-none"
+                className="w-full bg-surface border-2 border-border focus:border-primary focus:shadow-[0_0_0_3px_hsl(14_78%_52%/0.12)] rounded-2xl px-5 py-4 text-sm transition outline-none"
               />
             </div>
 
@@ -112,7 +119,7 @@ const Registro = () => {
               disabled={submitting}
               className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-primary text-primary-foreground px-6 py-4 text-sm font-bold hover:bg-primary-glow transition disabled:opacity-60"
             >
-              {submitting ? "Creando cuenta…" : <>Crear cuenta <ArrowUpRight className="w-4 h-4" /></>}
+              {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Creando cuenta…</> : <>Crear cuenta <ArrowUpRight className="w-4 h-4" /></>}
             </button>
 
             <p className="text-[11px] text-muted-foreground text-center">

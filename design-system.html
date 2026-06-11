@@ -1,0 +1,1608 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Academia Creativa — Design System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Nunito+Sans:opsz,wght@6..12,300;6..12,400;6..12,600;6..12,700;6..12,800;6..12,900&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── TOKENS ───────────────────────────────────────── */
+    :root {
+      --bg:          hsl(38, 40%, 96%);
+      --fg:          hsl(24, 25%, 12%);
+      --surface:     hsl(36, 35%, 92%);
+      --surface-el:  hsl(38, 50%, 98%);
+      --card:        hsl(38, 50%, 98%);
+      --muted:       hsl(36, 25%, 88%);
+      --muted-fg:    hsl(24, 12%, 38%);
+      --border:      hsl(30, 20%, 84%);
+
+      --primary:     hsl(14, 78%, 52%);
+      --primary-fg:  hsl(38, 50%, 98%);
+      --primary-glo: hsl(18, 90%, 62%);
+
+      --secondary:   hsl(38, 80%, 60%);
+      --secondary-fg:hsl(24, 30%, 14%);
+
+      --ink:         hsl(24, 25%, 12%);
+      --ink-fg:      hsl(38, 50%, 98%);
+
+      --destructive: hsl(0, 70%, 50%);
+
+      --radius: 1rem;
+
+      --grad-warm: linear-gradient(135deg, hsl(14,78%,52%), hsl(28,88%,58%));
+      --grad-sun:  linear-gradient(135deg, hsl(38,90%,65%), hsl(18,85%,58%));
+      --grad-ink:  linear-gradient(135deg, hsl(24,30%,14%), hsl(20,25%,22%));
+      --grad-cream:linear-gradient(180deg, hsl(38,50%,98%), hsl(36,35%,92%));
+
+      --shadow-soft: 0 1px 2px hsl(24 25% 12% / 0.04), 0 8px 24px -8px hsl(24 25% 12% / 0.08);
+      --shadow-card: 0 2px 4px hsl(24 25% 12% / 0.04), 0 16px 40px -16px hsl(24 25% 12% / 0.12);
+      --shadow-glow: 0 20px 60px -20px hsl(14 78% 52% / 0.4);
+    }
+
+    /* ─── RESET / BASE ─────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Nunito Sans', system-ui, sans-serif;
+      font-size: 14px;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    h1, h2, .serif { font-family: 'DM Serif Display', Georgia, serif; font-weight: 400; letter-spacing: .015em; }
+    h3, h4 { font-family: 'Nunito Sans', system-ui, sans-serif; font-weight: 800; letter-spacing: -.01em; }
+
+    /* ─── LAYOUT ──────────────────────────────────────── */
+    .ds-wrap    { display: flex; min-height: 100vh; }
+    .ds-sidebar { width: 220px; flex-shrink: 0; background: var(--ink); position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+    .ds-main    { flex: 1; padding: 48px 56px; overflow-x: hidden; }
+    .ds-inner   { max-width: 960px; margin: 0 auto; }
+
+    /* ─── DS SIDEBAR ──────────────────────────────────── */
+    .ds-logo {
+      padding: 28px 24px 20px;
+      border-bottom: 1px solid hsl(24 18% 22%);
+    }
+    .ds-logo-mark {
+      font-family: 'DM Serif Display', serif;
+      font-size: 18px;
+      color: var(--ink-fg);
+      line-height: 1.1;
+    }
+    .ds-logo-sub {
+      font-size: 9px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: hsl(38 30% 88% / .45);
+      margin-top: 4px;
+    }
+    .ds-nav { padding: 16px 12px; }
+    .ds-nav-section { margin-bottom: 24px; }
+    .ds-nav-label {
+      font-size: 9px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: hsl(38 30% 88% / .38);
+      padding: 0 12px;
+      margin-bottom: 6px;
+    }
+    .ds-nav-link {
+      display: block;
+      padding: 7px 12px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: hsl(38 30% 88% / .65);
+      text-decoration: none;
+      transition: background .15s, color .15s;
+      cursor: pointer;
+    }
+    .ds-nav-link:hover { background: hsl(24 20% 18%); color: hsl(38 50% 98%); }
+    .ds-nav-link.active {
+      background: hsl(14 78% 52% / .14);
+      color: hsl(14 78% 62%);
+    }
+
+    /* ─── SECTION ─────────────────────────────────────── */
+    .section { margin-bottom: 72px; scroll-margin-top: 32px; }
+    .section-tag {
+      display: inline-block;
+      font-size: 10px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+    .section-title { font-size: 32px; margin-bottom: 6px; }
+    .section-desc  { font-size: 14px; color: var(--muted-fg); margin-bottom: 40px; max-width: 560px; }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+    /* ─── GRID HELPERS ────────────────────────────────── */
+    .row     { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+    .row-2   { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .row-3   { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+    .row-4   { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
+
+    /* ─── SWATCH ──────────────────────────────────────── */
+    .swatch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; }
+    .swatch {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-soft);
+    }
+    .swatch-color { height: 68px; }
+    .swatch-info  { background: var(--card); padding: 10px 12px; }
+    .swatch-name  { font-size: 11px; font-weight: 800; color: var(--fg); }
+    .swatch-val   { font-size: 10px; color: var(--muted-fg); margin-top: 2px; font-family: monospace; }
+
+    /* ─── TYPE SCALE ──────────────────────────────────── */
+    .type-row { display: flex; align-items: baseline; gap: 24px; padding: 16px 0; border-bottom: 1px solid var(--border); }
+    .type-meta { width: 100px; flex-shrink: 0; font-size: 11px; color: var(--muted-fg); }
+    .type-meta strong { display: block; color: var(--fg); font-size: 12px; }
+    .type-sample { flex: 1; }
+
+    /* ─── BUTTONS ─────────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 700; font-size: 14px;
+      border: none; cursor: pointer;
+      border-radius: var(--radius);
+      padding: 10px 20px;
+      transition: all .18s;
+      text-decoration: none;
+    }
+    .btn-primary   { background: var(--primary); color: var(--primary-fg); box-shadow: var(--shadow-glow); }
+    .btn-primary:hover { background: var(--primary-glo); transform: translateY(-1px); }
+    .btn-secondary { background: var(--secondary); color: var(--secondary-fg); }
+    .btn-secondary:hover { filter: brightness(1.06); }
+    .btn-outline   { background: transparent; border: 1.5px solid var(--border); color: var(--fg); }
+    .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-ghost     { background: transparent; color: var(--muted-fg); }
+    .btn-ghost:hover { background: var(--muted); color: var(--fg); }
+    .btn-ink       { background: var(--ink); color: var(--ink-fg); }
+    .btn-ink:hover { background: hsl(24 30% 18%); }
+    .btn-danger    { background: var(--destructive); color: #fff; }
+    .btn-sm        { font-size: 12px; padding: 7px 14px; }
+    .btn-lg        { font-size: 16px; padding: 14px 28px; }
+
+    /* ─── INPUTS ──────────────────────────────────────── */
+    .input-wrap { display: flex; flex-direction: column; gap: 6px; }
+    .input-label { font-size: 13px; font-weight: 700; color: var(--fg); }
+    .input-hint  { font-size: 11.5px; color: var(--muted-fg); }
+    .input-error { font-size: 11.5px; color: var(--destructive); }
+    .input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface-el);
+      color: var(--fg);
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 14px;
+      transition: border-color .15s, box-shadow .15s;
+      outline: none;
+    }
+    .input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px hsl(14 78% 52% / .12); }
+    .input.error { border-color: var(--destructive); box-shadow: 0 0 0 3px hsl(0 70% 50% / .1); }
+    .input.success { border-color: hsl(150 60% 42%); }
+    .input::placeholder { color: var(--muted-fg); }
+
+    /* ─── BADGE ───────────────────────────────────────── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 700; border-radius: 999px;
+      padding: 3px 10px;
+    }
+    .badge-primary  { background: hsl(14 78% 52% / .12); color: var(--primary); }
+    .badge-success  { background: hsl(150 60% 42% / .12); color: hsl(150 60% 34%); }
+    .badge-warning  { background: hsl(38 80% 60% / .18); color: hsl(32 85% 38%); }
+    .badge-danger   { background: hsl(0 70% 50% / .1); color: var(--destructive); }
+    .badge-muted    { background: var(--muted); color: var(--muted-fg); }
+    .badge-ink      { background: var(--ink); color: var(--ink-fg); }
+    .badge-dot::before {
+      content: ''; display: inline-block;
+      width: 5px; height: 5px; border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* ─── CARD ────────────────────────────────────────── */
+    .card {
+      background: var(--card);
+      border-radius: calc(var(--radius) * 1.5);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-card);
+      padding: 24px;
+      transition: box-shadow .2s, transform .2s;
+    }
+    .card:hover { box-shadow: var(--shadow-glow); transform: translateY(-2px); }
+    .card-title { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+    .card-desc  { font-size: 13px; color: var(--muted-fg); }
+
+    /* ─── PROGRESS ────────────────────────────────────── */
+    .progress-wrap  { background: var(--muted); border-radius: 999px; height: 8px; overflow: hidden; }
+    .progress-bar   { height: 100%; border-radius: 999px; background: var(--grad-warm); transition: width .5s ease; }
+    .progress-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px; }
+    .progress-label strong { font-weight: 800; }
+
+    /* ─── COURSE CARD ─────────────────────────────────── */
+    .course-card {
+      background: var(--card);
+      border-radius: calc(var(--radius) * 1.5);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .course-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-glow); }
+    .course-card-img {
+      height: 160px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 40px;
+    }
+    .course-card-body { padding: 18px 20px 20px; }
+    .course-card-cat  { font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--primary); margin-bottom: 6px; }
+    .course-card-title { font-size: 17px; font-weight: 800; line-height: 1.3; margin-bottom: 4px; }
+    .course-card-sub   { font-size: 12px; color: var(--muted-fg); margin-bottom: 12px; }
+    .course-card-meta  { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--muted-fg); }
+    .course-card-price { font-size: 18px; font-weight: 900; color: var(--fg); }
+    .stars { color: var(--secondary); font-size: 12px; }
+
+    /* ─── STAT CARD ───────────────────────────────────── */
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: calc(var(--radius) * 1.5);
+      box-shadow: var(--shadow-soft);
+      padding: 20px 22px;
+    }
+    .stat-icon {
+      width: 40px; height: 40px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; margin-bottom: 12px;
+    }
+    .stat-value { font-size: 28px; font-weight: 900; line-height: 1.1; }
+    .stat-label { font-size: 12px; color: var(--muted-fg); margin-top: 4px; }
+    .stat-change { font-size: 11px; font-weight: 700; margin-top: 6px; }
+    .stat-up   { color: hsl(150 60% 38%); }
+    .stat-down { color: var(--destructive); }
+
+    /* ─── TOAST ───────────────────────────────────────── */
+    .toast {
+      display: flex; align-items: flex-start; gap: 12px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 14px 16px;
+      box-shadow: var(--shadow-card);
+      max-width: 340px;
+    }
+    .toast-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .toast-title { font-size: 13.5px; font-weight: 800; }
+    .toast-desc  { font-size: 12.5px; color: var(--muted-fg); margin-top: 2px; }
+    .toast.success     { border-left: 3px solid hsl(150 60% 42%); }
+    .toast.destructive { border-left: 3px solid hsl(0 70% 50%); }
+    .toast.info        { border-left: 3px solid hsl(210 80% 52%); }
+    .toast.warning     { border-left: 3px solid hsl(38 80% 60%); }
+
+    /* ═══════════════════════════════════════════════════
+       SIDEBAR PROPOSALS
+    ═══════════════════════════════════════════════════ */
+
+    /* ── PROPOSAL 1: Warm Ink (Admin sidebar) ── */
+    .sb-demo { border-radius: 20px; overflow: hidden; border: 1px solid var(--border); box-shadow: var(--shadow-card); display: flex; height: 520px; }
+    .sb-panel { overflow-y: auto; }
+
+    /* Propuesta 1 — Warm Ink */
+    .sb1 { width: 240px; background: var(--ink); display: flex; flex-direction: column; flex-shrink: 0; }
+    .sb1-head {
+      padding: 24px 20px 18px;
+      border-bottom: 1px solid hsl(24 18% 20%);
+    }
+    .sb1-brand { font-family: 'DM Serif Display', serif; color: hsl(38 50% 97%); font-size: 17px; line-height: 1.1; }
+    .sb1-role {
+      display: inline-block; margin-top: 6px;
+      font-size: 9px; letter-spacing: .12em; text-transform: uppercase;
+      color: hsl(38 50% 98%); font-weight: 700;
+      background: hsl(14 78% 52% / .2);
+      padding: 2px 8px; border-radius: 999px;
+    }
+    .sb1-nav { padding: 16px 12px; flex: 1; }
+    .sb1-section-label {
+      font-size: 9px; letter-spacing: .12em; text-transform: uppercase;
+      color: hsl(38 30% 88% / .35); padding: 0 10px; margin: 0 0 6px;
+      display: block;
+    }
+    .sb1-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 10px; border-radius: 10px;
+      font-size: 13px; font-weight: 600;
+      color: hsl(38 30% 88% / .6);
+      cursor: pointer; transition: all .15s;
+      margin-bottom: 1px;
+      border: 1px solid transparent;
+    }
+    .sb1-item:hover { background: hsl(24 20% 18%); color: hsl(38 50% 97%); }
+    .sb1-item.active {
+      background: hsl(14 78% 52% / .12);
+      color: hsl(14 78% 64%);
+      border-color: hsl(14 78% 52% / .18);
+    }
+    .sb1-item-icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+    .sb1-item.active .sb1-item-icon { background: hsl(14 78% 52% / .2); }
+    .sb1-item:hover .sb1-item-icon { background: hsl(24 20% 22%); }
+    .sb1-badge { margin-left: auto; font-size: 10px; font-weight: 800; background: var(--primary); color: var(--primary-fg); padding: 1px 7px; border-radius: 999px; }
+    .sb1-divider { height: 1px; background: hsl(24 18% 20%); margin: 10px 10px; }
+    .sb1-footer {
+      padding: 12px;
+      border-top: 1px solid hsl(24 18% 20%);
+    }
+    .sb1-user {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px; border-radius: 12px;
+      background: hsl(24 20% 16%);
+      transition: background .15s; cursor: pointer;
+    }
+    .sb1-user:hover { background: hsl(24 20% 20%); }
+    .sb1-avatar {
+      width: 34px; height: 34px; border-radius: 10px;
+      background: var(--grad-warm); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 13px; color: white;
+    }
+    .sb1-user-name { font-size: 12.5px; font-weight: 700; color: hsl(38 50% 97%); }
+    .sb1-user-role { font-size: 10px; color: hsl(38 30% 88% / .5); }
+    .sb1-logout { margin-left: auto; font-size: 14px; color: hsl(38 30% 88% / .4); transition: color .15s; }
+    .sb1-logout:hover { color: var(--primary); }
+
+    /* Content area for demo */
+    .sb-content { flex: 1; background: hsl(36 35% 93%); padding: 24px; }
+    .sb-content-header { margin-bottom: 20px; }
+    .sb-content-title  { font-size: 20px; font-weight: 900; }
+    .sb-content-sub    { font-size: 12px; color: var(--muted-fg); }
+
+    /* ── PROPOSAL 2: Cream Light (Sidebar alumno) ── */
+    .sb2 { width: 260px; background: var(--card); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+    .sb2-head {
+      padding: 22px 20px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sb2-back { font-size: 11px; color: var(--muted-fg); display: flex; align-items: center; gap: 4px; margin-bottom: 10px; cursor: pointer; }
+    .sb2-course-title { font-size: 15px; font-weight: 900; line-height: 1.3; }
+    .sb2-progress { margin-top: 12px; }
+    .sb2-progress-bar { height: 5px; background: var(--muted); border-radius: 999px; overflow: hidden; }
+    .sb2-progress-fill { width: 38%; height: 100%; background: var(--grad-warm); border-radius: 999px; }
+    .sb2-progress-label { font-size: 10.5px; color: var(--muted-fg); margin-top: 5px; }
+    .sb2-nav { flex: 1; overflow-y: auto; padding: 12px 0; }
+    .sb2-section { margin-bottom: 4px; }
+    .sb2-section-head {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 16px; cursor: pointer;
+      transition: background .12s;
+    }
+    .sb2-section-head:hover { background: var(--surface); }
+    .sb2-section-num {
+      width: 22px; height: 22px; border-radius: 6px;
+      background: var(--muted); color: var(--muted-fg);
+      font-size: 10px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .sb2-section-title { font-size: 12.5px; font-weight: 800; flex: 1; }
+    .sb2-section-count { font-size: 10.5px; color: var(--muted-fg); }
+    .sb2-lesson {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 16px 7px 46px; cursor: pointer;
+      transition: background .12s;
+      border-left: 3px solid transparent;
+    }
+    .sb2-lesson:hover { background: hsl(14 78% 52% / .04); }
+    .sb2-lesson.active {
+      background: hsl(14 78% 52% / .07);
+      border-left-color: var(--primary);
+    }
+    .sb2-lesson-check { font-size: 13px; flex-shrink: 0; }
+    .sb2-lesson-title { font-size: 12px; font-weight: 600; flex: 1; line-height: 1.35; }
+    .sb2-lesson.active .sb2-lesson-title { color: var(--primary); font-weight: 700; }
+    .sb2-lesson-dur { font-size: 10.5px; color: var(--muted-fg); }
+    .sb2-lesson.done .sb2-lesson-check { color: hsl(150 60% 42%); }
+    .sb2-footer {
+      padding: 14px 16px;
+      border-top: 1px solid var(--border);
+    }
+    .sb2-cert {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px; border-radius: 12px;
+      background: hsl(38 80% 60% / .1);
+      border: 1px solid hsl(38 80% 60% / .2);
+    }
+    .sb2-cert-icon { font-size: 22px; }
+    .sb2-cert-title { font-size: 12px; font-weight: 800; }
+    .sb2-cert-desc  { font-size: 10.5px; color: var(--muted-fg); }
+
+    /* ── PROPOSAL 3: Rail (icono expandible) ── */
+    .sb3-wrap { display: flex; height: 520px; background: hsl(36 35% 93%); border-radius: 20px; overflow: hidden; border: 1px solid var(--border); box-shadow: var(--shadow-card); }
+    .sb3 {
+      width: 68px;
+      background: var(--card);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      align-items: center;
+      padding: 16px 0;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .sb3-logo { width: 38px; height: 38px; border-radius: 10px; background: var(--grad-warm); display: flex; align-items: center; justify-content: center; font-family: 'DM Serif Display', serif; font-size: 16px; color: white; margin-bottom: 12px; }
+    .sb3-item {
+      width: 42px; height: 42px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px; cursor: pointer;
+      transition: all .15s; color: var(--muted-fg);
+      position: relative;
+    }
+    .sb3-item:hover { background: var(--surface); color: var(--fg); }
+    .sb3-item.active { background: hsl(14 78% 52% / .12); color: var(--primary); }
+    .sb3-item .sb3-dot {
+      position: absolute; top: 6px; right: 6px;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--primary);
+    }
+    .sb3-divider { width: 32px; height: 1px; background: var(--border); margin: 4px 0; }
+    .sb3-spacer { flex: 1; }
+    .sb3-avatar {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: var(--grad-sun); display: flex; align-items: center;
+      justify-content: center; font-weight: 900; font-size: 14px; color: white;
+      cursor: pointer;
+    }
+    .sb3-content { flex: 1; padding: 28px; overflow: auto; }
+
+    /* ─── AVATAR GROUP ────────────────────────────────── */
+    .avatar-stack { display: flex; }
+    .avatar-stack .av { width: 36px; height: 36px; border-radius: 50%; margin-left: -10px; border: 2px solid var(--card); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: white; }
+    .avatar-stack .av:first-child { margin-left: 0; }
+    .avatar-stack .av-more { background: var(--muted); color: var(--muted-fg); font-size: 11px; }
+
+    /* ─── GRADIENT PILLS ──────────────────────────────── */
+    .pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 6px 14px; font-size: 13px; font-weight: 700; }
+    .pill-warm { background: var(--grad-warm); color: white; }
+    .pill-sun  { background: var(--grad-sun);  color: hsl(24 25% 12%); }
+    .pill-ink  { background: var(--grad-ink);  color: white; }
+
+    /* ─── SKELETON ────────────────────────────────────── */
+    .skel { background: var(--muted); border-radius: 8px; animation: pulse 1.4s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+
+    /* ─── EMPTY STATE ─────────────────────────────────── */
+    .empty-state {
+      text-align: center; padding: 48px 24px;
+      background: var(--card); border-radius: calc(var(--radius)*1.5);
+      border: 1.5px dashed var(--border);
+    }
+    .empty-icon { font-size: 48px; margin-bottom: 12px; }
+    .empty-title { font-size: 17px; font-weight: 800; margin-bottom: 6px; }
+    .empty-desc  { font-size: 13px; color: var(--muted-fg); max-width: 280px; margin: 0 auto 20px; }
+
+    /* ─── TOOLTIP ─────────────────────────────────────── */
+    .tooltip-demo { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+    .tooltip-wrap { position: relative; display: inline-block; }
+    .tooltip-wrap:hover .tooltip-box { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .tooltip-box {
+      position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%) translateY(4px);
+      background: var(--ink); color: var(--ink-fg);
+      font-size: 11.5px; font-weight: 600;
+      padding: 6px 12px; border-radius: 8px;
+      white-space: nowrap; pointer-events: none;
+      opacity: 0; transition: all .15s;
+      z-index: 10;
+    }
+    .tooltip-box::after {
+      content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+      border: 5px solid transparent; border-top-color: var(--ink);
+    }
+
+    /* ─── TABLE ───────────────────────────────────────── */
+    .ds-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .ds-table th {
+      text-align: left; padding: 10px 14px;
+      font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--muted-fg); background: var(--surface); border-bottom: 1px solid var(--border);
+    }
+    .ds-table td { padding: 12px 14px; border-bottom: 1px solid hsl(30 20% 90%); vertical-align: middle; }
+    .ds-table tr:last-child td { border-bottom: none; }
+    .ds-table tr:hover td { background: hsl(38 40% 96% / .6); }
+    .ds-table-wrap { border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--card); box-shadow: var(--shadow-soft); }
+
+    /* ─── TAGS / CHIPS ────────────────────────────────── */
+    .chip { display: inline-flex; align-items: center; gap: 5px; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 4px 12px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .14s; }
+    .chip:hover { border-color: var(--primary); color: var(--primary); }
+    .chip.selected { background: hsl(14 78% 52% / .1); border-color: var(--primary); color: var(--primary); }
+
+    /* ─── MISC ────────────────────────────────────────── */
+    .mono { font-family: 'Courier New', monospace; font-size: 12px; background: var(--surface); padding: 2px 6px; border-radius: 5px; }
+    .section-spacer { height: 40px; }
+  </style>
+</head>
+<body>
+
+<div class="ds-wrap">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="ds-sidebar">
+    <div class="ds-logo">
+      <div class="ds-logo-mark">Academia<br/>Creativa</div>
+      <div class="ds-logo-sub">Design System v1.0</div>
+    </div>
+    <nav class="ds-nav">
+      <div class="ds-nav-section">
+        <div class="ds-nav-label">Fundamentos</div>
+        <a class="ds-nav-link active" href="#tokens">Tokens de color</a>
+        <a class="ds-nav-link" href="#typography">Tipografía</a>
+        <a class="ds-nav-link" href="#spacing">Sombras & Radio</a>
+        <a class="ds-nav-link" href="#gradients">Gradientes</a>
+        <a class="ds-nav-link" href="#sizes">Espaciado & Tamaños</a>
+      </div>
+      <div class="ds-nav-section">
+        <div class="ds-nav-label">Componentes</div>
+        <a class="ds-nav-link" href="#buttons">Botones</a>
+        <a class="ds-nav-link" href="#badges">Badges & Chips</a>
+        <a class="ds-nav-link" href="#inputs">Inputs</a>
+        <a class="ds-nav-link" href="#cards">Cards</a>
+        <a class="ds-nav-link" href="#progress">Progreso</a>
+        <a class="ds-nav-link" href="#toasts">Toasts</a>
+        <a class="ds-nav-link" href="#avatars">Avatares</a>
+        <a class="ds-nav-link" href="#tables">Tablas</a>
+        <a class="ds-nav-link" href="#states">Estados</a>
+      </div>
+      <div class="ds-nav-section">
+        <div class="ds-nav-label">Patrones</div>
+        <a class="ds-nav-link" href="#sidebars">Propuestas Sidebar</a>
+        <a class="ds-nav-link" href="#course-cards">Course Card</a>
+        <a class="ds-nav-link" href="#stat-cards">Stat Cards</a>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main class="ds-main">
+  <div class="ds-inner">
+
+    <!-- HEADER -->
+    <div style="margin-bottom:56px;">
+      <div class="section-tag">Design System</div>
+      <h1 class="serif" style="font-size:44px; line-height:1.1; margin-bottom:10px;">Academia Creativa</h1>
+      <p style="font-size:15px; color:var(--muted-fg); max-width:520px;">Guía visual completa del sistema de diseño. Tokens, componentes y patrones para la plataforma de cursos online.</p>
+    </div>
+
+    <!-- ══ TOKENS ══════════════════════════════════════════ -->
+    <section class="section" id="tokens">
+      <div class="section-tag">Fundamentos</div>
+      <h2 class="section-title">Tokens de color</h2>
+      <p class="section-desc">Paleta editorial cálida. Terracota como acción principal, mostaza como acento, ink para zonas de gravedad, crema como lienzo.</p>
+
+      <h4 style="margin-bottom:14px;">Paleta principal</h4>
+      <div class="swatch-grid" style="margin-bottom:28px;">
+        <div class="swatch">
+          <div class="swatch-color" style="background:hsl(38,40%,96%)"></div>
+          <div class="swatch-info"><div class="swatch-name">Background</div><div class="swatch-val">hsl(38 40% 96%)</div></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background:hsl(36,35%,92%)"></div>
+          <div class="swatch-info"><div class="swatch-name">Surface</div><div class="swatch-val">hsl(36 35% 92%)</div></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background:hsl(38,50%,98%)"></div>
+          <div class="swatch-info"><div class="swatch-name">Card</div><div class="swatch-val">hsl(38 50% 98%)</div></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background:hsl(14,78%,52%)"></div>
+          <div class="swatch-info"><div class="swatch-name">Primary</div><div class="swatch-val">hsl(14 78% 52%)</div></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background:hsl(18,90%,62%)"></div>
+          <div class="swatch-info"><div class="swatch-name">Primary Glow</div><div class="swatch-val">hsl(18 90% 62%)</div></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background:hsl(38,80%,60%)"></div>
+          <div class="swatch-info"><div class="swatch-name">Secondary</div><div class="swatch-val">hsl(38 80% 60%)</div></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background:hsl(24,25%,12%)"></div>
+          <div class="swatch-info"><div class="swatch-name">Ink</div><div class="swatch-val">hsl(24 25% 12%)</div></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background:hsl(36,25%,88%)"></div>
+          <div class="swatch-info"><div class="swatch-name">Muted</div><div class="swatch-val">hsl(36 25% 88%)</div></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background:hsl(24,12%,38%)"></div>
+          <div class="swatch-info"><div class="swatch-name">Muted FG</div><div class="swatch-val">hsl(24 12% 38%)</div></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background:hsl(30,20%,84%)"></div>
+          <div class="swatch-info"><div class="swatch-name">Border</div><div class="swatch-val">hsl(30 20% 84%)</div></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background:hsl(0,70%,50%)"></div>
+          <div class="swatch-info"><div class="swatch-name">Destructive</div><div class="swatch-val">hsl(0 70% 50%)</div></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background:hsl(150,60%,42%)"></div>
+          <div class="swatch-info"><div class="swatch-name">Success</div><div class="swatch-val">hsl(150 60% 42%)</div></div>
+        </div>
+      </div>
+
+      <h4 style="margin-bottom:14px;">Tonos de curso (tones)</h4>
+      <div class="swatch-grid">
+        <div class="swatch">
+          <div class="swatch-color" style="background:linear-gradient(135deg,hsl(14,78%,52%),hsl(28,88%,58%))"></div>
+          <div class="swatch-info"><div class="swatch-name">warm</div><div class="swatch-val">Terracota → Ámbar</div></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background:linear-gradient(135deg,hsl(38,90%,65%),hsl(18,85%,58%))"></div>
+          <div class="swatch-info"><div class="swatch-name">sun</div><div class="swatch-val">Dorado → Naranja</div></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background:linear-gradient(135deg,hsl(24,30%,14%),hsl(20,25%,22%))"></div>
+          <div class="swatch-info"><div class="swatch-name">ink</div><div class="swatch-val">Ink → Sombra</div></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background:linear-gradient(180deg,hsl(38,50%,98%),hsl(36,35%,92%))"></div>
+          <div class="swatch-info"><div class="swatch-name">cream</div><div class="swatch-val">Canvas → Surface</div></div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider"/>
+
+    <!-- ══ TYPOGRAPHY ════════════════════════════════════ -->
+    <section class="section" id="typography">
+      <div class="section-tag">Fundamentos</div>
+      <h2 class="section-title">Tipografía</h2>
+      <p class="section-desc">Dos familias: DM Serif Display para títulos editoriales y Nunito Sans para cuerpo de texto y UI.</p>
+
+      <div class="type-row">
+        <div class="type-meta"><strong>Display XL</strong>serif · 400 · 48px</div>
+        <div class="type-sample"><span class="serif" style="font-size:48px;">Aprende sin límites</span></div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta"><strong>Display L</strong>serif · 400 · 36px</div>
+        <div class="type-sample"><span class="serif" style="font-size:36px;">Cursos creativos</span></div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta"><strong>Display M</strong>serif · 400 · 28px</div>
+        <div class="type-sample"><span class="serif" style="font-size:28px;">Diseño editorial</span></div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta"><strong>Heading 3</strong>sans · 800 · 22px</div>
+        <div class="type-sample"><span style="font-size:22px; font-weight:800; letter-spacing:-.01em;">Marca magnética</span></div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta"><strong>Heading 4</strong>sans · 800 · 18px</div>
+        <div class="type-sample"><span style="font-size:18px; font-weight:800; letter-spacing:-.01em;">Sección del curso</span></div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta"><strong>Body</strong>sans · 400 · 14px</div>
+        <div class="type-sample" style="font-size:14px;">Texto de párrafo, descripciones de curso, contenido general de la plataforma.</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta"><strong>Small</strong>sans · 600 · 12px</div>
+        <div class="type-sample" style="font-size:12px; font-weight:600; color:var(--muted-fg);">Metadatos, duración, número de lecciones, fechas</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta"><strong>Micro</strong>sans · 800 · 10px</div>
+        <div class="type-sample" style="font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--primary);">CATEGORÍA · ETIQUETA · LABEL</div>
+      </div>
+    </section>
+
+    <hr class="divider"/>
+
+    <!-- ══ SPACING ════════════════════════════════════════ -->
+    <section class="section" id="spacing">
+      <div class="section-tag">Fundamentos</div>
+      <h2 class="section-title">Sombras & Border radius</h2>
+      <p class="section-desc">Sombras cálidas con base en ink. Bordes muy redondeados como rasgo identitario del sistema.</p>
+
+      <h4 style="margin-bottom:16px;">Sombras</h4>
+      <div class="row-3" style="margin-bottom:32px;">
+        <div style="background:var(--card); border-radius:16px; padding:28px 20px; text-align:center; box-shadow:var(--shadow-soft);">
+          <div style="font-size:13px; font-weight:700;">shadow-soft</div>
+          <div style="font-size:11px; color:var(--muted-fg); margin-top:4px;">Cards secundarias, elementos flotantes</div>
+        </div>
+        <div style="background:var(--card); border-radius:16px; padding:28px 20px; text-align:center; box-shadow:var(--shadow-card);">
+          <div style="font-size:13px; font-weight:700;">shadow-card</div>
+          <div style="font-size:11px; color:var(--muted-fg); margin-top:4px;">Course cards, contenido principal</div>
+        </div>
+        <div style="background:var(--card); border-radius:16px; padding:28px 20px; text-align:center; box-shadow:var(--shadow-glow);">
+          <div style="font-size:13px; font-weight:700;">shadow-glow</div>
+          <div style="font-size:11px; color:var(--muted-fg); margin-top:4px;">Hover de CTA, elementos destacados</div>
+        </div>
+      </div>
+
+      <h4 style="margin-bottom:16px;">Border radius</h4>
+      <div class="row" style="align-items:flex-end;">
+        <div style="text-align:center;">
+          <div style="width:60px;height:60px;background:var(--primary);opacity:.7;border-radius:8px;margin:0 auto 8px;"></div>
+          <div style="font-size:11px; color:var(--muted-fg);">8px<br/><span style="font-weight:700;">sm</span></div>
+        </div>
+        <div style="text-align:center;">
+          <div style="width:60px;height:60px;background:var(--primary);opacity:.7;border-radius:12px;margin:0 auto 8px;"></div>
+          <div style="font-size:11px; color:var(--muted-fg);">12px<br/><span style="font-weight:700;">md</span></div>
+        </div>
+        <div style="text-align:center;">
+          <div style="width:60px;height:60px;background:var(--primary);opacity:.7;border-radius:16px;margin:0 auto 8px;"></div>
+          <div style="font-size:11px; color:var(--muted-fg);">16px (--radius)<br/><span style="font-weight:700;">lg</span></div>
+        </div>
+        <div style="text-align:center;">
+          <div style="width:60px;height:60px;background:var(--primary);opacity:.7;border-radius:24px;margin:0 auto 8px;"></div>
+          <div style="font-size:11px; color:var(--muted-fg);">24px<br/><span style="font-weight:700;">2xl</span></div>
+        </div>
+        <div style="text-align:center;">
+          <div style="width:60px;height:60px;background:var(--primary);opacity:.7;border-radius:32px;margin:0 auto 8px;"></div>
+          <div style="font-size:11px; color:var(--muted-fg);">32px<br/><span style="font-weight:700;">3xl</span></div>
+        </div>
+        <div style="text-align:center;">
+          <div style="width:60px;height:60px;background:var(--primary);opacity:.7;border-radius:999px;margin:0 auto 8px;"></div>
+          <div style="font-size:11px; color:var(--muted-fg);">999px<br/><span style="font-weight:700;">pill</span></div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider"/>
+
+    <!-- ══ GRADIENTS ═════════════════════════════════════ -->
+    <section class="section" id="gradients">
+      <div class="section-tag">Fundamentos</div>
+      <h2 class="section-title">Gradientes</h2>
+      <div class="row-4">
+        <div style="border-radius:16px; overflow:hidden; border:1px solid var(--border);">
+          <div style="height:80px; background:var(--grad-warm);"></div>
+          <div style="padding:10px 12px; background:var(--card);"><div style="font-size:12px; font-weight:800;">gradient-warm</div><div class="mono" style="margin-top:4px;">--grad-warm</div></div>
+        </div>
+        <div style="border-radius:16px; overflow:hidden; border:1px solid var(--border);">
+          <div style="height:80px; background:var(--grad-sun);"></div>
+          <div style="padding:10px 12px; background:var(--card);"><div style="font-size:12px; font-weight:800;">gradient-sun</div><div class="mono" style="margin-top:4px;">--grad-sun</div></div>
+        </div>
+        <div style="border-radius:16px; overflow:hidden; border:1px solid var(--border);">
+          <div style="height:80px; background:var(--grad-ink);"></div>
+          <div style="padding:10px 12px; background:var(--card);"><div style="font-size:12px; font-weight:800;">gradient-ink</div><div class="mono" style="margin-top:4px;">--grad-ink</div></div>
+        </div>
+        <div style="border-radius:16px; overflow:hidden; border:1px solid var(--border);">
+          <div style="height:80px; background:var(--grad-cream); border-bottom:1px solid var(--border);"></div>
+          <div style="padding:10px 12px; background:var(--card);"><div style="font-size:12px; font-weight:800;">gradient-cream</div><div class="mono" style="margin-top:4px;">--grad-cream</div></div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider"/>
+
+    <!-- ══ SPACING & SIZES ═══════════════════════════════ -->
+    <section class="section" id="sizes">
+      <div class="section-tag">Fundamentos</div>
+      <h2 class="section-title">Espaciado & Tamaños</h2>
+      <p class="section-desc">Escala de 4 px base. Todos los espacios, alturas de componente y anchuras fijas derivan de este grid, garantizando consistencia vertical y horizontal.</p>
+
+      <!-- Escala de espaciado -->
+      <h4 style="margin-bottom:16px;">Escala de espaciado (base 4 px)</h4>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:36px;">
+        <style>
+          .sp-row{display:flex;align-items:center;gap:16px;}
+          .sp-label{width:56px;font-size:11px;font-weight:800;color:var(--muted-fg);flex-shrink:0;text-align:right;}
+          .sp-token{width:96px;font-size:10.5px;font-family:monospace;background:var(--surface);padding:2px 7px;border-radius:5px;flex-shrink:0;}
+          .sp-bar{height:20px;background:var(--grad-warm);border-radius:6px;opacity:.82;}
+          .sp-px{font-size:11px;color:var(--muted-fg);}
+        </style>
+        <div class="sp-row"><span class="sp-label">1</span><span class="sp-token">space-1</span><div class="sp-bar" style="width:4px;"></div><span class="sp-px">4 px</span></div>
+        <div class="sp-row"><span class="sp-label">2</span><span class="sp-token">space-2</span><div class="sp-bar" style="width:8px;"></div><span class="sp-px">8 px</span></div>
+        <div class="sp-row"><span class="sp-label">3</span><span class="sp-token">space-3</span><div class="sp-bar" style="width:12px;"></div><span class="sp-px">12 px</span></div>
+        <div class="sp-row"><span class="sp-label">4</span><span class="sp-token">space-4</span><div class="sp-bar" style="width:16px;"></div><span class="sp-px">16 px — gap base entre ítems</span></div>
+        <div class="sp-row"><span class="sp-label">5</span><span class="sp-token">space-5</span><div class="sp-bar" style="width:20px;"></div><span class="sp-px">20 px</span></div>
+        <div class="sp-row"><span class="sp-label">6</span><span class="sp-token">space-6</span><div class="sp-bar" style="width:24px;"></div><span class="sp-px">24 px — padding de card</span></div>
+        <div class="sp-row"><span class="sp-label">8</span><span class="sp-token">space-8</span><div class="sp-bar" style="width:32px;"></div><span class="sp-px">32 px</span></div>
+        <div class="sp-row"><span class="sp-label">10</span><span class="sp-token">space-10</span><div class="sp-bar" style="width:40px;"></div><span class="sp-px">40 px — separación entre secciones internas</span></div>
+        <div class="sp-row"><span class="sp-label">12</span><span class="sp-token">space-12</span><div class="sp-bar" style="width:48px;"></div><span class="sp-px">48 px — padding vertical de página</span></div>
+        <div class="sp-row"><span class="sp-label">16</span><span class="sp-token">space-16</span><div class="sp-bar" style="width:64px;"></div><span class="sp-px">64 px — separación entre bloques mayores</span></div>
+        <div class="sp-row"><span class="sp-label">20</span><span class="sp-token">space-20</span><div class="sp-bar" style="width:80px;"></div><span class="sp-px">80 px</span></div>
+        <div class="sp-row"><span class="sp-label">24</span><span class="sp-token">space-24</span><div class="sp-bar" style="width:96px;"></div><span class="sp-px">96 px — separación entre secciones de página</span></div>
+      </div>
+
+      <!-- Alturas de componentes -->
+      <h4 style="margin-bottom:16px;">Alturas de componente</h4>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:36px;max-width:560px;">
+        <style>
+          .ch-row{display:flex;align-items:center;gap:16px;}
+          .ch-name{width:160px;font-size:12px;font-weight:700;flex-shrink:0;}
+          .ch-bar{background:hsl(14 78% 52%/.12);border:1.5px solid hsl(14 78% 52%/.3);border-radius:8px;display:flex;align-items:center;padding:0 12px;}
+          .ch-val{font-size:11px;font-family:monospace;color:var(--primary);font-weight:700;margin-left:auto;}
+        </style>
+        <div class="ch-row">
+          <span class="ch-name">Botón pequeño (sm)</span>
+          <div class="ch-bar" style="height:32px;width:120px;"><span class="ch-val">32 px</span></div>
+        </div>
+        <div class="ch-row">
+          <span class="ch-name">Botón normal</span>
+          <div class="ch-bar" style="height:40px;width:148px;"><span class="ch-val">40 px</span></div>
+        </div>
+        <div class="ch-row">
+          <span class="ch-name">Botón grande (lg)</span>
+          <div class="ch-bar" style="height:48px;width:172px;"><span class="ch-val">48 px</span></div>
+        </div>
+        <div class="ch-row">
+          <span class="ch-name">Input / Select</span>
+          <div class="ch-bar" style="height:40px;width:220px;background:hsl(38 80% 60%/.1);border-color:hsl(38 80% 60%/.3);"><span class="ch-val" style="color:hsl(32 85% 38%);">40 px</span></div>
+        </div>
+        <div class="ch-row">
+          <span class="ch-name">Textarea (min)</span>
+          <div class="ch-bar" style="height:80px;width:220px;background:hsl(38 80% 60%/.1);border-color:hsl(38 80% 60%/.3);"><span class="ch-val" style="color:hsl(32 85% 38%);align-self:flex-start;margin-top:8px;">80 px</span></div>
+        </div>
+        <div class="ch-row">
+          <span class="ch-name">Nav item (sidebar)</span>
+          <div class="ch-bar" style="height:38px;width:196px;background:hsl(24 20% 18%/.12);border-color:hsl(24 25% 12%/.2);"><span class="ch-val" style="color:var(--fg);">38 px</span></div>
+        </div>
+        <div class="ch-row">
+          <span class="ch-name">Header / Topbar</span>
+          <div class="ch-bar" style="height:64px;width:280px;background:hsl(24 25% 12%/.08);border-color:hsl(24 25% 12%/.15);"><span class="ch-val" style="color:var(--fg);">64 px</span></div>
+        </div>
+      </div>
+
+      <!-- Tamaños de avatar e ícono -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-bottom:36px;">
+        <div>
+          <h4 style="margin-bottom:16px;">Avatares</h4>
+          <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;">
+            <div style="text-align:center;">
+              <div style="width:24px;height:24px;border-radius:6px;background:var(--grad-warm);margin:0 auto 6px;"></div>
+              <div style="font-size:10px;color:var(--muted-fg);">24px<br/><b>xs</b></div>
+            </div>
+            <div style="text-align:center;">
+              <div style="width:32px;height:32px;border-radius:8px;background:var(--grad-warm);margin:0 auto 6px;"></div>
+              <div style="font-size:10px;color:var(--muted-fg);">32px<br/><b>sm</b></div>
+            </div>
+            <div style="text-align:center;">
+              <div style="width:40px;height:40px;border-radius:10px;background:var(--grad-warm);margin:0 auto 6px;"></div>
+              <div style="font-size:10px;color:var(--muted-fg);">40px<br/><b>md</b></div>
+            </div>
+            <div style="text-align:center;">
+              <div style="width:48px;height:48px;border-radius:12px;background:var(--grad-warm);margin:0 auto 6px;"></div>
+              <div style="font-size:10px;color:var(--muted-fg);">48px<br/><b>lg</b></div>
+            </div>
+            <div style="text-align:center;">
+              <div style="width:64px;height:64px;border-radius:16px;background:var(--grad-warm);margin:0 auto 6px;"></div>
+              <div style="font-size:10px;color:var(--muted-fg);">64px<br/><b>xl</b></div>
+            </div>
+            <div style="text-align:center;">
+              <div style="width:80px;height:80px;border-radius:20px;background:var(--grad-warm);margin:0 auto 6px;"></div>
+              <div style="font-size:10px;color:var(--muted-fg);">80px<br/><b>2xl</b></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <h4 style="margin-bottom:16px;">Íconos</h4>
+          <div style="display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;">
+            <div style="text-align:center;">
+              <div style="width:14px;height:14px;background:var(--primary);border-radius:3px;margin:0 auto 6px;opacity:.8;"></div>
+              <div style="font-size:10px;color:var(--muted-fg);">14px<br/><b>xs</b><br/><span style="color:var(--muted-fg);">inline</span></div>
+            </div>
+            <div style="text-align:center;">
+              <div style="width:16px;height:16px;background:var(--primary);border-radius:3px;margin:0 auto 6px;opacity:.8;"></div>
+              <div style="font-size:10px;color:var(--muted-fg);">16px<br/><b>sm</b><br/><span style="color:var(--muted-fg);">badge</span></div>
+            </div>
+            <div style="text-align:center;">
+              <div style="width:20px;height:20px;background:var(--primary);border-radius:4px;margin:0 auto 6px;opacity:.8;"></div>
+              <div style="font-size:10px;color:var(--muted-fg);">20px<br/><b>md</b><br/><span style="color:var(--muted-fg);">nav</span></div>
+            </div>
+            <div style="text-align:center;">
+              <div style="width:24px;height:24px;background:var(--primary);border-radius:5px;margin:0 auto 6px;opacity:.8;"></div>
+              <div style="font-size:10px;color:var(--muted-fg);">24px<br/><b>lg</b><br/><span style="color:var(--muted-fg);">button</span></div>
+            </div>
+            <div style="text-align:center;">
+              <div style="width:32px;height:32px;background:var(--primary);border-radius:7px;margin:0 auto 6px;opacity:.8;"></div>
+              <div style="font-size:10px;color:var(--muted-fg);">32px<br/><b>xl</b><br/><span style="color:var(--muted-fg);">hero</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Anchuras fijas -->
+      <h4 style="margin-bottom:16px;">Anchuras & contenedores</h4>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <style>
+          .cw-row{display:flex;align-items:center;gap:14px;}
+          .cw-label{width:200px;font-size:12px;font-weight:700;flex-shrink:0;}
+          .cw-track{flex:1;height:28px;background:var(--surface);border-radius:8px;overflow:hidden;position:relative;}
+          .cw-fill{height:100%;border-radius:8px;display:flex;align-items:center;padding:0 10px;}
+          .cw-px{font-size:10.5px;font-weight:800;font-family:monospace;}
+        </style>
+        <div class="cw-row">
+          <span class="cw-label">Sidebar (DS doc)</span>
+          <div class="cw-track"><div class="cw-fill" style="width:14.6%;background:hsl(24 25% 12%/.15);"><span class="cw-px">220 px</span></div></div>
+        </div>
+        <div class="cw-row">
+          <span class="cw-label">Sidebar admin</span>
+          <div class="cw-track"><div class="cw-fill" style="width:16%;background:hsl(24 25% 12%/.15);"><span class="cw-px">240 px</span></div></div>
+        </div>
+        <div class="cw-row">
+          <span class="cw-label">Sidebar alumno</span>
+          <div class="cw-track"><div class="cw-fill" style="width:17.3%;background:hsl(24 25% 12%/.15);"><span class="cw-px">260 px</span></div></div>
+        </div>
+        <div class="cw-row">
+          <span class="cw-label">Icon rail</span>
+          <div class="cw-track"><div class="cw-fill" style="width:4.5%;background:hsl(14 78% 52%/.15);"><span class="cw-px">68 px</span></div></div>
+        </div>
+        <div class="cw-row">
+          <span class="cw-label">Contenido máx. (main)</span>
+          <div class="cw-track"><div class="cw-fill" style="width:64%;background:hsl(14 78% 52%/.12);"><span class="cw-px">960 px</span></div></div>
+        </div>
+        <div class="cw-row">
+          <span class="cw-label">Contenedor 2xl</span>
+          <div class="cw-track"><div class="cw-fill" style="width:93.3%;background:hsl(38 80% 60%/.15);"><span class="cw-px">1400 px</span></div></div>
+        </div>
+        <div class="cw-row">
+          <span class="cw-label">Formularios (máx.)</span>
+          <div class="cw-track"><div class="cw-fill" style="width:32%;background:hsl(150 60% 42%/.12);"><span class="cw-px">480 px</span></div></div>
+        </div>
+        <div class="cw-row">
+          <span class="cw-label">Course card (min)</span>
+          <div class="cw-track"><div class="cw-fill" style="width:18.6%;background:hsl(150 60% 42%/.12);"><span class="cw-px">280 px</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider"/>
+
+    <!-- ══ BUTTONS ═══════════════════════════════════════ -->
+    <section class="section" id="buttons">
+      <div class="section-tag">Componentes</div>
+      <h2 class="section-title">Botones</h2>
+      <p class="section-desc">Jerarquía clara de acciones: primario → secundario → outline → ghost. Tamaños sm, default y lg.</p>
+
+      <h4 style="margin-bottom:14px;">Variantes</h4>
+      <div class="row" style="margin-bottom:24px;">
+        <button class="btn btn-primary">Empezar curso</button>
+        <button class="btn btn-secondary">Ver catálogo</button>
+        <button class="btn btn-outline">Más información</button>
+        <button class="btn btn-ghost">Cancelar</button>
+        <button class="btn btn-ink">Área privada</button>
+        <button class="btn btn-danger">Eliminar</button>
+      </div>
+
+      <h4 style="margin-bottom:14px;">Tamaños</h4>
+      <div class="row" style="align-items:center; margin-bottom:24px;">
+        <button class="btn btn-primary btn-sm">Pequeño</button>
+        <button class="btn btn-primary">Normal</button>
+        <button class="btn btn-primary btn-lg">Grande</button>
+      </div>
+
+      <h4 style="margin-bottom:14px;">Con icono</h4>
+      <div class="row">
+        <button class="btn btn-primary">▶ Continuar lección</button>
+        <button class="btn btn-outline">⬇ Descargar recursos</button>
+        <button class="btn btn-ghost">← Volver al curso</button>
+      </div>
+    </section>
+
+    <hr class="divider"/>
+
+    <!-- ══ BADGES ═════════════════════════════════════════ -->
+    <section class="section" id="badges">
+      <div class="section-tag">Componentes</div>
+      <h2 class="section-title">Badges & Chips</h2>
+
+      <h4 style="margin-bottom:14px;">Badges de estado</h4>
+      <div class="row" style="margin-bottom:24px;">
+        <span class="badge badge-primary badge-dot">Publicado</span>
+        <span class="badge badge-success badge-dot">Completado</span>
+        <span class="badge badge-warning badge-dot">En progreso</span>
+        <span class="badge badge-danger badge-dot">Error</span>
+        <span class="badge badge-muted">Borrador</span>
+        <span class="badge badge-ink">Admin</span>
+      </div>
+
+      <h4 style="margin-bottom:14px;">Chips de filtro (catálogo)</h4>
+      <div class="row" style="margin-bottom:24px;">
+        <span class="chip selected">Todos</span>
+        <span class="chip">Diseño</span>
+        <span class="chip">Branding</span>
+        <span class="chip">Tipografía</span>
+        <span class="chip">Fotografía</span>
+        <span class="chip">Ilustración</span>
+      </div>
+
+      <h4 style="margin-bottom:14px;">Pills de gradiente</h4>
+      <div class="row">
+        <span class="pill pill-warm">Más vendido</span>
+        <span class="pill pill-sun">Nuevo</span>
+        <span class="pill pill-ink">Premium</span>
+      </div>
+    </section>
+
+    <hr class="divider"/>
+
+    <!-- ══ INPUTS ══════════════════════════════════════════ -->
+    <section class="section" id="inputs">
+      <div class="section-tag">Componentes</div>
+      <h2 class="section-title">Inputs & Formularios</h2>
+
+      <div class="row-2">
+        <div class="input-wrap">
+          <label class="input-label">Nombre completo</label>
+          <input class="input" type="text" placeholder="Laura Martínez" />
+          <span class="input-hint">Tal y como aparecerá en tu certificado</span>
+        </div>
+        <div class="input-wrap">
+          <label class="input-label">Correo electrónico</label>
+          <input class="input" type="email" placeholder="laura@academia.es" />
+        </div>
+        <div class="input-wrap">
+          <label class="input-label">Contraseña</label>
+          <input class="input error" type="password" placeholder="••••••••" />
+          <span class="input-error">La contraseña debe tener al menos 8 caracteres</span>
+        </div>
+        <div class="input-wrap">
+          <label class="input-label">Confirmar contraseña</label>
+          <input class="input success" type="password" placeholder="••••••••" />
+        </div>
+        <div class="input-wrap">
+          <label class="input-label">Buscar cursos</label>
+          <input class="input" type="search" placeholder="🔍  Acuarela, branding, tipografía…" />
+        </div>
+        <div class="input-wrap">
+          <label class="input-label">Área de comentario</label>
+          <textarea class="input" rows="3" placeholder="Escribe tu pregunta sobre esta lección…" style="resize:vertical;"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider"/>
+
+    <!-- ══ CARDS ══════════════════════════════════════════ -->
+    <section class="section" id="cards">
+      <div class="section-tag">Componentes</div>
+      <h2 class="section-title">Cards base</h2>
+
+      <div class="row-3">
+        <div class="card">
+          <div class="card-title">Card estándar</div>
+          <div class="card-desc">Contenedor con sombra-card, borde redondeado 24px y hover con glow terracota.</div>
+        </div>
+        <div class="card" style="background:var(--ink); color:var(--ink-fg);">
+          <div class="card-title" style="color:hsl(38 50% 97%);">Card Ink</div>
+          <div class="card-desc" style="color:hsl(38 30% 88%/0.6);">Para destacados oscuros, hero sections, zona del reproductor.</div>
+        </div>
+        <div class="card" style="background:var(--grad-warm); color:white; border:none;">
+          <div class="card-title" style="color:white;">Card Gradient</div>
+          <div class="card-desc" style="color:rgba(255,255,255,.75);">Para CTAs destacados, banners de oferta, módulos premium.</div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider"/>
+
+    <!-- ══ PROGRESS ════════════════════════════════════════ -->
+    <section class="section" id="progress">
+      <div class="section-tag">Componentes</div>
+      <h2 class="section-title">Indicadores de progreso</h2>
+
+      <div style="display:flex; flex-direction:column; gap:20px; max-width:480px;">
+        <div>
+          <div class="progress-label"><span>Marca magnética</span><strong>72%</strong></div>
+          <div class="progress-wrap"><div class="progress-bar" style="width:72%"></div></div>
+        </div>
+        <div>
+          <div class="progress-label"><span>Tipografía emocional</span><strong>38%</strong></div>
+          <div class="progress-wrap"><div class="progress-bar" style="width:38%; background:var(--grad-sun);"></div></div>
+        </div>
+        <div>
+          <div class="progress-label"><span>Ilustración vectorial</span><strong>100%</strong></div>
+          <div class="progress-wrap"><div class="progress-bar" style="width:100%; background:linear-gradient(135deg,hsl(150,60%,42%),hsl(160,70%,50%));"></div></div>
+        </div>
+        <div>
+          <div class="progress-label"><span>Fotografía de producto</span><strong>8%</strong></div>
+          <div class="progress-wrap"><div class="progress-bar" style="width:8%"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider"/>
+
+    <!-- ══ TOASTS ══════════════════════════════════════════ -->
+    <section class="section" id="toasts">
+      <div class="section-tag">Componentes</div>
+      <h2 class="section-title">Toasts & Notificaciones</h2>
+
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <!-- success — CheckCircle2 -->
+        <div class="toast success">
+          <div class="toast-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="hsl(150 60% 42%)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></div>
+          <div><div class="toast-title">¡Lección completada!</div><div class="toast-desc">Has marcado «Fundamentos del color» como completada.</div></div>
+        </div>
+        <!-- destructive — XCircle -->
+        <div class="toast destructive">
+          <div class="toast-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="hsl(0 70% 50%)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg></div>
+          <div><div class="toast-title">Error al guardar</div><div class="toast-desc">No se pudo guardar tu progreso. Comprueba tu conexión.</div></div>
+        </div>
+        <!-- info — Info -->
+        <div class="toast info">
+          <div class="toast-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="hsl(210 80% 52%)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></div>
+          <div><div class="toast-title">Sesión iniciada</div><div class="toast-desc">Bienvenida de nuevo, Laura. Continúa donde lo dejaste.</div></div>
+        </div>
+        <!-- warning — AlertTriangle -->
+        <div class="toast warning">
+          <div class="toast-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="hsl(38 80% 60%)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div>
+          <div><div class="toast-title">Acceso no disponible</div><div class="toast-desc">Esta lección es solo para alumnos matriculados.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider"/>
+
+    <!-- ══ AVATARES ════════════════════════════════════════ -->
+    <section class="section" id="avatars">
+      <div class="section-tag">Componentes</div>
+      <h2 class="section-title">Avatares</h2>
+
+      <div class="row" style="align-items:center; margin-bottom:24px;">
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--grad-warm);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:12px;">LM</div>
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--grad-sun);display:flex;align-items:center;justify-content:center;color:hsl(24 25% 12%);font-weight:800;font-size:14px;">LM</div>
+        <div style="width:48px;height:48px;border-radius:50%;background:var(--grad-ink);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:16px;">LM</div>
+        <div style="width:56px;height:56px;border-radius:50%;background:var(--grad-warm);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:18px;">LM</div>
+        <div style="width:64px;height:64px;border-radius:16px;background:var(--grad-warm);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:20px;">LM</div>
+      </div>
+
+      <h4 style="margin-bottom:14px;">Avatar stack</h4>
+      <div class="avatar-stack">
+        <div class="av" style="background:var(--grad-warm);">LM</div>
+        <div class="av" style="background:var(--grad-sun); color:hsl(24 25% 12%);">SR</div>
+        <div class="av" style="background:hsl(265 82% 58%);">DA</div>
+        <div class="av" style="background:hsl(172 75% 42%);">PV</div>
+        <div class="av av-more">+12</div>
+      </div>
+    </section>
+
+    <hr class="divider"/>
+
+    <!-- ══ TABLES ══════════════════════════════════════════ -->
+    <section class="section" id="tables">
+      <div class="section-tag">Componentes</div>
+      <h2 class="section-title">Tablas</h2>
+
+      <div class="ds-table-wrap">
+        <table class="ds-table">
+          <thead>
+            <tr>
+              <th>Alumno</th>
+              <th>Curso</th>
+              <th>Progreso</th>
+              <th>Estado</th>
+              <th>Importe</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:10px;"><div style="width:30px;height:30px;border-radius:8px;background:var(--grad-warm);display:flex;align-items:center;justify-content:center;color:white;font-size:11px;font-weight:800;">MR</div><div><div style="font-weight:700;font-size:13px;">Marta Reyes</div><div style="font-size:11px;color:var(--muted-fg);">marta@studio.es</div></div></div></td>
+              <td style="font-size:13px;">Marca magnética</td>
+              <td><div style="display:flex;align-items:center;gap:8px;"><div class="progress-wrap" style="width:80px;"><div class="progress-bar" style="width:72%"></div></div><span style="font-size:11px;font-weight:700;">72%</span></div></td>
+              <td><span class="badge badge-warning badge-dot">En progreso</span></td>
+              <td style="font-weight:800;">197€</td>
+            </tr>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:10px;"><div style="width:30px;height:30px;border-radius:8px;background:var(--grad-sun);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;">DA</div><div><div style="font-weight:700;font-size:13px;">Diego Aranda</div><div style="font-size:11px;color:var(--muted-fg);">diego.a@gmail.com</div></div></div></td>
+              <td style="font-size:13px;">Movimiento y color</td>
+              <td><div style="display:flex;align-items:center;gap:8px;"><div class="progress-wrap" style="width:80px;"><div class="progress-bar" style="width:100%;background:linear-gradient(135deg,hsl(150,60%,42%),hsl(160,70%,50%));"></div></div><span style="font-size:11px;font-weight:700;">100%</span></div></td>
+              <td><span class="badge badge-success badge-dot">Completado</span></td>
+              <td style="font-weight:800;">297€</td>
+            </tr>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:10px;"><div style="width:30px;height:30px;border-radius:8px;background:hsl(265 82% 58%);display:flex;align-items:center;justify-content:center;color:white;font-size:11px;font-weight:800;">LB</div><div><div style="font-weight:700;font-size:13px;">Lucía Bermejo</div><div style="font-size:11px;color:var(--muted-fg);">lucia.b@hotmail.com</div></div></div></td>
+              <td style="font-size:13px;">Trazos en píxel</td>
+              <td><div style="display:flex;align-items:center;gap:8px;"><div class="progress-wrap" style="width:80px;"><div class="progress-bar" style="width:12%"></div></div><span style="font-size:11px;font-weight:700;">12%</span></div></td>
+              <td><span class="badge badge-warning badge-dot">En progreso</span></td>
+              <td style="font-weight:800;">147€</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <hr class="divider"/>
+
+    <!-- ══ STATES ══════════════════════════════════════════ -->
+    <section class="section" id="states">
+      <div class="section-tag">Componentes</div>
+      <h2 class="section-title">Estados</h2>
+
+      <div class="row-3" style="margin-bottom:28px;">
+        <div class="empty-state">
+          <div class="empty-icon">📚</div>
+          <div class="empty-title">Sin cursos todavía</div>
+          <div class="empty-desc">Explora el catálogo y encuentra el curso que cambiará tu trayectoria.</div>
+          <button class="btn btn-primary btn-sm">Ver catálogo</button>
+        </div>
+
+        <!-- Skeleton -->
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div class="skel" style="width:48px;height:48px;border-radius:12px;"></div>
+            <div style="flex:1;">
+              <div class="skel" style="height:14px;border-radius:6px;width:70%;margin-bottom:8px;"></div>
+              <div class="skel" style="height:11px;border-radius:6px;width:45%;"></div>
+            </div>
+          </div>
+          <div class="skel" style="height:160px;border-radius:16px;"></div>
+          <div class="skel" style="height:12px;border-radius:6px;width:85%;"></div>
+          <div class="skel" style="height:12px;border-radius:6px;width:65%;"></div>
+        </div>
+
+        <!-- Error -->
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center;background:var(--card);border-radius:24px;border:1.5px solid hsl(0 70% 50% / .15);">
+          <div style="font-size:40px;margin-bottom:12px;">⚠️</div>
+          <div style="font-size:16px;font-weight:800;margin-bottom:6px;">Error al cargar</div>
+          <div style="font-size:12px;color:var(--muted-fg);margin-bottom:20px;">No pudimos conectar con el servidor. Comprueba tu conexión.</div>
+          <button class="btn btn-outline btn-sm">Reintentar</button>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider"/>
+
+    <!-- ══ SIDEBARS ════════════════════════════════════════ -->
+    <section class="section" id="sidebars">
+      <div class="section-tag">Patrones de navegación</div>
+      <h2 class="section-title">Propuestas de Sidebar</h2>
+      <p class="section-desc">Tres variantes distintas. La 1 para el panel admin, la 2 para el reproductor de alumno, la 3 como rail minimalista alternativo.</p>
+
+      <!-- PROPUESTA 1 -->
+      <h4 style="margin-bottom:6px;">Propuesta 1 — Warm Ink (Panel Admin)</h4>
+      <p style="font-size:12.5px; color:var(--muted-fg); margin-bottom:18px;">Sidebar oscuro que usa el color <strong>ink</strong> del propio sistema de diseño. Acento terracota para el estado activo, agrupaciones con labels, usuario al pie. Sin paletas externas (adiós al índigo).</p>
+      <div class="sb-demo" style="margin-bottom:44px;">
+        <!-- SIDEBAR 1 -->
+        <div class="sb1 sb-panel">
+          <div class="sb1-head">
+            <div class="sb1-brand">Academia<br/>Creativa</div>
+            <div class="sb1-role">✦ Admin</div>
+          </div>
+          <nav class="sb1-nav">
+            <div style="margin-bottom:20px;">
+              <span class="sb1-section-label">Visión general</span>
+              <div class="sb1-item active">
+                <div class="sb1-item-icon">⊞</div>
+                Dashboard
+                <span class="sb1-badge">3</span>
+              </div>
+              <div class="sb1-item">
+                <div class="sb1-item-icon">📊</div>
+                Métricas
+              </div>
+            </div>
+            <div style="margin-bottom:20px;">
+              <span class="sb1-section-label">Contenido</span>
+              <div class="sb1-item">
+                <div class="sb1-item-icon">📚</div>
+                Cursos
+              </div>
+              <div class="sb1-item">
+                <div class="sb1-item-icon">◉</div>
+                Lecciones
+              </div>
+            </div>
+            <div style="margin-bottom:20px;">
+              <span class="sb1-section-label">Comunidad</span>
+              <div class="sb1-item">
+                <div class="sb1-item-icon">👥</div>
+                Alumnos
+              </div>
+              <div class="sb1-item">
+                <div class="sb1-item-icon">💳</div>
+                Ventas
+                <span class="sb1-badge">12</span>
+              </div>
+            </div>
+            <div class="sb1-divider"></div>
+            <div class="sb1-item">
+              <div class="sb1-item-icon">⚙</div>
+              Ajustes
+            </div>
+          </nav>
+          <div class="sb1-footer">
+            <div class="sb1-user">
+              <div class="sb1-avatar">LM</div>
+              <div style="flex:1;min-width:0;">
+                <div class="sb1-user-name">Laura Martínez</div>
+                <div class="sb1-user-role">Owner · Administradora</div>
+              </div>
+              <div class="sb1-logout" title="Cerrar sesión">⏻</div>
+            </div>
+          </div>
+        </div>
+        <!-- CONTENT -->
+        <div class="sb-content">
+          <div class="sb-content-header">
+            <div class="sb-content-title">Dashboard</div>
+            <div class="sb-content-sub">Hoy, 24 de mayo de 2026</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div class="stat-card">
+              <div class="stat-icon" style="background:hsl(14 78% 52%/0.12);">💰</div>
+              <div class="stat-value">18.420€</div>
+              <div class="stat-label">Ingresos del mes</div>
+              <div class="stat-change stat-up">↑ +12,4%</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background:hsl(150 60% 42%/0.12);">👩‍🎓</div>
+              <div class="stat-value">284</div>
+              <div class="stat-label">Nuevos alumnos</div>
+              <div class="stat-change stat-up">↑ +8,2%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROPUESTA 2 -->
+      <h4 style="margin-bottom:6px;">Propuesta 2 — Cream Light (Reproductor Alumno)</h4>
+      <p style="font-size:12.5px; color:var(--muted-fg); margin-bottom:18px;">Sidebar claro que usa el fondo <strong>card</strong> y <strong>surface</strong>. Muestra el progreso del curso en cabecera, lecciones con estado (completada / activa / bloqueada), y un CTA de certificado en el pie.</p>
+      <div class="sb-demo" style="margin-bottom:44px;">
+        <div class="sb2 sb-panel">
+          <div class="sb2-head">
+            <div class="sb2-back">← Mis cursos</div>
+            <div class="sb2-course-title">Marca magnética: crea una identidad irresistible</div>
+            <div class="sb2-progress">
+              <div class="sb2-progress-bar"><div class="sb2-progress-fill"></div></div>
+              <div class="sb2-progress-label">6 de 16 lecciones completadas · 38%</div>
+            </div>
+          </div>
+          <nav class="sb2-nav">
+            <div class="sb2-section">
+              <div class="sb2-section-head">
+                <div class="sb2-section-num">1</div>
+                <div class="sb2-section-title">Fundamentos de marca</div>
+                <div class="sb2-section-count">4 lec.</div>
+              </div>
+              <div class="sb2-lesson done">
+                <span class="sb2-lesson-check">✓</span>
+                <span class="sb2-lesson-title">Qué es una marca y qué no es</span>
+                <span class="sb2-lesson-dur">8 min</span>
+              </div>
+              <div class="sb2-lesson done">
+                <span class="sb2-lesson-check">✓</span>
+                <span class="sb2-lesson-title">Arquetipos de marca</span>
+                <span class="sb2-lesson-dur">12 min</span>
+              </div>
+              <div class="sb2-lesson active">
+                <span class="sb2-lesson-check">▶</span>
+                <span class="sb2-lesson-title">Posicionamiento y diferenciación</span>
+                <span class="sb2-lesson-dur">15 min</span>
+              </div>
+              <div class="sb2-lesson">
+                <span class="sb2-lesson-check" style="color:var(--muted-fg);">○</span>
+                <span class="sb2-lesson-title">Brief de marca</span>
+                <span class="sb2-lesson-dur">10 min</span>
+              </div>
+            </div>
+            <div class="sb2-section">
+              <div class="sb2-section-head">
+                <div class="sb2-section-num">2</div>
+                <div class="sb2-section-title">Identidad visual</div>
+                <div class="sb2-section-count">6 lec.</div>
+              </div>
+              <div class="sb2-lesson done">
+                <span class="sb2-lesson-check">✓</span>
+                <span class="sb2-lesson-title">Logotipos que funcionan</span>
+                <span class="sb2-lesson-dur">18 min</span>
+              </div>
+              <div class="sb2-lesson done">
+                <span class="sb2-lesson-check">✓</span>
+                <span class="sb2-lesson-title">Paletas de color con alma</span>
+                <span class="sb2-lesson-dur">22 min</span>
+              </div>
+            </div>
+          </nav>
+          <div class="sb2-footer">
+            <div class="sb2-cert">
+              <div class="sb2-cert-icon">🎓</div>
+              <div>
+                <div class="sb2-cert-title">Certificado disponible</div>
+                <div class="sb2-cert-desc">Completa el 100% para obtenerlo</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- CONTENT -->
+        <div class="sb-content" style="background:hsl(24 25% 10%); color:white; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px;">
+          <div style="font-size:40px;">▶</div>
+          <div style="font-size:15px; font-weight:800;">Posicionamiento y diferenciación</div>
+          <div style="font-size:12px; color:hsl(38 30% 88%/0.5);">15 min · Lección 3 de 16</div>
+        </div>
+      </div>
+
+      <!-- PROPUESTA 3 -->
+      <h4 style="margin-bottom:6px;">Propuesta 3 — Icon Rail (Alternativa minimalista)</h4>
+      <p style="font-size:12.5px; color:var(--muted-fg); margin-bottom:18px;">Sidebar de iconos de 68px de ancho. Ideal cuando el contenido necesita más espacio. Puede expandirse a 220px on hover (requiere CSS/JS adicional). Usa fondo <strong>card</strong> claro.</p>
+      <div class="sb3-wrap">
+        <div class="sb3">
+          <div class="sb3-logo">A</div>
+          <div class="sb3-item active" title="Dashboard">⊞<div class="sb3-dot"></div></div>
+          <div class="sb3-item" title="Cursos">📚</div>
+          <div class="sb3-item" title="Alumnos">👥</div>
+          <div class="sb3-item" title="Ventas">💳</div>
+          <div class="sb3-divider"></div>
+          <div class="sb3-item" title="Métricas">📊</div>
+          <div class="sb3-spacer"></div>
+          <div class="sb3-item" title="Ajustes">⚙</div>
+          <div class="sb3-avatar" title="Laura Martínez">LM</div>
+        </div>
+        <div class="sb3-content">
+          <div style="font-size:19px; font-weight:900; margin-bottom:6px;">Dashboard</div>
+          <div style="font-size:12px; color:var(--muted-fg); margin-bottom:24px;">Resumen de actividad · mayo 2026</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+            <div class="stat-card"><div class="stat-value" style="font-size:22px;">18.420€</div><div class="stat-label">Ingresos</div><div class="stat-change stat-up">↑ +12,4%</div></div>
+            <div class="stat-card"><div class="stat-value" style="font-size:22px;">284</div><div class="stat-label">Nuevos alumnos</div><div class="stat-change stat-up">↑ +8,2%</div></div>
+            <div class="stat-card"><div class="stat-value" style="font-size:22px;">4,8%</div><div class="stat-label">Conversión</div><div class="stat-change stat-down">↓ -0,3%</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider"/>
+
+    <!-- ══ COURSE CARDS ════════════════════════════════════ -->
+    <section class="section" id="course-cards">
+      <div class="section-tag">Patrones</div>
+      <h2 class="section-title">Course Card</h2>
+      <p class="section-desc">Tarjeta del catálogo. Imagen con fondo tonal del curso, categoría, título, subtítulo, metadatos y precio.</p>
+
+      <div class="row-3">
+        <div class="course-card">
+          <div class="course-card-img" style="background:linear-gradient(135deg,hsl(14,78%,52%),hsl(28,88%,58%));">🎨</div>
+          <div class="course-card-body">
+            <div class="course-card-cat">Branding</div>
+            <div class="course-card-title">Marca magnética</div>
+            <div class="course-card-sub">Crea una identidad visual irresistible</div>
+            <div class="course-card-meta">
+              <span><span class="stars">★★★★★</span> 4.9 <span style="color:var(--muted-fg)">(312)</span></span>
+              <div class="course-card-price">197€</div>
+            </div>
+          </div>
+        </div>
+        <div class="course-card">
+          <div class="course-card-img" style="background:linear-gradient(135deg,hsl(38,90%,65%),hsl(18,85%,58%));">✏️</div>
+          <div class="course-card-body">
+            <div class="course-card-cat">Tipografía</div>
+            <div class="course-card-title">Letras con carácter</div>
+            <div class="course-card-sub">Domina la tipografía expresiva</div>
+            <div class="course-card-meta">
+              <span><span class="stars">★★★★☆</span> 4.7 <span style="color:var(--muted-fg)">(184)</span></span>
+              <div class="course-card-price">147€</div>
+            </div>
+          </div>
+        </div>
+        <div class="course-card">
+          <div class="course-card-img" style="background:linear-gradient(135deg,hsl(24,30%,14%),hsl(20,25%,22%));">🖼</div>
+          <div class="course-card-body">
+            <div class="course-card-cat">Fotografía</div>
+            <div class="course-card-title">Luz y sombra</div>
+            <div class="course-card-sub">Fotografía de producto con luz natural</div>
+            <div class="course-card-meta">
+              <span><span class="stars">★★★★★</span> 5.0 <span style="color:var(--muted-fg)">(97)</span></span>
+              <div class="course-card-price">297€</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider"/>
+
+    <!-- ══ STAT CARDS ══════════════════════════════════════ -->
+    <section class="section" id="stat-cards">
+      <div class="section-tag">Patrones</div>
+      <h2 class="section-title">Stat Cards (Admin & Alumno)</h2>
+
+      <h4 style="margin-bottom:14px;">Panel Admin</h4>
+      <div class="row-4" style="margin-bottom:28px;">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:hsl(14 78% 52%/0.12);">💰</div>
+          <div class="stat-value">18.420€</div>
+          <div class="stat-label">Ingresos del mes</div>
+          <div class="stat-change stat-up">↑ +12,4% vs mes anterior</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:hsl(150 60% 42%/0.12);">👩‍🎓</div>
+          <div class="stat-value">284</div>
+          <div class="stat-label">Nuevos alumnos</div>
+          <div class="stat-change stat-up">↑ +8,2%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:hsl(38 80% 60%/0.15);">📈</div>
+          <div class="stat-value">4,8%</div>
+          <div class="stat-label">Tasa de conversión</div>
+          <div class="stat-change stat-down">↓ -0,3%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:hsl(210 80% 52%/0.1);">📚</div>
+          <div class="stat-value">16</div>
+          <div class="stat-label">Cursos activos</div>
+          <div class="stat-change stat-up">↑ +2 este mes</div>
+        </div>
+      </div>
+
+      <h4 style="margin-bottom:14px;">Panel Alumno</h4>
+      <div class="row-4">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--grad-warm);color:white;">🔥</div>
+          <div class="stat-value">28</div>
+          <div class="stat-label">Racha de días</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:hsl(150 60% 42%/0.12);">✅</div>
+          <div class="stat-value">47</div>
+          <div class="stat-label">Lecciones completadas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--grad-sun);color:hsl(24 25% 12%);">🎓</div>
+          <div class="stat-value">3</div>
+          <div class="stat-label">Cursos completados</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:hsl(14 78% 52%/0.12);">⏱</div>
+          <div class="stat-value">9h 12m</div>
+          <div class="stat-label">Esta semana</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FIN -->
+    <div class="section-spacer"></div>
+    <div style="text-align:center; padding: 40px 0 60px; color:var(--muted-fg); font-size:12px;">
+      <div class="serif" style="font-size:20px; color:var(--fg); margin-bottom:6px;">Academia Creativa</div>
+      Design System v1.0 · Proyecto NCH
+    </div>
+
+  </div><!-- /ds-inner -->
+  </main>
+</div>
+
+<script>
+  const links    = document.querySelectorAll('.ds-nav-link');
+  const sections = document.querySelectorAll('.section');
+
+  function setActive(id) {
+    links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + id));
+  }
+
+  // IntersectionObserver: marca la sección visible más alta en la pantalla
+  let visibleIds = new Set();
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) visibleIds.add(e.target.id);
+      else visibleIds.delete(e.target.id);
+    });
+    // Entre todas las visibles, elegir la que aparece primero en el DOM
+    let first = null;
+    sections.forEach(s => { if (visibleIds.has(s.id)) first = first ?? s.id; });
+    if (first) setActive(first);
+  }, { rootMargin: '0px 0px -40% 0px', threshold: 0 });
+
+  sections.forEach(s => observer.observe(s));
+
+  // Fallback: al llegar al fondo, activar la última
+  window.addEventListener('scroll', () => {
+    if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 8) {
+      setActive(sections[sections.length - 1].id);
+    }
+  }, { passive: true });
+
+  // Smooth scroll
+  links.forEach(l => {
+    l.addEventListener('click', e => {
+      e.preventDefault();
+      const id = l.getAttribute('href').slice(1);
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+</script>
+</body>
+</html>

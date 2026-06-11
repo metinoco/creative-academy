@@ -19,7 +19,7 @@ type Props = {
 const Logo = ({ variant = "default", to = "/", size = "md", showWord = true }: Props) => {
   const sizes = {
     sm: { mark: 32, text: "text-base" },
-    md: { mark: 40, text: "text-xl" },
+    md: { mark: 46, text: "text-xl md:text-[22px]" },
     lg: { mark: 56, text: "text-2xl" },
   };
   const s = sizes[size];

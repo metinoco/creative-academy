@@ -14,7 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['Nunito Sans', 'system-ui', 'sans-serif'],
+        display: ['DM Serif Display', 'Georgia', 'serif'],
         sans: ['Nunito Sans', 'system-ui', 'sans-serif'],
       },
       colors: {
