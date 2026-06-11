@@ -90,7 +90,7 @@ supabase/
 │   ├── stripe-webhook/index.ts           # Edge Function: procesa checkout.session.completed → payments + enrollments
 │   ├── generate-certificate/index.ts     # Edge Function: genera PDF con pdf-lib (A4 landscape) y sube a Storage
 │   └── _shared/cors.ts                   # Headers CORS compartidos
-└── migrations/              # 11 archivos SQL (schema completo + seed + Q&A/notas + admin functions + payments + métricas + certificados)
+└── migrations/              # 12 archivos SQL (schema completo + seed + Q&A/notas + admin functions + payments + métricas + certificados + hardening RLS)
 
 vercel.json                  # Rewrite catch-all → /index.html (necesario para React Router en Vercel)
 ```

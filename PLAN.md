@@ -66,7 +66,7 @@
 - [x] Tabla `payments` con RLS + funciones `admin_get_payment_stats()` y `admin_get_recent_payments()`
 - [x] Tabla `certificates` con RLS + función pública `get_certificate_by_code(_code)`
 - [x] 4 funciones de métricas admin: `admin_get_course_completion`, `admin_get_revenue_by_course`, `admin_get_qa_stats`, `admin_get_monthly_trends`
-- [x] 11 migraciones en `supabase/migrations/`
+- [x] 12 migraciones en `supabase/migrations/` (incluye `20260607120000_security-rls-hardening.sql`)
 - [x] `types.ts` extendido manualmente con tipos para todas las RPCs admin y `get_certificate_by_code` (no auto-generados por CLI)
 
 ### Datos reales conectados
