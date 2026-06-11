@@ -52,7 +52,7 @@ src/
 │   ├── admin/               # Sub-componentes del panel de administración
 │   │   ├── AdminDashboard.tsx       # Tiles reales + top cursos
 │   │   ├── AdminCursos.tsx          # Tabla de cursos con stats
-│   │   ├── AdminAlumnos.tsx         # Modal centralizado por alumno
+│   │   ├── AdminAlumnos.tsx         # Modal centralizado por alumno; envía emails de acceso concedido/revocado vía send-email Edge Function
 │   │   ├── AdminVentas.tsx          # Transacciones Stripe reales
 │   │   ├── AdminMetricas.tsx        # Métricas de contenido: completitud, revenue por curso, Q&A
 │   │   └── AdminNotificationPanel.tsx  # Panel de notificaciones con badge y drawer
@@ -87,10 +87,14 @@ docs/
 supabase/
 ├── functions/
 │   ├── create-checkout-session/index.ts  # Edge Function: crea sesión Stripe y devuelve URL de pago
-│   ├── stripe-webhook/index.ts           # Edge Function: procesa checkout.session.completed → payments + enrollments
-│   ├── generate-certificate/index.ts     # Edge Function: genera PDF con pdf-lib (A4 landscape) y sube a Storage
-│   └── _shared/cors.ts                   # Headers CORS compartidos
-└── migrations/              # 12 archivos SQL (schema completo + seed + Q&A/notas + admin functions + payments + métricas + certificados + hardening RLS)
+│   ├── stripe-webhook/index.ts           # Edge Function: procesa checkout.session.completed → payments + enrollments + email de confirmación
+│   ├── generate-certificate/index.ts     # Edge Function: genera PDF con pdf-lib (A4 landscape), sube a Storage y envía email con enlace
+│   ├── send-email/index.ts               # Edge Function: envíos transaccionales (welcome, course_access, access_revoked); tipos admin requieren rol admin
+│   ├── send-activity-reminder/index.ts   # Edge Function: detecta alumnos inactivos vía RPC y envía recordatorios; soporta dry_run y send_test
+│   └── _shared/
+│       ├── cors.ts                       # Headers CORS compartidos
+│       └── resend.ts                     # Wrapper de API Resend + 6 plantillas HTML responsivas (welcome, purchase, course_access, certificate, access_revoked, activity_reminder)
+└── migrations/              # 13 archivos SQL (schema completo + seed + Q&A/notas + admin functions + payments + métricas + certificados + hardening RLS + detección actividad)
 
 vercel.json                  # Rewrite catch-all → /index.html (necesario para React Router en Vercel)
 ```
@@ -279,6 +283,7 @@ Constraint único `(question_id, user_id)` — un voto por alumno/pregunta.
 - `admin_get_qa_stats()` — SECURITY DEFINER; actividad Q&A (preguntas/respuestas por curso) para `AdminMetricas.tsx`
 - `admin_get_monthly_trends()` — SECURITY DEFINER; tendencia mensual de alumnos e ingresos para `AdminMetricas.tsx`
 - `get_certificate_by_code(_code)` — SECURITY DEFINER; verificación pública de certificado sin auth (usada en `Certificado.tsx`)
+- `get_inactive_enrolled_students(days_inactive)` — SECURITY DEFINER; devuelve alumnos matriculados (purchase/manual) sin actividad en los últimos N días (def. 14), excluyendo revocados, seeds y ya certificados; usada por `send-activity-reminder`
 
 ### Enums
 - `app_role` — `admin`, `student`
@@ -411,7 +416,7 @@ El viewport está fijado en `bottom-right`; los toasts tienen `rounded-[14px]` y
 | Panel admin con datos reales | **Completado** | Dashboard, Cursos, Alumnos, Ventas y Métricas con datos reales; NotificationPanel activo; paleta Warm Ink |
 | CRUD de cursos desde admin | Pendiente | Crear/editar cursos, secciones y lecciones |
 | Gestión de alumnos desde admin | **Completado** | Buscar, ver matrículas, dar/revocar acceso manual desde modal centralizado por alumno; doble confirmación al revocar |
-| Emails automáticos | Pendiente | Bienvenida, confirmación compra, recordatorio |
+| Emails automáticos | **Completado** | `_shared/resend.ts` con 6 plantillas; `send-email` (welcome al registrarse, course_access y access_revoked desde AdminAlumnos); confirmación de compra desde `stripe-webhook`; certificado desde `generate-certificate`; `send-activity-reminder` para alumnos inactivos (RPC `get_inactive_enrolled_students`) |
 | Migración de 2.400 alumnos existentes | Pendiente | Proceso de importación desde sistema anterior |
 | Landing page conectada a Supabase | **Completado** | `Index.tsx` lee cursos desde Supabase; `courses.ts` como fallback de imágenes |
 
@@ -450,12 +455,15 @@ El viewport está fijado en `bottom-right`; los toasts tienen `rounded-[14px]` y
 
 Solo el `PUBLISHABLE_KEY` (anon key) está expuesto al cliente. Nunca usar la `service_role` key en el frontend.
 
-Las variables de Stripe van en los **secrets de Supabase Edge Functions** (no en `.env`):
+Las variables de Stripe y email van en los **secrets de Supabase Edge Functions** (no en `.env`):
 
 | Secret | Descripción |
 |--------|-------------|
 | `STRIPE_SECRET_KEY` | Clave secreta de Stripe (sk_live_… / sk_test_…) |
 | `STRIPE_WEBHOOK_SECRET` | Secret del endpoint webhook de Stripe (whsec_…) |
+| `RESEND_API_KEY` | API key de Resend para envío de emails transaccionales |
+| `RESEND_FROM_EMAIL` | Dirección remitente (default: `onboarding@resend.dev`; usar dominio propio en producción) |
+| `SITE_URL` | URL base del sitio usada en los enlaces de los emails (default: `https://academia-creativa.vercel.app`) |
 
 ---
 
@@ -485,7 +493,7 @@ La aplicación se despliega en **Vercel**. El archivo `vercel.json` en la raíz 
 - Para probar el reproductor (`/alumno/curso/:slug`), el usuario debe tener una fila en `enrollments` con `revoked_at IS NULL` para el curso deseado.
 - Las lecciones con `is_free_preview = true` son accesibles sin matrícula.
 - Todos los datos de `Alumno.tsx` son reales: progreso, racha, tiempo semanal/mensual y grid de actividad se calculan desde `lesson_progress`.
-- `Admin.tsx`: Dashboard, Cursos y Alumnos usan datos reales de Supabase. Solo `AdminVentas.tsx` es placeholder (Stripe pendiente).
+- `Admin.tsx`: Dashboard, Cursos, Alumnos, Ventas y Métricas usan datos reales de Supabase. `AdminVentas.tsx` consume las RPCs `admin_get_payment_stats` y `admin_get_recent_payments` con datos de Stripe reales.
 - `courses.ts` actúa como fallback cuando faltan datos en Supabase; no eliminar hasta que la BD tenga todos los cursos completos.
 - Los estados vacíos y de error están implementados en `Cursos.tsx` y `Alumno.tsx`; la carga del formulario (Loader2) en `Login.tsx` y `Registro.tsx`. Las 4 queries de `Alumno.tsx` (enrollments, courses, lessons, progress) lanzan el error en lugar de ignorarlo, lo que permite que React Query active el error state correctamente.
 - `Login.tsx` y `Registro.tsx` usan las variantes de toast tipadas (`success`, `info`, `warning`, `destructive`) del sistema de notificaciones rediseñado.

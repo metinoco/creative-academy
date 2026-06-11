@@ -22,6 +22,34 @@ Plataforma LMS propia para Academia Creativa (cliente: Laura Martínez). Reempla
 | Package manager | npm (compatible con bun) |
 | Hosting | Vercel (SPA, `vercel.json` con rewrite catch-all) |
 | Pagos | Stripe (Edge Functions `create-checkout-session` + `stripe-webhook`) |
+| Emails | Resend (Edge Functions `send-email` + `send-activity-reminder`, 6 plantillas HTML responsivas) |
+
+## 🏗️ Arquitectura de servicios
+
+```mermaid
+flowchart LR
+    Browser["Navegador\nReact 18 · Tailwind · shadcn/ui"]
+
+    subgraph Supabase["Supabase"]
+        Auth["Auth"]
+        DB["PostgreSQL + RLS"]
+        EF["Edge Functions (Deno)"]
+        Storage["Storage (PDFs)"]
+    end
+
+    Stripe(["Stripe"])
+    Resend(["Resend"])
+    Vercel(["Vercel"])
+
+    Vercel -->|sirve SPA| Browser
+    Browser -->|supabase-js| Auth
+    Browser -->|supabase-js + RLS| DB
+    Browser -->|invoke| EF
+    EF -->|service_role| DB
+    EF <-->|checkout + webhook| Stripe
+    EF -->|API REST| Resend
+    EF -->|upload| Storage
+```
 
 ## ⚙️ Requisitos previos
 
@@ -40,6 +68,16 @@ VITE_SUPABASE_PROJECT_ID=<tu-project-id>
 ```
 
 Solo el `PUBLISHABLE_KEY` (anon key) se expone al cliente. Nunca usar la `service_role` key en el frontend.
+
+Los secrets de las Edge Functions (Stripe + Resend) se configuran en **Supabase → Edge Functions → Manage secrets**, no en `.env`:
+
+| Secret | Descripción |
+|--------|-------------|
+| `STRIPE_SECRET_KEY` | Clave secreta de Stripe |
+| `STRIPE_WEBHOOK_SECRET` | Secret del webhook de Stripe |
+| `RESEND_API_KEY` | API key de Resend |
+| `RESEND_FROM_EMAIL` | Dirección remitente (default: `onboarding@resend.dev`) |
+| `SITE_URL` | URL base del sitio para los enlaces en emails |
 
 ## 🚀 Instalación y desarrollo
 
@@ -110,6 +148,7 @@ Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se control
 | Datos reales en panel admin | 100 % |
 | Sistema de pagos | 100 % |
 | Certificados | 100 % |
+| Emails automáticos | 100 % |
 
 ### Detalle por página
 
@@ -126,6 +165,25 @@ Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se control
 | Verificación cert. (`/certificado/:codigo`) | **Supabase** | Página pública; muestra datos del certificado verificados via RPC; descarga PDF |
 | 404 | — | Diseño split con ilustración 3D |
 
+## 🔄 Flujo principal del alumno
+
+```mermaid
+flowchart TD
+    Registro["/registro"] -->|trigger BD + email bienvenida| Dashboard["/alumno — Dashboard"]
+    Dashboard --> Catalogo["/cursos — Catálogo"]
+    Catalogo --> Detalle["/curso/:id — Detalle"]
+    Detalle --> Check{¿Matriculado?}
+    Check -->|Sí| Reproductor["/alumno/curso/:slug"]
+    Check -->|No| Comprar["Botón Comprar"]
+    Comprar --> Stripe["Stripe Checkout\ncreate-checkout-session"]
+    Stripe -->|"checkout.session.completed"| Webhook["stripe-webhook\npayments + enrollments\n+ email confirmación"]
+    Webhook --> Reproductor
+    Reproductor --> Progress{100 % lecciones}
+    Progress -->|No| Reproductor
+    Progress -->|Sí| Cert["Modal certificado\ngenerate-certificate"]
+    Cert --> CertPage["PDF en Storage + email\n/certificado/:codigo"]
+```
+
 ## 🛣️ Roadmap
 
 ### Fase 1 — Crítico (para lanzar)
@@ -139,12 +197,7 @@ Todas las tablas tienen RLS habilitado. El acceso a contenido de pago se control
 | ~~1.5~~ | ~~Integración de pagos con Stripe~~ | ✅ Completado |
 | ~~1.6~~ | ~~Certificados de finalización~~ | ✅ Completado |
 | 1.7 | Migración de ~2.400 alumnos existentes | Alta (1–2 días) |
-| 1.8 | Emails automáticos (Resend / SendGrid) | Media (1 día) |
-
-Dependencias clave:
-- **1.5 Stripe** → desbloquea 1.3 (métricas reales) y 1.8 (confirmación de compra)
-- **1.6 Certificados** → requiere 1.8 (email de certificado)
-- **1.7 Migración** → requiere 1.8 (bienvenida a alumnos)
+| ~~1.8~~ | ~~Emails automáticos (Resend)~~ | ✅ Completado |
 
 ### Fase 2 — Deseable (post-lanzamiento)
 
@@ -167,6 +220,7 @@ Dependencias clave:
 - Las variables de Stripe (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`) van en los secrets de Supabase Edge Functions, no en `.env` del frontend.
 - Para generar un certificado: completar el 100% de las lecciones de un curso y usar el botón "Obtener certificado" en el reproductor. El certificado queda accesible en el dashboard del alumno.
 - La URL de verificación de certificados tiene el formato `/certificado/XXXXXXXX` (código de 8 caracteres en mayúsculas). No requiere autenticación.
+- Para probar emails: configurar `RESEND_API_KEY` en los secrets de Edge Functions. En desarrollo sin la key, los envíos se omiten con `console.warn` sin lanzar error. Para testear el recordatorio de actividad sin enviar emails reales, invocar `send-activity-reminder` con `{ "dry_run": true }` desde Supabase Studio; para probar la plantilla, usar `{ "send_test": "tu@email.com" }`.
 
 Para el detalle completo del plan de implementación, ver [PLAN.md](./PLAN.md).
 
