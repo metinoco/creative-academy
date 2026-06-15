@@ -24,7 +24,10 @@ const ProtectedRoute = ({ children, requireRole }: Props) => {
   }
 
   if (requireRole && role !== requireRole) {
-    return <Navigate to={role === "admin" ? "/admin" : "/alumno"} replace />;
+    if (role === "admin") return <Navigate to="/admin" replace />;
+    if (role === "student") return <Navigate to="/alumno" replace />;
+    // No role assigned: send to home to avoid infinite redirect loop on protected routes
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;

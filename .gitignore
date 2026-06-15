@@ -34,3 +34,6 @@ dist-ssr
 
 # MCP local config
 .mcp.json
+
+# Supabase CLI temp (linked project ref)
+supabase/.temp/
