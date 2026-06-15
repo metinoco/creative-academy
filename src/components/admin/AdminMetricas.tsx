@@ -309,7 +309,7 @@ export default function AdminMetricas() {
             {(atRisk.data?.length ?? 0) > 0 && (
               <span className="flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1">
                 <AlertTriangle className="w-3 h-3" />
-                {atRisk.data!.length} alumnos
+                {(() => { const n = new Set(atRisk.data!.map((s) => s.user_id)).size; return `${n} ${n === 1 ? "alumno" : "alumnos"}`; })()}
               </span>
             )}
           </div>
@@ -351,50 +351,75 @@ export default function AdminMetricas() {
                   <th className="px-4 py-2.5 text-left text-[10px] font-black uppercase tracking-widest text-[hsl(24_12%_50%)]">Alumno</th>
                   <th className="px-4 py-2.5 text-left text-[10px] font-black uppercase tracking-widest text-[hsl(24_12%_50%)] hidden sm:table-cell">Curso</th>
                   <th className="px-4 py-2.5 text-left text-[10px] font-black uppercase tracking-widest text-[hsl(24_12%_50%)] hidden sm:table-cell">Matriculado</th>
-                  <th className="px-4 py-2.5 text-left text-[10px] font-black uppercase tracking-widest text-[hsl(24_12%_50%)]">Inactividad</th>
+                  <th className="px-4 py-2.5 text-left text-[10px] font-black uppercase tracking-widest text-[hsl(24_12%_50%)] hidden sm:table-cell">Inactividad</th>
                 </tr>
               </thead>
               <tbody className={`divide-y ${BORDER}`}>
-                {(atRisk.data ?? []).map((s) => (
-                  <tr
-                    key={`${s.user_id}-${s.course_id}`}
-                    className="hover:bg-[hsl(38_40%_98%)] transition"
-                  >
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-[hsl(24_25%_12%)]">
-                        {s.full_name ?? "—"}
-                      </div>
-                      <div className="text-xs text-[hsl(24_12%_50%)] truncate sm:hidden">
-                        {s.course_title}
-                      </div>
-                      <div className="text-xs text-[hsl(24_12%_50%)] truncate max-w-[180px]">
-                        {s.email}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 max-w-[220px] hidden sm:table-cell">
-                      <span className="truncate block text-[hsl(24_25%_12%)]">
-                        {s.course_title}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-[hsl(24_12%_50%)] whitespace-nowrap hidden sm:table-cell">
-                      {fmtDate(s.granted_at)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full ${
-                          s.days_inactive >= 90
-                            ? "bg-red-50 text-red-600"
-                            : s.days_inactive >= 60
-                            ? "bg-amber-50 text-amber-600"
-                            : "bg-yellow-50 text-yellow-700"
-                        }`}
-                      >
-                        <Activity className="w-3 h-3" />
-                        {s.days_inactive} días
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                {Object.values(
+                  (atRisk.data ?? []).reduce<Record<string, AtRiskStudent[]>>((acc, s) => {
+                    if (!acc[s.user_id]) acc[s.user_id] = [];
+                    acc[s.user_id].push(s);
+                    return acc;
+                  }, {})
+                ).map((group) => {
+                  const first = group[0];
+                  const earliest = group.reduce((a, b) =>
+                    a.granted_at < b.granted_at ? a : b
+                  );
+                  const worst = group.reduce((a, b) =>
+                    a.days_inactive >= b.days_inactive ? a : b
+                  );
+                  const badgeClass = worst.days_inactive >= 90
+                    ? "bg-red-50 text-red-600"
+                    : worst.days_inactive >= 60
+                    ? "bg-amber-50 text-amber-600"
+                    : "bg-yellow-50 text-yellow-700";
+                  return (
+                    <tr
+                      key={first.user_id}
+                      className="hover:bg-[hsl(38_40%_98%)] transition"
+                    >
+                      <td className="px-4 py-3">
+                        <div className="font-medium text-[hsl(24_25%_12%)]">
+                          {first.full_name ?? "—"}
+                        </div>
+                        <div className="text-xs text-[hsl(24_12%_50%)] truncate max-w-[200px]">
+                          {first.email}
+                        </div>
+                        {/* Cursos + badge de inactividad solo en móvil */}
+                        <div className="flex flex-col gap-0.5 mt-1.5 sm:hidden">
+                          {group.map((s) => (
+                            <span key={s.course_id} className="text-xs text-[hsl(24_12%_45%)] truncate">
+                              · {s.course_title}
+                            </span>
+                          ))}
+                          <span className={`mt-1.5 self-start inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full ${badgeClass}`}>
+                            <Activity className="w-3 h-3" />
+                            {worst.days_inactive} días inactivo
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 max-w-[240px] hidden sm:table-cell">
+                        <div className="flex flex-col gap-1">
+                          {group.map((s) => (
+                            <span key={s.course_id} className="truncate block text-[hsl(24_25%_12%)] text-sm leading-snug">
+                              {s.course_title}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-[hsl(24_12%_50%)] whitespace-nowrap hidden sm:table-cell align-top">
+                        {fmtDate(earliest.granted_at)}
+                      </td>
+                      <td className="px-4 py-3 align-top hidden sm:table-cell">
+                        <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full ${badgeClass}`}>
+                          <Activity className="w-3 h-3" />
+                          {worst.days_inactive} días
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
