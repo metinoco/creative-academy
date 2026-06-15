@@ -28,7 +28,7 @@ const Login = () => {
     toast({ title: "¡Bienvenido de vuelta!", description, variant: "info" });
     // Redirect: respect requested route, else send by role (decided in /alumno fallback)
     navigate(
-      from && from !== "/login" ? from : "/alumno",
+      from && from !== "/login" ? from : role === "admin" ? "/admin" : "/alumno",
       { replace: true, state: autoCheckout ? { autoCheckout: true } : {} }
     );
   };

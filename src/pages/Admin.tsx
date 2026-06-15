@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, Users, CreditCard, BarChart3,
   Settings, LogOut, Menu, Lock,
@@ -70,11 +70,18 @@ function ComingSoonSection({ label }: { label: string }) {
   );
 }
 
+const VALID_SECTIONS = new Set<Section>(["dashboard", "cursos", "alumnos", "ventas", "metricas", "ajustes"]);
+
 const Admin = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { signOut, profile } = useAuth();
-  const [activeSection, setActiveSection] = useState<Section>("dashboard");
-  const [sidebarOpen, setSidebarOpen]     = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const pathSegment = location.pathname.split("/")[2] ?? "";
+  const activeSection: Section = VALID_SECTIONS.has(pathSegment as Section)
+    ? (pathSegment as Section)
+    : "dashboard";
 
   const handleLogout = async () => {
     await signOut();
@@ -85,8 +92,12 @@ const Admin = () => {
 
   const handleNav = (id: Section, locked?: boolean, onNavigate?: () => void) => {
     if (locked) return;
-    setActiveSection(id);
+    navigate(id === "dashboard" ? "/admin" : `/admin/${id}`);
     onNavigate?.();
+  };
+
+  const handleNavSection = (id: Section) => {
+    navigate(id === "dashboard" ? "/admin" : `/admin/${id}`);
   };
 
   const NavItem = ({
@@ -227,7 +238,7 @@ const Admin = () => {
 
             <div className="ml-auto flex items-center gap-2 md:gap-3">
               <AdminNotificationPanel
-                onNavigate={(s) => setActiveSection(s)}
+                onNavigate={handleNavSection}
               />
             </div>
           </div>
@@ -253,7 +264,7 @@ const Admin = () => {
             </div>
           )}
 
-          {activeSection === "dashboard" && <AdminDashboard onNavigate={(s) => setActiveSection(s)} />}
+          {activeSection === "dashboard" && <AdminDashboard onNavigate={handleNavSection} />}
           {activeSection === "cursos"    && <AdminCursos />}
           {activeSection === "alumnos"   && <AdminAlumnos />}
           {activeSection === "ventas"    && <AdminVentas />}
