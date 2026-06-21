@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, Users, CreditCard, BarChart3,
   Settings, LogOut, Menu, Lock,
@@ -78,18 +78,30 @@ const Admin = () => {
   const location = useLocation();
   const { signOut, profile } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  // null = lista, "new" = crear, uuid = editar
-  const [editingCourseId, setEditingCourseId] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const pathSegment = location.pathname.split("/")[2] ?? "";
   const activeSection: Section = VALID_SECTIONS.has(pathSegment as Section)
     ? (pathSegment as Section)
     : "dashboard";
 
-  // Reset editor when navigating away from cursos
+  // "editing" search param: "new" | uuid | absent (lista)
+  const editingCourseId = activeSection === "cursos" ? (searchParams.get("editing") ?? null) : null;
+
+  const setEditingCourseId = (id: string | null) => {
+    if (id === null) {
+      setSearchParams({}, { replace: true });
+    } else {
+      setSearchParams({ editing: id }, { replace: true });
+    }
+  };
+
+  // Reset editor param when navigating away from cursos
   useEffect(() => {
-    if (activeSection !== "cursos") setEditingCourseId(null);
-  }, [activeSection]);
+    if (activeSection !== "cursos" && searchParams.has("editing")) {
+      setSearchParams({}, { replace: true });
+    }
+  }, [activeSection]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLogout = async () => {
     await signOut();
