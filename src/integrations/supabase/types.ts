@@ -23,6 +23,8 @@ export type Database = {
           duration_text: string | null
           id: string
           image_url: string | null
+          is_featured: boolean
+          is_new: boolean
           lessons_count: number
           price: number
           rating: number | null
@@ -42,6 +44,8 @@ export type Database = {
           duration_text?: string | null
           id?: string
           image_url?: string | null
+          is_featured?: boolean
+          is_new?: boolean
           lessons_count?: number
           price?: number
           rating?: number | null
@@ -61,6 +65,8 @@ export type Database = {
           duration_text?: string | null
           id?: string
           image_url?: string | null
+          is_featured?: boolean
+          is_new?: boolean
           lessons_count?: number
           price?: number
           rating?: number | null
@@ -718,6 +724,17 @@ export type Database = {
           issued_at: string
           verification_code: string
           pdf_url: string
+        }[]
+      }
+      get_course_lesson_index: {
+        Args: { _course_id: string }
+        Returns: {
+          id: string
+          section_id: string
+          title: string
+          duration_minutes: number | null
+          position: number
+          is_free_preview: boolean
         }[]
       }
     }

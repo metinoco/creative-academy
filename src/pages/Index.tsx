@@ -20,6 +20,34 @@ interface LandingCourse {
   lessons_count: number;
   price: number;
   reviews_count: number;
+  tone: "warm" | "cream" | "sun" | "ink";
+  is_featured: boolean;
+  is_new: boolean;
+  created_at: string;
+}
+
+const toneMap: Record<LandingCourse["tone"], string> = {
+  warm: "bg-primary/10 text-primary",
+  sun: "bg-secondary/30 text-ink",
+  cream: "bg-surface text-ink",
+  ink: "bg-ink text-ink-foreground",
+};
+
+// Arma el bento de 6 cursos: el más popular ordenado por reviews_count, salvo
+// que haya un curso marcado como "nuevo" — ese siempre ocupa la 2ª posición,
+// desplazando al de menor reviews_count para mantener el total en 6.
+function buildFeaturedCourses(allCourses: LandingCourse[]): LandingCourse[] {
+  const top6 = allCourses.slice(0, 6);
+  const newCourses = allCourses.filter((c) => c.is_new);
+  if (newCourses.length === 0) return top6;
+
+  const pinnedNew = newCourses.reduce((latest, c) =>
+    new Date(c.created_at) > new Date(latest.created_at) ? c : latest
+  );
+
+  const rest = top6.filter((c) => c.id !== pinnedNew.id);
+  const trimmedRest = rest.length === 6 ? rest.slice(0, 5) : rest;
+  return [trimmedRest[0], pinnedNew, ...trimmedRest.slice(1)].filter(Boolean) as LandingCourse[];
 }
 
 const Index = () => {
@@ -32,18 +60,17 @@ const Index = () => {
       const { data, error, count } = await supabase
         .from("courses")
         .select(
-          "id, slug, title, category, author, image_url, duration_text, lessons_count, price, reviews_count",
+          "id, slug, title, category, author, image_url, duration_text, lessons_count, price, reviews_count, tone, is_featured, is_new, created_at",
           { count: "exact" }
         )
         .eq("status", "published")
-        .order("reviews_count", { ascending: false })
-        .limit(6);
+        .order("reviews_count", { ascending: false });
       if (error) throw error;
       return { courses: (data ?? []) as LandingCourse[], total: count ?? 0 };
     },
   });
 
-  const featured = data?.courses ?? [];
+  const featured = buildFeaturedCourses(data?.courses ?? []);
   const courseCount = data?.total ?? 0;
   const countLabel = courseCount > 0 ? `${courseCount} cursos disponibles` : "16 cursos disponibles";
   const catalogLabel = courseCount > 0 ? `${courseCount} cursos` : "16 cursos";
@@ -173,8 +200,13 @@ const Index = () => {
               <img src={img(featured[0])} alt={featured[0].title} className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-700" />
               <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/60 to-transparent" />
               <div className="absolute top-6 left-6 flex items-center gap-2">
-                <span className="px-3 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest">Destacado</span>
-                <span className="px-3 py-1 rounded-full bg-card/90 backdrop-blur text-ink text-[10px] font-bold uppercase">{featured[0].category}</span>
+                {featured[0].is_featured && (
+                  <span className="px-3 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest">Destacado</span>
+                )}
+                {featured[0].is_new && (
+                  <span className="px-3 py-1 rounded-full bg-secondary text-ink text-[10px] font-black uppercase tracking-widest">Nuevo</span>
+                )}
+                <span className={`px-3 py-1 rounded-full backdrop-blur text-[10px] font-bold uppercase ${toneMap[featured[0].tone]}`}>{featured[0].category}</span>
               </div>
               <div className="absolute bottom-0 left-0 right-0 p-8 text-ink-foreground">
                 <div className="flex items-end justify-between gap-4">
@@ -195,7 +227,7 @@ const Index = () => {
             </Link>
 
             {/* Two stacked cards right */}
-            {featured.slice(1, 3).map((c, i) => (
+            {featured.slice(1, 3).map((c) => (
               <Link key={c.id} to={`/curso/${c.slug}`} className="col-span-12 md:col-span-5 group relative overflow-hidden rounded-[2rem] bg-card border-2 border-ink hover:bg-ink hover:text-ink-foreground transition min-h-[200px]">
                 <div className="flex h-full">
                   <div className="w-2/5 relative overflow-hidden">
@@ -212,8 +244,15 @@ const Index = () => {
                     </div>
                   </div>
                 </div>
-                {i === 0 && (
-                  <span className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-secondary text-ink text-[9px] font-black uppercase">Nuevo</span>
+                {(c.is_featured || c.is_new) && (
+                  <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                    {c.is_featured && (
+                      <span className="px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[9px] font-black uppercase">Destacado</span>
+                    )}
+                    {c.is_new && (
+                      <span className="px-2 py-0.5 rounded-full bg-secondary text-ink text-[9px] font-black uppercase">Nuevo</span>
+                    )}
+                  </div>
                 )}
               </Link>
             ))}
@@ -223,9 +262,19 @@ const Index = () => {
               <Link key={c.id} to={`/curso/${c.slug}`} className="col-span-12 sm:col-span-6 md:col-span-4 group rounded-[2rem] overflow-hidden bg-card border-2 border-ink transition hover:-translate-y-1">
                 <div className="aspect-[4/3] relative overflow-hidden">
                   <img src={img(c)} alt={c.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-card text-ink">
+                  <span className={`absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${toneMap[c.tone]}`}>
                     {c.category}
                   </span>
+                  {(c.is_featured || c.is_new) && (
+                    <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                      {c.is_featured && (
+                        <span className="px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[9px] font-black uppercase">Destacado</span>
+                      )}
+                      {c.is_new && (
+                        <span className="px-2 py-0.5 rounded-full bg-secondary text-ink text-[9px] font-black uppercase">Nuevo</span>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <div className="p-5">
                   <h3 className="font-display text-xl font-black leading-tight">{c.title}</h3>

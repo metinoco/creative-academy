@@ -63,6 +63,8 @@ const courseSchema = z.object({
   duration_text: z.string().optional(),
   image_url:     z.string().optional().refine(v => !v || v.startsWith("http"), "Debe ser una URL válida"),
   tone:          z.enum(["warm", "cream", "sun", "ink"]),
+  is_featured:   z.boolean(),
+  is_new:        z.boolean(),
 });
 type CourseFormData = z.infer<typeof courseSchema>;
 
@@ -637,42 +639,26 @@ function ContentTab({ courseId }: { courseId: string }) {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
-  const handleSectionDragEnd = async (event: DragEndEvent) => {
+  const handleSectionDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
     const oldIndex = items.findIndex(s => s.id === active.id);
     const newIndex  = items.findIndex(s => s.id === over.id);
-    const reordered = arrayMove(items, oldIndex, newIndex);
-    setItems(reordered);
-    const results = await Promise.all(
-      reordered.map((s, idx) =>
-        supabase.from("sections").update({ position: idx + 1 }).eq("id", s.id)
-      )
-    );
-    if (results.some(r => r.error)) {
-      toast({ title: "Error al reordenar secciones", variant: "destructive" });
-      refetch();
-    }
+    setItems(prev => arrayMove(prev, oldIndex, newIndex));
+    setHasPendingOrder(true);
   };
 
-  const handleLessonDragEnd = async (event: DragEndEvent, sectionId: string) => {
+  const handleLessonDragEnd = (event: DragEndEvent, sectionId: string) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
     const section = items.find(s => s.id === sectionId);
     if (!section) return;
     const oldIndex = section.lessons.findIndex(l => l.id === active.id);
     const newIndex  = section.lessons.findIndex(l => l.id === over.id);
-    const reordered = arrayMove(section.lessons, oldIndex, newIndex);
-    setItems(prev => prev.map(s => s.id === sectionId ? { ...s, lessons: reordered } : s));
-    const results = await Promise.all(
-      reordered.map((l, idx) =>
-        supabase.from("lessons").update({ position: idx + 1 }).eq("id", l.id)
-      )
-    );
-    if (results.some(r => r.error)) {
-      toast({ title: "Error al reordenar lecciones", variant: "destructive" });
-      refetch();
-    }
+    setItems(prev => prev.map(s =>
+      s.id === sectionId ? { ...s, lessons: arrayMove(s.lessons, oldIndex, newIndex) } : s
+    ));
+    setHasPendingOrder(true);
   };
 
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -702,6 +688,35 @@ function ContentTab({ courseId }: { courseId: string }) {
 
   const [deletingLessonId, setDeletingLessonId] = useState<string | null>(null);
   const [deletingLesson, setDeletingLesson] = useState(false);
+
+  const [hasPendingOrder, setHasPendingOrder] = useState(false);
+  const [savingOrder, setSavingOrder] = useState(false);
+
+  const handleSaveOrder = async () => {
+    setSavingOrder(true);
+    try {
+      const results = await Promise.all([
+        ...items.map((s, idx) =>
+          supabase.from("sections").update({ position: idx + 1 }).eq("id", s.id)
+        ),
+        ...items.flatMap(s =>
+          s.lessons.map((l, idx) =>
+            supabase.from("lessons").update({ position: idx + 1 }).eq("id", l.id)
+          )
+        ),
+      ]);
+      if (results.some(r => r.error)) {
+        toast({ title: "Error al guardar el orden", variant: "destructive" });
+        refetch();
+      } else {
+        setHasPendingOrder(false);
+        queryClient.invalidateQueries({ queryKey: ["course-sections-public", courseId] });
+        toast({ title: "Orden guardado", variant: "success" });
+      }
+    } finally {
+      setSavingOrder(false);
+    }
+  };
 
   const handleSaveSection = async (sectionId: string) => {
     if (!editingSectionTitle.trim()) return;
@@ -856,6 +871,29 @@ function ContentTab({ courseId }: { courseId: string }) {
           </SortableContext>
         </DndContext>
 
+        {/* Pending order banner */}
+        {hasPendingOrder && (
+          <div className="flex items-center justify-between gap-4 px-4 py-3 rounded-2xl bg-[hsl(14_78%_52%)/0.06] border-2 border-[hsl(14_78%_52%)/0.25]">
+            <p className="text-sm font-bold text-[hsl(14_78%_42%)]">Orden sin guardar</p>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => { setItems(sections ?? []); setHasPendingOrder(false); }}
+                className={`px-3 py-1.5 text-xs font-bold rounded-full border ${ADMIN_BORDER} hover:bg-[hsl(38_40%_96%)] transition`}
+              >
+                Descartar
+              </button>
+              <button
+                onClick={handleSaveOrder}
+                disabled={savingOrder}
+                className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold rounded-full bg-[hsl(14_78%_52%)] text-white hover:bg-[hsl(14_78%_46%)] transition disabled:opacity-60"
+              >
+                {savingOrder && <Loader2 className="w-3 h-3 animate-spin" />}
+                Guardar orden
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Add section */}
         {addingSection ? (
           <div className={`${ADMIN_CARD} border ${ADMIN_BORDER} rounded-2xl p-4 flex items-center gap-2`}>
@@ -982,6 +1020,7 @@ export default function AdminCursoEditor({
       title: "", slug: "", subtitle: "", description: "",
       category: "", author: "", price: 0,
       duration_text: "", image_url: "", tone: "warm",
+      is_featured: false, is_new: false,
     },
   });
 
@@ -1015,6 +1054,8 @@ export default function AdminCursoEditor({
         duration_text: courseData.duration_text ?? "",
         image_url:     courseData.image_url ?? "",
         tone:          (courseData.tone as CourseFormData["tone"]) ?? "warm",
+        is_featured:   courseData.is_featured ?? false,
+        is_new:        courseData.is_new ?? false,
       });
       setCourseStatus((courseData.status as "draft" | "published") ?? "draft");
     }
@@ -1056,13 +1097,15 @@ export default function AdminCursoEditor({
         duration_text: data.duration_text || null,
         image_url:     data.image_url || null,
         tone:          data.tone,
+        is_featured:   data.is_featured,
+        is_new:        data.is_new,
       };
 
       if (activeCourseId) {
         const { error } = await supabase.from("courses").update(payload).eq("id", activeCourseId);
         if (error) throw error;
         queryClient.invalidateQueries({ queryKey: ["admin", "course", activeCourseId] });
-        toast({ title: "Borrador guardado", variant: "success" });
+        toast({ title: courseStatus === "published" ? "Cambios guardados" : "Borrador guardado", variant: "success" });
       } else {
         const { data: created, error } = await supabase
           .from("courses")
@@ -1404,6 +1447,34 @@ export default function AdminCursoEditor({
                     )}
                   />
 
+                  {/* Featured / New flags */}
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="is_featured"
+                      render={({ field }) => (
+                        <FormItem className={`flex items-center justify-between gap-3 rounded-xl border-2 ${ADMIN_BORDER} px-4 py-3`}>
+                          <FormLabel className="text-sm font-bold text-[hsl(24_25%_12%)]">Curso destacado</FormLabel>
+                          <FormControl>
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="is_new"
+                      render={({ field }) => (
+                        <FormItem className={`flex items-center justify-between gap-3 rounded-xl border-2 ${ADMIN_BORDER} px-4 py-3`}>
+                          <FormLabel className="text-sm font-bold text-[hsl(24_25%_12%)]">Curso nuevo</FormLabel>
+                          <FormControl>
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
                   {/* Action buttons */}
                   <div className={`flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-4 border-t ${ADMIN_BORDER}`}>
                     <button
@@ -1412,7 +1483,7 @@ export default function AdminCursoEditor({
                       className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[hsl(14_78%_52%)] text-white text-sm font-bold hover:bg-[hsl(14_78%_46%)] transition disabled:opacity-60"
                     >
                       {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-                      Guardar borrador
+                      {isPublished ? "Guardar cambios" : "Guardar borrador"}
                     </button>
 
                     {activeCourseId && (

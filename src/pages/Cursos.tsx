@@ -22,7 +22,15 @@ interface CourseRow {
   rating: number | null;
   reviews_count: number;
   price: number;
+  tone: "warm" | "cream" | "sun" | "ink";
 }
+
+const toneMap: Record<CourseRow["tone"], string> = {
+  warm: "bg-primary/10 text-primary",
+  sun: "bg-secondary/30 text-ink",
+  cream: "bg-surface text-ink",
+  ink: "bg-ink text-ink-foreground",
+};
 
 const Cursos = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -34,7 +42,7 @@ const Cursos = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("courses")
-        .select("id, slug, title, category, author, image_url, duration_text, lessons_count, rating, reviews_count, price")
+        .select("id, slug, title, category, author, image_url, duration_text, lessons_count, rating, reviews_count, price, tone")
         .eq("status", "published")
         .order("reviews_count", { ascending: false });
       if (error) throw error;
@@ -232,7 +240,7 @@ const Cursos = () => {
                     height={600}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-card/95 backdrop-blur text-ink text-[10px] font-black uppercase tracking-widest">
+                  <span className={`absolute top-3 left-3 px-2.5 py-1 rounded-full backdrop-blur text-[10px] font-black uppercase tracking-widest ${toneMap[c.tone]}`}>
                     {c.category}
                   </span>
                   {c.rating && (
