@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Eye, Search, ExternalLink, Plus } from "lucide-react";
+import { Eye, Search, Pencil, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { courses as staticCourses } from "@/data/courses";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useToast } from "@/hooks/use-toast";
 
 // ── Design-system "Warm Ink" tokens ───────────────────────────────────────────
 const ADMIN_CARD    = "bg-white";
@@ -26,9 +25,13 @@ interface CourseRow {
   active_enrollments: number;
 }
 
-export default function AdminCursos() {
+interface AdminCursosProps {
+  onNewCourse: () => void;
+  onEditCourse: (id: string) => void;
+}
+
+export default function AdminCursos({ onNewCourse, onEditCourse }: AdminCursosProps) {
   const [search, setSearch] = useState("");
-  const { toast } = useToast();
 
   const { data: courses, isLoading, error, refetch } = useQuery({
     queryKey: ["admin", "course-stats"],
@@ -75,13 +78,7 @@ export default function AdminCursos() {
             />
           </div>
           <button
-            onClick={() =>
-              toast({
-                title: "Próximamente",
-                description: "La creación de cursos desde el panel estará disponible pronto.",
-                variant: "info",
-              })
-            }
+            onClick={onNewCourse}
             className={`inline-flex items-center gap-2 rounded-full ${PRIMARY} text-white px-4 py-2 text-sm font-bold hover:bg-[hsl(14_78%_46%)] transition shrink-0`}
           >
             <Plus className="w-4 h-4" />
@@ -207,13 +204,13 @@ export default function AdminCursos() {
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <button
-                                  disabled
-                                  className="w-8 h-8 rounded-full grid place-items-center opacity-35 cursor-not-allowed"
+                                  onClick={() => onEditCourse(c.id)}
+                                  className="w-8 h-8 rounded-full grid place-items-center hover:bg-[hsl(38_40%_96%)] transition"
                                 >
-                                  <ExternalLink className="w-3.5 h-3.5" />
+                                  <Pencil className="w-3.5 h-3.5" />
                                 </button>
                               </TooltipTrigger>
-                              <TooltipContent>Editar — próximamente</TooltipContent>
+                              <TooltipContent>Editar curso</TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
                         </div>

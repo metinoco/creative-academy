@@ -55,7 +55,8 @@ src/
 │   │   ├── AdminAlumnos.tsx         # Modal centralizado por alumno; envía emails de acceso concedido/revocado vía send-email Edge Function
 │   │   ├── AdminVentas.tsx          # Transacciones Stripe reales
 │   │   ├── AdminMetricas.tsx        # Métricas de contenido: completitud, revenue por curso, Q&A
-│   │   └── AdminNotificationPanel.tsx  # Panel de notificaciones con badge y drawer
+│   │   ├── AdminNotificationPanel.tsx  # Panel de notificaciones con badge y drawer
+│   │   └── AdminCursoEditor.tsx     # Editor CRUD de cursos: formulario de info (React Hook Form + Zod), gestión de secciones (inline rename/delete) y lecciones (dialog modal); publica/despublica; auto-save al pasar a la pestaña Contenido
 │   ├── SiteHeader.tsx       # Cabecera unificada: dropdown de usuario en desktop (hover+click, cierre al hacer clic fuera), avatar/nombre en header del Sheet móvil
 │   ├── SiteFooter.tsx       # Pie de página
 │   ├── CourseCard.tsx       # Tarjeta de curso para el catálogo
@@ -113,7 +114,7 @@ vercel.json                  # Rewrite catch-all → /index.html (necesario para
 | `/registro` | `Registro` | Público |
 | `/alumno` | `Alumno` | Protegida (rol: `student`) |
 | `/alumno/curso/:slug` | `AlumnoCurso` | Protegida (rol: `student`) |
-| `/admin` | `Admin` | Protegida (rol: `admin`) |
+| `/admin/*` | `Admin` | Protegida (rol: `admin`); la sección activa se deriva del segundo segmento de la URL (`/admin/cursos`, `/admin/alumnos`, etc.) |
 | `/pago/exito` | `PagoExito` | Público |
 | `/certificado/:codigo` | `Certificado` | Público (verificación de certificado emitido) |
 
@@ -293,8 +294,7 @@ Constraint único `(question_id, user_id)` — un voto por alumno/pregunta.
 
 ### RLS
 Todas las tablas tienen RLS habilitado:
-- **`courses`/`sections`:** cursos publicados visibles a `anon` y `authenticated`; admins gestionan todo
-- **`lessons`:** política separada por rol — `anon` solo ve lecciones con `is_free_preview = true` en cursos publicados; `authenticated` ve además todo el contenido de cursos en los que está matriculado (`has_course_access`) y admins ven todo
+- **`courses`/`sections`/`lessons`:** SELECT público limitado (cursos publicados / lecciones con `is_free_preview`); `authenticated` ve además el contenido de cursos en los que está matriculado (`has_course_access`); admins tienen `FOR ALL` (SELECT + INSERT + UPDATE + DELETE) en las tres tablas — políticas `"Admins manage courses/sections/lessons"` definidas en la migración inicial
 - **`enrollments`:** cada usuario ve sus propias matrículas; admins ven todas
 - **`lesson_progress`:** cada usuario gestiona su propio progreso (INSERT requiere matrícula activa); admins ven todo
 - **`profiles`:** SELECT y UPDATE restringidos al propio usuario o admin
@@ -392,7 +392,7 @@ El viewport está fijado en `bottom-right`; los toasts tienen `rounded-[14px]` y
 | `Registro` | Funcional | Auth real con Supabase | Spinner Loader2 en botón durante envío |
 | `Alumno` (dashboard) | UI completa | **Supabase** | Todos los datos reales: matrículas, progreso, lecciones completadas, cursos completados, racha diaria, tiempo semanal/mensual y grid de actividad (query `student-activity`). Empty state motivacional + error state con reintentar. |
 | `AlumnoCurso` (reproductor) | UI completa | **Supabase** | Lecciones, progreso, control de acceso por matrícula; Q&A y notas persistidos en BD; modal para generar certificado al completar curso (llama a Edge Function `generate-certificate`) |
-| `Admin` (dashboard) | UI completa | **Supabase** | Dashboard: 4 tiles reales + top cursos real; revenue con overlay "Próximamente". Cursos: tabla real con `admin_get_course_stats`. Alumnos: modal centralizado por alumno con botón móvil adaptado. Ventas: UI real. Métricas: tasas de completitud, revenue por curso, Q&A stats, tendencias mensuales (4 RPCs). NotificationPanel: campana con badge + drawer de atajos. Topbar fijo en móvil (`position: fixed` + spacer). Paleta Warm Ink unificada en todos los sub-componentes (Dashboard, Métricas, Ventas, NotificationPanel, Alumnos y AdminCursos). |
+| `Admin` (dashboard) | UI completa | **Supabase** | Dashboard: 4 tiles reales + top cursos real; revenue con overlay "Próximamente". Cursos: tabla real + editor CRUD completo (`AdminCursoEditor`): crear/editar metadatos de curso, gestionar secciones y lecciones, publicar/despublicar; navegación por URL (`/admin/*`). Alumnos: modal centralizado por alumno con botón móvil adaptado. Ventas: UI real. Métricas: tasas de completitud, revenue por curso, Q&A stats, tendencias mensuales (4 RPCs). NotificationPanel: campana con badge + drawer de atajos. Topbar fijo en móvil (`position: fixed` + spacer). Paleta Warm Ink unificada en todos los sub-componentes. |
 | `PagoExito` (`/pago/exito`) | Completa | — | Confirmación visual post-Stripe con enlace al dashboard del alumno |
 | `Certificado` (`/certificado/:codigo`) | Completa | **Supabase** | Verificación pública via `get_certificate_by_code`; muestra datos del cert + botón descarga PDF |
 | `NotFound` (404) | Completa | — | Layout split con ilustración 3D de artista en pánico |
@@ -414,7 +414,7 @@ El viewport está fijado en `bottom-right`; los toasts tienen `rounded-[14px]` y
 | Q&A en reproductor de lecciones | **Completado** | `AlumnoCurso.tsx` lee/escribe `lesson_questions` y `lesson_answers`; votos vía `toggle_question_vote()` |
 | Notas en reproductor | **Completado** | `AlumnoCurso.tsx` upserta en `lesson_notes` con índice único `(user_id, lesson_id)` |
 | Panel admin con datos reales | **Completado** | Dashboard, Cursos, Alumnos, Ventas y Métricas con datos reales; NotificationPanel activo; paleta Warm Ink |
-| CRUD de cursos desde admin | Pendiente | Crear/editar cursos, secciones y lecciones |
+| CRUD de cursos desde admin | **Completado** | `AdminCursoEditor.tsx`: crear/editar metadatos, secciones inline, lecciones vía dialog, publicar/despublicar; auto-sync de `lessons_count`; navegación URL-based en Admin |
 | Gestión de alumnos desde admin | **Completado** | Buscar, ver matrículas, dar/revocar acceso manual desde modal centralizado por alumno; doble confirmación al revocar |
 | Emails automáticos | **Completado** | `_shared/resend.ts` con 6 plantillas; `send-email` (welcome al registrarse, course_access y access_revoked desde AdminAlumnos); confirmación de compra desde `stripe-webhook`; certificado desde `generate-certificate`; `send-activity-reminder` para alumnos inactivos (RPC `get_inactive_enrolled_students`) |
 | Migración de 2.400 alumnos existentes | Pendiente | Proceso de importación desde sistema anterior |
@@ -442,6 +442,7 @@ El viewport está fijado en `bottom-right`; los toasts tienen `rounded-[14px]` y
 - `courses.ts` se mantiene como fallback estático para imágenes y metadatos hasta que todos los cursos tengan datos completos en la BD.
 - **Code splitting:** todas las páginas se importan con `lazy()` + `Suspense` en `App.tsx`. El build usa `manualChunks` en `vite.config.ts` para separar vendors (react, query, supabase, recharts, radix-ui).
 - **Menú móvil:** `SiteHeader` y el panel `Admin` usan el componente `Sheet` de shadcn/ui como drawer de navegación en viewports pequeños.
+- **Navegación del admin por URL:** `Admin.tsx` usa `useLocation()` para derivar la sección activa del segundo segmento de la URL (`/admin` → dashboard, `/admin/cursos` → cursos, etc.). La ruta está registrada como `/admin/*` en `App.tsx`. El estado del editor de cursos (`editingCourseId`) vive en `Admin.tsx` — se resetea al navegar a otra sección.
 
 ---
 

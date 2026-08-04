@@ -35,23 +35,24 @@ Los tipos en `src/integrations/supabase/types.ts` siguen siendo válidos porque 
 
 ### Paso 2 — Aplicar el schema (SQL Editor de Supabase, sin CLI)
 
-Ir a **SQL Editor** del nuevo proyecto y ejecutar los 4 archivos en orden:
+Ir a **SQL Editor** del nuevo proyecto y ejecutar **todos los archivos de `supabase/migrations/`** en orden cronológico (hay 13 archivos en total). El orden importa: cada migración depende de las anteriores.
 
-**Migración 1** — pegar y ejecutar:
-`supabase/migrations/20260502082240_56062459-e3ec-45ce-94bd-15f6f3c7deb4.sql`
-→ Crea: enum `app_role`, tablas `profiles` y `user_roles`, funciones `has_role()`, trigger `handle_new_user()`, trigger `touch_updated_at()`
+Los más relevantes:
 
-**Migración 2** — pegar y ejecutar:
-`supabase/migrations/20260502082254_084f40cc-230e-416f-96f1-23054cbd4bda.sql`
-→ Aplica correcciones de seguridad a las funciones (search_path, revoke public)
+**Migración 1** — `20260502082240_…`
+→ Crea: enum `app_role`, tablas `profiles` y `user_roles`, funciones `has_role()`, triggers `handle_new_user()` y `touch_updated_at()`
 
-**Migración 3** — pegar y ejecutar:
-`supabase/migrations/20260508133721_3b7aefb8-71cd-4e06-ad85-fa754481969a.sql`
-→ Crea: tablas `courses`, `sections`, `lessons`, `enrollments`, `lesson_progress`, vista `lessons_public`, funciones `has_course_access()` y `get_lesson_content()`, políticas RLS, y seed con 16 cursos
+**Migración 2** — `20260502082254_…`
+→ Correcciones de seguridad en funciones (search_path, revoke public)
 
-**Migración 4** — pegar y ejecutar:
-`supabase/migrations/20260513163652_891c8508-ae1e-43d6-96cb-679f27f1f400.sql`
-→ Seed de secciones y lecciones para los 13 cursos restantes + enrolamiento del usuario de prueba (Carlos) con progreso inicial
+**Migración 3** — `20260508133721_…`
+→ Tablas `courses`, `sections`, `lessons`, `enrollments`, `lesson_progress`; vista `lessons_public`; funciones `has_course_access()`, `get_lesson_content()`; políticas RLS (incluye `FOR ALL` para admins en las tres tablas); seed con 16 cursos y lecciones de muestra
+
+**Migración 4** — `20260513163652_…`
+→ Seed de secciones/lecciones para los 13 cursos restantes
+
+**Migraciones 5–13** — resto de archivos en `supabase/migrations/`
+→ Q&A/notas, funciones admin, pagos Stripe, métricas, tendencias, hardening RLS, certificados, detección de actividad
 
 > El orden importa: cada migración depende de las anteriores.
 

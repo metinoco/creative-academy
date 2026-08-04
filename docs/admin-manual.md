@@ -244,11 +244,11 @@ Tabla de alumnos con matrícula activa que **no han completado ninguna lección*
 
 ## 6. Cursos
 
-Tabla del catálogo completo con datos en tiempo real desde Supabase.
+Tabla del catálogo completo con datos en tiempo real desde Supabase. Desde aquí se pueden crear y editar cursos directamente.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│  Catálogo de cursos                                    [+ Nuevo 🔒] │
+│  Catálogo de cursos                                    [+ Nuevo]    │
 │  16 publicados · 2 borradores                                        │
 │                                                                     │
 │  🔍 Buscar por título, autor o categoría...                         │
@@ -263,15 +263,74 @@ Tabla del catálogo completo con datos en tiempo real desde Supabase.
 
 **Acciones por fila:**
 - **Ojo (👁)**: Abre la página pública del curso en una pestaña nueva.
-- **Enlace externo (↗)**: Abre el detalle del curso desde `/curso/:slug`.
+- **Lápiz (✏)**: Abre el editor del curso (`AdminCursoEditor`).
 
 **Estado:**
-- `●` verde — Publicado y visible en el catálogo.
+- `●` naranja — Publicado y visible en el catálogo.
 - `○` gris — Borrador, no visible para los alumnos.
 
 **Búsqueda:** filtra en tiempo real por `title`, `author` o `category` sin llamada adicional a la API.
 
-> **Nota:** El botón "+ Nuevo curso" está visible pero bloqueado (🔒). El CRUD de cursos está en el roadmap Fase 2.
+---
+
+### 6.1 Crear un nuevo curso
+
+1. Pulsar **+ Nuevo** en la esquina superior derecha.
+2. Se abre el editor con la pestaña **Información** en blanco.
+3. Completar los campos obligatorios (Título, Slug, Categoría, Instructor). El slug se genera automáticamente a partir del título; se puede editar manualmente.
+4. Pulsar **Guardar borrador** → el curso se crea con `status = 'draft'` (invisible en el catálogo).
+5. Pasar a la pestaña **Contenido** para añadir secciones y lecciones (el borrador se guarda automáticamente si aún no existe).
+
+### 6.2 Editor de curso (`AdminCursoEditor`)
+
+El editor tiene dos pestañas:
+
+#### Pestaña Información
+
+| Campo | Obligatorio | Notas |
+|-------|-------------|-------|
+| Título | Sí | |
+| Slug (URL) | Sí | Solo minúsculas, números y guiones; debe ser único |
+| Subtítulo | No | Línea de descripción corta |
+| Descripción | No | Texto largo visible en la página de detalle |
+| Categoría | Sí | Combobox con categorías existentes + opción de crear nueva |
+| Instructor | Sí | Combobox con instructores existentes + opción de crear nuevo |
+| Precio (€) | Sí | Número positivo |
+| Duración | No | Texto libre (ej. "8h 30min") |
+| Imagen del curso (URL) | No | URL externa de la imagen de portada |
+| Paleta de color | Sí | warm / cream / sun / ink |
+
+**Botones de acción:**
+- **Guardar borrador**: guarda los cambios; en creación, registra el curso como `draft`.
+- **Publicar curso**: cambia `status` a `'published'` (con confirmación). El curso aparece en el catálogo.
+- **Despublicar**: revierte a `draft` (con confirmación). Los alumnos ya matriculados mantienen su acceso.
+
+#### Pestaña Contenido
+
+Gestión de secciones y lecciones del curso:
+
+```
+Sección 1 — Fundamentos         [2 lecciones]   [✏] [🗑]
+  ▸ 1. Bienvenida               8 min            [✏] [🗑]
+  ▸ 2. Qué es una marca         14 min           [✏] [🗑]
+  [+ Añadir lección]
+
+Sección 2 — Sistema visual      [1 lección]     [✏] [🗑]
+  ▸ 1. Construcción del logo    28 min   [Libre] [✏] [🗑]
+  [+ Añadir lección]
+
+[+ Añadir sección]
+```
+
+**Secciones:**
+- Renombrar inline con el lápiz (Enter guarda, Esc cancela).
+- Eliminar con confirmación (se eliminan también todas las lecciones de esa sección en cascada).
+- Expandir/contraer pulsando en el nombre o la flecha.
+
+**Lecciones:**
+- Crear o editar desde un **dialog modal** con campos: Título, URL de vídeo, Notas/Contenido, Duración (minutos), switch Vista previa gratuita.
+- Eliminar con confirmación.
+- Al crear/eliminar lecciones, se actualiza automáticamente `courses.lessons_count`.
 
 ---
 
@@ -332,7 +391,7 @@ Al hacer clic en cualquier fila, se abre el **modal de alumno**.
 1. Seleccionar un curso del `Select` (lista todos los cursos publicados en los que el alumno no está matriculado).
 2. Pulsar **Dar acceso** → inserta en `enrollments` con `source = 'manual'`.
 
-> **Nota:** La columna `notifyAccessRevoked` está preparada como stub para cuando se integre Resend (tarea 1.8). Actualmente no envía email.
+> Al dar acceso o revocar, se envía automáticamente un email al alumno vía la Edge Function `send-email` (plantillas `course_access` / `access_revoked`).
 
 ---
 
@@ -429,8 +488,7 @@ Las queries de panel admin usan `staleTime: 5 * 60 * 1000` (5 minutos). Las quer
 ### Limitaciones conocidas
 | Área | Limitación |
 |------|-----------|
-| Notificación por email al revocar | Stub — pendiente integrar Resend (tarea 1.8) |
-| CRUD de cursos | No implementado — roadmap Fase 2 |
-| Ajustes | Sección bloqueada — roadmap Fase 2 |
+| Reordenar secciones/lecciones | No hay drag-and-drop; el orden se cambia editando el campo `position` directamente en la BD |
+| Ajustes | Sección bloqueada — roadmap |
 | Exportación de datos | No implementada |
 | Paginación de alumnos | Sin paginación — puede ser lento con >1.000 alumnos |

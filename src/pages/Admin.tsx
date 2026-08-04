@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, Users, CreditCard, BarChart3,
   Settings, LogOut, Menu, Lock,
@@ -14,6 +14,7 @@ import AdminAlumnos from "@/components/admin/AdminAlumnos";
 import AdminVentas from "@/components/admin/AdminVentas";
 import AdminMetricas from "@/components/admin/AdminMetricas";
 import AdminNotificationPanel from "@/components/admin/AdminNotificationPanel";
+import AdminCursoEditor from "@/components/admin/AdminCursoEditor";
 
 // ── Design-system "Warm Ink" tokens ────────────────────────────────────────
 const ADMIN_BG      = "bg-white";
@@ -77,11 +78,30 @@ const Admin = () => {
   const location = useLocation();
   const { signOut, profile } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const pathSegment = location.pathname.split("/")[2] ?? "";
   const activeSection: Section = VALID_SECTIONS.has(pathSegment as Section)
     ? (pathSegment as Section)
     : "dashboard";
+
+  // "editing" search param: "new" | uuid | absent (lista)
+  const editingCourseId = activeSection === "cursos" ? (searchParams.get("editing") ?? null) : null;
+
+  const setEditingCourseId = (id: string | null) => {
+    if (id === null) {
+      setSearchParams({}, { replace: true });
+    } else {
+      setSearchParams({ editing: id }, { replace: true });
+    }
+  };
+
+  // Reset editor param when navigating away from cursos
+  useEffect(() => {
+    if (activeSection !== "cursos" && searchParams.has("editing")) {
+      setSearchParams({}, { replace: true });
+    }
+  }, [activeSection]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLogout = async () => {
     await signOut();
@@ -265,7 +285,18 @@ const Admin = () => {
           )}
 
           {activeSection === "dashboard" && <AdminDashboard onNavigate={handleNavSection} />}
-          {activeSection === "cursos"    && <AdminCursos />}
+          {activeSection === "cursos" && editingCourseId === null && (
+            <AdminCursos
+              onNewCourse={() => setEditingCourseId("new")}
+              onEditCourse={(id) => setEditingCourseId(id)}
+            />
+          )}
+          {activeSection === "cursos" && editingCourseId !== null && (
+            <AdminCursoEditor
+              courseId={editingCourseId === "new" ? null : editingCourseId}
+              onBack={() => setEditingCourseId(null)}
+            />
+          )}
           {activeSection === "alumnos"   && <AdminAlumnos />}
           {activeSection === "ventas"    && <AdminVentas />}
           {activeSection === "metricas"  && <AdminMetricas />}
